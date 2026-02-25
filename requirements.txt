@@ -15,6 +15,7 @@ pandas
 matplotlib
 numpy
 scipy
+rich  # Required by TRL
 
 # Additional ML Tools
 scikit-learn
