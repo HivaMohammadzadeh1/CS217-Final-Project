@@ -62,8 +62,9 @@ def main():
 
     # Quick stats
     print("\nDataset Statistics:")
-    avg_chosen_len = sum(len(ex['chosen']) for ex in train_dataset[:100]) / 100
-    avg_rejected_len = sum(len(ex['rejected']) for ex in train_dataset[:100]) / 100
+    sample_examples = [train_dataset[i] for i in range(min(100, len(train_dataset)))]
+    avg_chosen_len = sum(len(ex['chosen']) for ex in sample_examples) / len(sample_examples)
+    avg_rejected_len = sum(len(ex['rejected']) for ex in sample_examples) / len(sample_examples)
     print(f"   Avg chosen response length:   {avg_chosen_len:.0f} chars")
     print(f"   Avg rejected response length: {avg_rejected_len:.0f} chars")
 

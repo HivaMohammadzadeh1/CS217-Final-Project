@@ -7,7 +7,7 @@ accelerate
 trl
 
 # MX Format Library (Microsoft)
-mx-pytorch
+# mx-pytorch  # Install separately: pip install git+https://github.com/microsoft/microxcaling.git
 
 # Utilities
 tqdm
