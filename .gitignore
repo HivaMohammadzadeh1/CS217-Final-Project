@@ -1,0 +1,142 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# PyTorch
+*.pth
+*.pt
+*.ckpt
+checkpoints/
+lightning_logs/
+
+# HuggingFace
+transformers_cache/
+.cache/
+
+# Datasets
+data/
+datasets/
+*.csv
+!results/README.md
+
+# Model weights
+models/
+*.safetensors
+*.bin
+
+# Logs
+*.log
+logs/
+wandb/
+tensorboard/
+
+# FPGA/Vivado
+*.jou
+*.log
+*.str
+*.xpr
+*.bit
+*.ltx
+*.rpt
+.Xil/
+vivado*
+*.xml
+!constraints.xdc
+
+# SystemC
+*.o
+*.out
+simulations/
+*.vcd
+*.wlf
+
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.pdf
+!report/README.md
+
+# Results (keep directory structure but ignore data)
+results/*.csv
+results/*.json
+results/*.txt
+results/plots/*.png
+results/plots/*.pdf
+!results/README.md
+
+# Temporary files
+*.tmp
+*.swp
+*~
+.*.swp
+
+# Energy measurement logs
+power_log*.csv
+fpga_power*.txt
+
+# AWS
+.aws/
+*.pem
+
+# Backup files
+*.bak
+*.backup
+
+# Compressed files
+*.zip
+*.tar.gz
+*.rar

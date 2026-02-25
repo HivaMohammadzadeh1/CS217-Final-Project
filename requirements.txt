@@ -1,0 +1,25 @@
+# CS217 Final Project - Layer-Adaptive MX Format Quantization for RLHF
+# PyTorch and Deep Learning Dependencies
+torch>=2.0
+transformers
+datasets
+accelerate
+trl
+
+# MX Format Library (Microsoft)
+mx-pytorch
+
+# Utilities
+tqdm
+pandas
+matplotlib
+numpy
+scipy
+
+# Additional ML Tools
+scikit-learn
+tensorboard
+
+# Development Tools
+jupyter
+ipython
