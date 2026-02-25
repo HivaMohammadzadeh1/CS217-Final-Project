@@ -108,6 +108,7 @@ simulations/
 *.toc
 *.synctex.gz
 *.pdf
+!docs/*.pdf
 !report/README.md
 
 # Results (keep directory structure but ignore data)
