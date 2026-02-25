@@ -4,9 +4,9 @@
 Stanford University | February 2026
 
 ## Team Members
-- Hiva Zaad (Hardware Lead)
-- Grant Griffith (ML/Quantization Lead)
-- Daniel Adkins (Integration Lead)
+- Hiva Zaad 
+- Grant Griffith 
+- Daniel Adkins 
 
 ## Project Overview
 
