@@ -54,7 +54,7 @@ class Lab1FPGAInterface:
         """
         try:
             # Path to Lab 1 compiled shared library
-            lab1_lib_path = Path("~/cs217-lab-1-main/design_top/software/build/libdesign_top.so").expanduser()
+            lab1_lib_path = Path("~/CS217-Final-Project/integration/libdesign_top.so").expanduser()
 
             if not lab1_lib_path.exists():
                 if self.verbose:
