@@ -1,26 +1,5 @@
-# CS217 Final Project - Layer-Adaptive MX Format Quantization for RLHF
-# PyTorch and Deep Learning Dependencies
-torch>=2.0
-transformers
-datasets
-accelerate
-trl
-
-# MX Format Library (Microsoft)
-# mx-pytorch  # Install separately: pip install git+https://github.com/microsoft/microxcaling.git
-
-# Utilities
-tqdm
-pandas
-matplotlib
-numpy
-scipy
-rich  # Required by TRL
-
-# Additional ML Tools
-scikit-learn
-tensorboard
-
-# Development Tools
-jupyter
-ipython
+trl==0.9.6
+transformers==4.42.3
+accelerate==0.30.1
+datasets==2.19.0
+torch
