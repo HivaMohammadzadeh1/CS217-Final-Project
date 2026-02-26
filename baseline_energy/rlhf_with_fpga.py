@@ -82,22 +82,13 @@ class FPGALinearLayer(nn.Module):
         return result
 
 
+FPGA_TARGET_LAYERS = {"q_proj", "k_proj", "v_proj", "o_proj"}
+
 def replace_linear_with_fpga(model, fpga_offloader, verbose=False):
-    """
-    Replace all nn.Linear layers in the model with FPGA-offloaded versions.
-
-    Args:
-        model: PyTorch model
-        fpga_offloader: FPGAMatmulOffload instance
-        verbose: Print replacement information
-
-    Returns:
-        Number of layers replaced
-    """
     count = 0
 
     for name, module in model.named_children():
-        if isinstance(module, nn.Linear):
+        if isinstance(module, nn.Linear) and name in FPGA_TARGET_LAYERS:
             setattr(model, name, FPGALinearLayer(module, fpga_offloader))
             count += 1
             if verbose:
@@ -106,7 +97,6 @@ def replace_linear_with_fpga(model, fpga_offloader, verbose=False):
             count += replace_linear_with_fpga(module, fpga_offloader, verbose)
 
     return count
-
 
 def restore_fpga_to_linear(model):
     """
