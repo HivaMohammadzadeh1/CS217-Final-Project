@@ -98,14 +98,40 @@ def replace_linear_with_fpga(model, fpga_offloader, verbose=False):
 
     for name, module in model.named_children():
         if isinstance(module, nn.Linear):
-            # Replace this linear layer
             setattr(model, name, FPGALinearLayer(module, fpga_offloader))
             count += 1
             if verbose:
                 print(f"   Replaced {name} with FPGA offload")
         else:
-            # Recursively replace in submodules
             count += replace_linear_with_fpga(module, fpga_offloader, verbose)
+
+    return count
+
+
+def restore_fpga_to_linear(model):
+    """
+    Convert all FPGALinearLayer modules back to standard nn.Linear so the
+    model can be serialized with save_pretrained (which expects vanilla layers).
+
+    Returns:
+        Number of layers restored
+    """
+    count = 0
+
+    for name, module in model.named_children():
+        if isinstance(module, FPGALinearLayer):
+            linear = nn.Linear(
+                module.weight.shape[1],
+                module.weight.shape[0],
+                bias=module.bias is not None,
+            )
+            linear.weight = module.weight
+            if module.bias is not None:
+                linear.bias = module.bias
+            setattr(model, name, linear)
+            count += 1
+        else:
+            count += restore_fpga_to_linear(module)
 
     return count
 
@@ -589,42 +615,107 @@ class RLHFWithFPGATrainer:
 
     def save_model(self):
         """
-        Save the trained policy model, tokenizer, and training config so the
-        checkpoint can be reloaded for future evaluations without re-training.
+        Save the trained policy model, reward model, tokenizer, and training
+        config so everything can be reloaded for future evaluations without
+        re-training.
+
+        Handles FPGALinearLayer -> nn.Linear conversion so that HuggingFace
+        save_pretrained produces a valid, standard checkpoint.
         """
+        print(f"\n{'='*60}")
+        print("Saving Models & Artifacts")
+        print(f"{'='*60}\n")
+
+        # ── 1. Restore FPGA layers to standard nn.Linear before saving ──
+        fpga_was_active = config.USE_FPGA_OFFLOAD
+        if fpga_was_active:
+            print("  Restoring FPGA layers to nn.Linear for serialization...")
+            n_policy = restore_fpga_to_linear(self.model)
+            n_reward = restore_fpga_to_linear(self.reward_model)
+            n_ref = restore_fpga_to_linear(self.ref_model)
+            print(f"    Restored: policy={n_policy}, reward={n_reward}, ref={n_ref}")
+
+        # ── 2. Save policy model (causal-LM without value head) ──
         model_dir = self.output_dir / "trained_model"
         model_dir.mkdir(parents=True, exist_ok=True)
-        print(f"💾 Saving trained model to {model_dir}/ ...")
-
-        # Save the underlying pretrained causal-LM (without the value head)
-        # so it can be loaded with AutoModelForCausalLM for downstream use.
         self.model.pretrained_model.save_pretrained(str(model_dir))
         self.tokenizer.save_pretrained(str(model_dir))
+        print(f"  ✓ Policy model (causal-LM): {model_dir}/")
 
-        # Also save the full PPO model (with value head) for resuming training
+        # ── 3. Save full PPO model (with value head) for resume ──
         ppo_dir = self.output_dir / "trained_model_ppo"
         ppo_dir.mkdir(parents=True, exist_ok=True)
         self.model.save_pretrained(str(ppo_dir))
+        self.tokenizer.save_pretrained(str(ppo_dir))
+        print(f"  ✓ PPO model (with value head): {ppo_dir}/")
 
-        # Persist a small metadata file so future evals know what was used
+        # ── 4. Save reward model for reproducible future evals ──
+        reward_dir = self.output_dir / "reward_model"
+        reward_dir.mkdir(parents=True, exist_ok=True)
+        self.reward_model.save_pretrained(str(reward_dir))
+        self.tokenizer.save_pretrained(str(reward_dir))
+        print(f"  ✓ Reward model: {reward_dir}/")
+
+        # ── 5. Save reference model for future comparisons ──
+        ref_dir = self.output_dir / "reference_model"
+        ref_dir.mkdir(parents=True, exist_ok=True)
+        self.ref_model.pretrained_model.save_pretrained(str(ref_dir))
+        self.tokenizer.save_pretrained(str(ref_dir))
+        print(f"  ✓ Reference model: {ref_dir}/")
+
+        # ── 6. Save raw state dicts as .pt files (fail-safe backup) ──
+        torch.save(
+            self.model.pretrained_model.state_dict(),
+            str(self.output_dir / "policy_state_dict.pt"),
+        )
+        torch.save(
+            self.reward_model.state_dict(),
+            str(self.output_dir / "reward_state_dict.pt"),
+        )
+        print(f"  ✓ State-dict backups (.pt): {self.output_dir}/")
+
+        # ── 7. Training metadata for provenance ──
         meta = {
             "base_model": config.MODEL_NAME,
             "reward_model": config.REWARD_MODEL_NAME,
             "training_steps": self.args.steps,
             "fpga_offload": config.USE_FPGA_OFFLOAD,
             "fpga_mock": config.USE_MOCK_FPGA,
+            "use_lab1_fpga": config.USE_LAB1_FPGA,
             "fp16": config.FP16,
             "learning_rate": config.LEARNING_RATE,
             "batch_size": config.BATCH_SIZE,
             "ppo_epochs": config.PPO_EPOCHS,
             "max_seq_length": config.MAX_SEQ_LENGTH,
+            "max_prompt_length": config.MAX_PROMPT_LENGTH,
+            "max_response_length": config.MAX_RESPONSE_LENGTH,
+            "dataset": config.DATASET_NAME,
+            "train_size": config.TRAIN_SIZE,
+            "eval_size": config.EVAL_SIZE,
+            "random_seed": config.RANDOM_SEED,
+            "saved_artifacts": [
+                "trained_model/",
+                "trained_model_ppo/",
+                "reward_model/",
+                "reference_model/",
+                "policy_state_dict.pt",
+                "reward_state_dict.pt",
+            ],
         }
-        with open(model_dir / "training_meta.json", "w") as f:
+        with open(self.output_dir / "training_meta.json", "w") as f:
             json.dump(meta, f, indent=2)
+        print(f"  ✓ Training metadata: {self.output_dir / 'training_meta.json'}")
 
-        print(f"  ✓ Causal-LM checkpoint: {model_dir}/")
-        print(f"  ✓ PPO checkpoint (with value head): {ppo_dir}/")
-        print(f"  ✓ Training metadata: {model_dir / 'training_meta.json'}\n")
+        # ── 8. Re-apply FPGA layers if training/eval will continue ──
+        if fpga_was_active:
+            print("  Re-applying FPGA offload layers...")
+            replace_linear_with_fpga(self.model, self.fpga_offloader)
+            replace_linear_with_fpga(self.reward_model, self.fpga_offloader)
+            replace_linear_with_fpga(self.ref_model, self.fpga_offloader)
+
+        print(f"\n{'='*60}")
+        print(f"All artifacts saved to: {self.output_dir}/")
+        print(f"{'='*60}\n")
 
     def save_results(self, training_stats):
         """Save training results and timing breakdown."""
@@ -692,6 +783,7 @@ def main():
     parser.add_argument(
         "--skip-eval",
         action="store_true",
+        default=False,
         dest="skip_eval",
         help="Skip post-training evaluation",
     )
