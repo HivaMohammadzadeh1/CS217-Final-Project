@@ -319,7 +319,7 @@ class RLHFWithFPGATrainer:
                     return_tensors="pt",
                     max_length=config.MAX_PROMPT_LENGTH,
                     truncation=True,
-                ).input_ids.to(self.device)
+                ).input_ids.squeeze(0).to(self.device)  # Remove batch dimension for PPO
 
                 with torch.no_grad():
                     response_tensors = ppo_trainer.generate(
