@@ -1,0 +1,55 @@
+
+======================================================================
+FPGA Energy Analysis for RLHF Training
+======================================================================
+
+FPGA Configuration:           
+  Clock Frequency: 250.0 MHz
+  Power Consumption: 35.0 W
+  Cycles per 16×16 matmul: 148,656 cycles
+  Time per matmul: 594.62 μs
+  Energy per matmul: 20811.84 μJ
+
+Workload Configuration:       
+  PPO Steps: 50
+  Batch Size: 8
+  Sequence Length: 512
+  Total Samples: 400
+
+Matmul Operations:            
+  Forward matmuls per sample: 170
+  Backward matmuls per sample: 170
+  Total matmuls per sample: 340
+  Total matmuls: 136,000
+
+FPGA Performance:             
+  Total Cycles: 20,217,216,000 cycles
+  Total Time: 1.35 minutes (80.9 seconds)
+  Total Energy: 0.7862 Wh (2830.4 Joules)
+
+Breakdown:                    
+  Data Transfer: 99.98% of cycles
+  Computation: 0.02% of cycles
+
+======================================================================
+
+======================================================================
+CPU Comparison
+======================================================================
+
+CPU baseline data not available yet.
+Run CPU baseline first:
+  python baseline_energy/rlhf_baseline.py --steps 50
+Then check: results/cpu_baseline_50steps/energy_summary.csv
+
+======================================================================
+Quick Reference - Different Workloads
+======================================================================
+
+2 steps: 0.05 min, 0.0314 Wh, 5,440 matmuls
+
+10 steps: 0.27 min, 0.1572 Wh, 27,200 matmuls
+
+50 steps: 1.35 min, 0.7862 Wh, 136,000 matmuls
+
+100 steps: 2.70 min, 1.5725 Wh, 272,000 matmuls

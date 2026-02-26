@@ -1,0 +1,3 @@
+AFIDEVICE    0       0x1d0f      0xf010      0000:34:00.0
+AFI          0       agfi-01443ef11f15e4071  loaded            0        ok               0       0x10212415
+AFIDEVICE    0       0x1d0f      0xf010      0000:34:00.0

@@ -1,0 +1,96 @@
+========================================
+Lab 1 FPGA Performance Measurement
+========================================
+
+Checking FPGA status...
+AFIDEVICE    0       0x1d0f      0xf010      0000:34:00.0
+
+Running Lab 1 FPGA test 10 times to get average performance...
+
+Run 1/10...
+Run 2/10...
+Run 3/10...
+Run 4/10...
+Run 5/10...
+Run 6/10...
+Run 7/10...
+Run 8/10...
+Run 9/10...
+Run 10/10...
+
+Extracting performance metrics...
+
+=== Data Transfer Cycles ===
+Data Transfer Cycles: 28047
+Data Transfer Cycles: 40872
+Data Transfer Cycles: 53550
+Data Transfer Cycles: 66261
+Data Transfer Cycles: 78831
+Data Transfer Cycles: 91905
+Data Transfer Cycles: 104589
+Data Transfer Cycles: 117156
+Data Transfer Cycles: 129767
+Data Transfer Cycles: 142316
+Data Transfer Cycles: 154988
+Data Transfer Cycles: 167574
+Data Transfer Cycles: 180125
+Data Transfer Cycles: 192696
+Data Transfer Cycles: 205258
+Data Transfer Cycles: 218480
+Data Transfer Cycles: 231143
+Data Transfer Cycles: 243842
+Data Transfer Cycles: 256418
+Data Transfer Cycles: 269002
+Data Transfer Cycles: 12678
+Data Transfer Cycles: 25251
+Data Transfer Cycles: 37936
+Data Transfer Cycles: 50490
+Data Transfer Cycles: 63231
+Data Transfer Cycles: 75789
+Data Transfer Cycles: 88499
+Data Transfer Cycles: 101122
+Data Transfer Cycles: 113817
+Data Transfer Cycles: 126405
+
+=== Compute Cycles ===
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+Compute Cycles: 15
+
+=== Average Performance ===
+Average Data Transfer Cycles: 122268
+Average Compute Cycles: 15
+Total Cycles per 16x16 matmul: 122283
+
+Full results saved to: lab1_fpga_performance.txt
+
+To calculate energy:
+  Assuming 250 MHz clock: .000489 seconds per matmul
+  With FPGA power (from XPE): Energy = Power × Time

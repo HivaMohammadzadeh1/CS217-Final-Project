@@ -1,0 +1,21 @@
+{
+  "num_steps": 10,
+  "batch_size": 8,
+  "seq_len": 512,
+  "total_samples": 80,
+  "forward_matmuls_per_sample": 170,
+  "backward_matmuls_per_sample": 170,
+  "total_matmuls_per_sample": 340,
+  "total_matmuls": 27200,
+  "num_matmuls": 27200,
+  "total_cycles": 4043443200,
+  "total_time_s": 16.1737728,
+  "total_time_min": 0.26956287999999995,
+  "total_energy_j": 566.082048,
+  "total_energy_wh": 0.15724501333333332,
+  "fpga_power_w": 35.0,
+  "cycles_per_matmul": 148656,
+  "fpga_clock_mhz": 250.0,
+  "time_per_matmul_us": 594.624,
+  "energy_per_matmul_uj": 20811.839999999997
+}

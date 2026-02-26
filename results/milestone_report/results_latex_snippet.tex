@@ -1,0 +1,35 @@
+% LaTeX snippet for milestone report - copy into your main document
+
+\subsection{FPGA Baseline Performance}
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Metric} & \textbf{Value} \\ \midrule
+Total Cycles per 16×16 matmul & 148656 cycles \\
+Data Transfer Cycles & 148641 cycles (99.99\%) \\
+Computation Cycles & 15 cycles (0.01\%) \\
+Time per matmul & 594.62 $\mu$s \\
+Energy per matmul & 20811.84 $\mu$J \\
+Throughput & 1682 matmuls/sec \\
+\bottomrule
+\end{tabular}
+\caption{Lab 1 FPGA baseline performance measurements}
+\label{tab:fpga_baseline}
+\end{table}
+
+\subsection{RLHF Workload Energy Estimates}
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{PPO Steps} & \textbf{Time (min)} & \textbf{Energy (Wh)} \\ \midrule
+2 steps & TIME_2 & ENERGY_2 \\
+10 steps & TIME_10 & ENERGY_10 \\
+50 steps & TIME_50 & ENERGY_50 \\
+100 steps & TIME_100 & ENERGY_100 \\
+\bottomrule
+\end{tabular}
+\caption{FPGA energy estimates for RLHF training workloads}
+\label{tab:fpga_energy}
+\end{table}
