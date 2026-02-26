@@ -12,8 +12,10 @@ REWARD_MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"  # Same base, will add scalar h
 DATASET_NAME = "hivamoh/cs217-rlhf-dataset"  # Fixed HH-RLHF dataset on HuggingFace Hub
 USE_HUB_DATASET = True  # Set to False to use local dataset
 LOCAL_DATASET_PATH = "data/cs217_rlhf_dataset"  # Path if using local dataset
-TRAIN_SPLIT = "train"  # 1000 samples
-TEST_SPLIT = "test"  # 200 samples
+DATASET_SPLIT = "train"  # Use train split
+NUM_SAMPLES = 1000  # Total samples to use (800 train + 200 eval)
+TRAIN_SIZE = 800  # Training samples
+EVAL_SIZE = 200  # Evaluation samples
 RANDOM_SEED = 42  # Fixed seed used to create the dataset
 
 # Sequence Configuration
@@ -52,3 +54,9 @@ VERBOSE = True
 
 # Phase Timing (what to measure)
 MEASURE_PHASES = True  # Track rollout/reward/gradient separately
+
+# FPGA Offload Configuration
+USE_FPGA_OFFLOAD = True  # Enable FPGA matmul offload
+USE_MOCK_FPGA = True  # Use mock FPGA for testing (no real hardware needed)
+FPGA_DEVICE_ID = 0  # FPGA device ID (for AWS F2)
+FPGA_VERBOSE = False  # Print detailed FPGA offload info
