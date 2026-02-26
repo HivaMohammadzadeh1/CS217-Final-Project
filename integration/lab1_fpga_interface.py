@@ -54,13 +54,13 @@ class Lab1FPGAInterface:
         """
         try:
             # Path to Lab 1 compiled shared library
-            lab1_lib_path = Path("~/cs217-lab-1-hiva/design_top/software/build/libdesign_top.so").expanduser()
+            lab1_lib_path = Path("~/cs217-lab-1-main/design_top/software/build/libdesign_top.so").expanduser()
 
             if not lab1_lib_path.exists():
                 if self.verbose:
                     print(f"⚠️  Lab 1 library not found at {lab1_lib_path}")
                     print("    To compile Lab 1 as a shared library:")
-                    print("    cd ~/cs217-lab-1-hiva/design_top/software")
+                    print("    cd ~/cs217-lab-1-main/design_top/software")
                     print("    gcc -shared -fPIC -o build/libdesign_top.so src/design_top.c -I../../../sdk/userspace/include -L../../../sdk/userspace/lib -lfpga_mgmt")
                     print("    Will use software fallback for now")
                 self.use_hardware = False

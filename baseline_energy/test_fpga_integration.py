@@ -82,7 +82,7 @@ try:
     import subprocess
     result = subprocess.run(
         [
-            "python", "baseline_energy/rlhf_with_fpga.py",
+            "/opt/Xilinx/Vitis_HLS/2024.1/vcxx/third-party/python-linux/user/3.10.10/bin/python3", "baseline_energy/rlhf_with_fpga.py",
             "--steps", "2",
             "--output", "results/integration_test"
         ],

@@ -348,7 +348,7 @@ class RLHFWithFPGATrainer:
                 # Phase 3: Gradient update
                 gradient_start = time.time()
                 stats = ppo_trainer.step(
-                    [prompt_tensors], [response_tensors], [rewards]
+                    [prompt_tensors], [response_tensors.squeeze(0)], [rewards]
                 )
                 gradient_time = time.time() - gradient_start
                 self.phase_times["gradient"].append(gradient_time)
