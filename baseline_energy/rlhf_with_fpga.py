@@ -587,6 +587,45 @@ class RLHFWithFPGATrainer:
         except Exception:
             return float("nan")
 
+    def save_model(self):
+        """
+        Save the trained policy model, tokenizer, and training config so the
+        checkpoint can be reloaded for future evaluations without re-training.
+        """
+        model_dir = self.output_dir / "trained_model"
+        model_dir.mkdir(parents=True, exist_ok=True)
+        print(f"💾 Saving trained model to {model_dir}/ ...")
+
+        # Save the underlying pretrained causal-LM (without the value head)
+        # so it can be loaded with AutoModelForCausalLM for downstream use.
+        self.model.pretrained_model.save_pretrained(str(model_dir))
+        self.tokenizer.save_pretrained(str(model_dir))
+
+        # Also save the full PPO model (with value head) for resuming training
+        ppo_dir = self.output_dir / "trained_model_ppo"
+        ppo_dir.mkdir(parents=True, exist_ok=True)
+        self.model.save_pretrained(str(ppo_dir))
+
+        # Persist a small metadata file so future evals know what was used
+        meta = {
+            "base_model": config.MODEL_NAME,
+            "reward_model": config.REWARD_MODEL_NAME,
+            "training_steps": self.args.steps,
+            "fpga_offload": config.USE_FPGA_OFFLOAD,
+            "fpga_mock": config.USE_MOCK_FPGA,
+            "fp16": config.FP16,
+            "learning_rate": config.LEARNING_RATE,
+            "batch_size": config.BATCH_SIZE,
+            "ppo_epochs": config.PPO_EPOCHS,
+            "max_seq_length": config.MAX_SEQ_LENGTH,
+        }
+        with open(model_dir / "training_meta.json", "w") as f:
+            json.dump(meta, f, indent=2)
+
+        print(f"  ✓ Causal-LM checkpoint: {model_dir}/")
+        print(f"  ✓ PPO checkpoint (with value head): {ppo_dir}/")
+        print(f"  ✓ Training metadata: {model_dir / 'training_meta.json'}\n")
+
     def save_results(self, training_stats):
         """Save training results and timing breakdown."""
         print("💾 Saving results...")
@@ -667,6 +706,9 @@ def main():
 
     # Train with FPGA offload
     trainer.train()
+
+    # Save trained model for future evals
+    trainer.save_model()
 
     # Evaluate quantization quality degradation
     if not args.skip_eval:
