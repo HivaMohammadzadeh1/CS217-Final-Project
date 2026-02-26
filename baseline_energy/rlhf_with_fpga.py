@@ -129,7 +129,9 @@ class RLHFWithFPGATrainer:
         # Initialize FPGA offloader
         self.fpga_offloader = FPGAMatmulOffload(
             use_mock=config.USE_MOCK_FPGA,
-            verbose=config.FPGA_VERBOSE
+            verbose=config.FPGA_VERBOSE,
+            use_lab1=config.USE_LAB1_FPGA,
+            device_id=config.FPGA_DEVICE_ID
         )
 
         # Phase timing

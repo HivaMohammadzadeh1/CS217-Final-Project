@@ -3,19 +3,32 @@ FPGA Matmul Offload with Tiling
 
 This module provides:
 1. Tiling function that breaks any matmul into 16x16 chunks
-2. FPGA offload wrapper (with mock interface for testing)
+2. FPGA offload wrapper (mock, or real Lab 1 FPGA)
 3. Result reassembly
 
 Usage:
     from fpga_matmul_offload import FPGAMatmulOffload
 
-    offloader = FPGAMatmulOffload(use_mock=True)  # Mock FPGA for testing
-    result = offloader.matmul(A, B)  # Automatically tiled to 16x16
+    # Option 1: Mock FPGA (for testing without hardware)
+    offloader = FPGAMatmulOffload(use_mock=True)
+    result = offloader.matmul(A, B)
+
+    # Option 2: Real Lab 1 FPGA (requires hardware + bitstream)
+    offloader = FPGAMatmulOffload(use_mock=False, use_lab1=True)
+    result = offloader.matmul(A, B)
 """
 
 import numpy as np
 import torch
 import time
+from pathlib import Path
+
+# Try to import Lab 1 FPGA interface
+try:
+    from lab1_fpga_interface import Lab1FPGAInterface
+    LAB1_AVAILABLE = True
+except ImportError:
+    LAB1_AVAILABLE = False
 
 
 class MockFPGAInterface:
@@ -61,19 +74,34 @@ class MockFPGAInterface:
 
 
 class RealFPGAInterface:
-    """Real FPGA interface (to be implemented when hardware is ready)."""
+    """Real FPGA interface using Lab 1 hardware."""
 
-    def __init__(self, device_id=0):
+    def __init__(self, device_id=0, verbose=False, use_lab1=True):
         """
         Initialize real FPGA connection.
 
         Args:
             device_id: FPGA device ID (for AWS F2)
+            verbose: Print debug information
+            use_lab1: Use Lab 1 FPGA interface (16×16 matmul accelerator)
         """
         self.device_id = device_id
-        # TODO: Initialize FPGA connection
-        # import pynq or AWS FPGA SDK
-        raise NotImplementedError("Real FPGA interface not yet implemented")
+        self.verbose = verbose
+        self.use_lab1 = use_lab1
+
+        if use_lab1 and LAB1_AVAILABLE:
+            # Use Lab 1 FPGA interface
+            self.fpga = Lab1FPGAInterface(device_id=device_id, verbose=verbose)
+            if verbose:
+                print("✓ Using Lab 1 FPGA interface (16×16 matmul accelerator)")
+        elif use_lab1 and not LAB1_AVAILABLE:
+            if verbose:
+                print("⚠️  Lab 1 FPGA interface not available")
+                print("    Make sure lab1_fpga_interface.py is in integration/")
+            raise ImportError("Lab 1 FPGA interface not available")
+        else:
+            # Generic FPGA interface (not implemented)
+            raise NotImplementedError("Generic FPGA interface not yet implemented")
 
     def matmul_16x16(self, tile_a, tile_b):
         """
@@ -86,11 +114,22 @@ class RealFPGAInterface:
         Returns:
             (16, 16) numpy array result
         """
-        # TODO: Implement FPGA communication
-        # 1. Transfer tiles to FPGA memory
-        # 2. Trigger computation
-        # 3. Read back result
-        raise NotImplementedError("Real FPGA interface not yet implemented")
+        if self.use_lab1:
+            # Use Lab 1 FPGA hardware (or software fallback if hardware unavailable)
+            return self.fpga.matmul_16x16(tile_a, tile_b)
+        else:
+            raise NotImplementedError("Generic FPGA interface not yet implemented")
+
+    def get_stats(self):
+        """Return FPGA statistics."""
+        if self.use_lab1:
+            return self.fpga.get_stats()
+        return {}
+
+    def reset_stats(self):
+        """Reset FPGA statistics."""
+        if self.use_lab1:
+            self.fpga.reset_stats()
 
 
 class FPGAMatmulOffload:
@@ -100,7 +139,7 @@ class FPGAMatmulOffload:
 
     TILE_SIZE = 16  # Fixed 16x16 tile size for FPGA
 
-    def __init__(self, use_mock=True, device_id=0, verbose=False):
+    def __init__(self, use_mock=True, device_id=0, verbose=False, use_lab1=True):
         """
         Initialize FPGA matmul offloader.
 
@@ -108,6 +147,7 @@ class FPGAMatmulOffload:
             use_mock: If True, use mock FPGA for testing
             device_id: FPGA device ID (for real FPGA)
             verbose: Print detailed tiling information
+            use_lab1: Use Lab 1 FPGA interface (when use_mock=False)
         """
         self.use_mock = use_mock
         self.verbose = verbose
@@ -117,7 +157,7 @@ class FPGAMatmulOffload:
             if verbose:
                 print("🔧 Using MOCK FPGA interface")
         else:
-            self.fpga = RealFPGAInterface(device_id=device_id)
+            self.fpga = RealFPGAInterface(device_id=device_id, verbose=verbose, use_lab1=use_lab1)
             if verbose:
                 print(f"🔧 Connected to real FPGA (device {device_id})")
 
