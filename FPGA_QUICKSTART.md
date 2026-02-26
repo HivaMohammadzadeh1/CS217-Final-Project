@@ -1,6 +1,15 @@
 # FPGA Quick Start - Next Steps
 
-You're now connected to your FPGA instance! Here's what to do:
+**IMPORTANT**: f2.6xlarge has FPGA (Xilinx VU9P), NOT GPU!
+
+## Hardware Clarification
+
+Your f2.6xlarge instance:
+- ✅ CPU: Intel Xeon (16 vCPUs)
+- ✅ FPGA: Xilinx VU9P FPGA
+- ❌ NO GPU
+
+For GPU training, you need: g4dn.xlarge, p3.2xlarge, etc.
 
 ## On the FPGA Instance (ubuntu@ip-172-31-87-76)
 
@@ -29,14 +38,35 @@ source venv/bin/activate
 python baseline_energy/verify_setup.py
 ```
 
-### Step 3: Test FPGA Integration (Mock Mode)
+### Step 3: Choose Your Running Mode
+
+The code now runs in **CPU-only mode** (no mock FPGA):
+- ✅ Pure PyTorch on CPU
+- ✅ No FPGA offload overhead
+- ✅ ~2-6 hours for 50 steps
 
 ```bash
-# Test with mock FPGA first (no real hardware needed yet)
-python baseline_energy/test_fpga_integration.py
-
-# Quick 2-step test
+# Quick 2-step test (CPU only)
 python baseline_energy/rlhf_with_fpga.py --steps 2 --output results/test_2steps
+
+# This uses: USE_FPGA_OFFLOAD = False in config.py
+```
+
+**Alternative modes:**
+
+**A. Mock FPGA Mode** (for testing FPGA architecture):
+```bash
+# Edit config.py
+# Set: USE_FPGA_OFFLOAD = True, USE_MOCK_FPGA = True
+python baseline_energy/rlhf_with_fpga.py --steps 2 --output results/mock_fpga_test
+```
+
+**B. Real GPU Mode** (requires g4dn.xlarge or similar):
+```bash
+# Copy GPU config
+cp baseline_energy/config_gpu.py baseline_energy/config.py
+python baseline_energy/rlhf_with_fpga.py --steps 50 --output results/gpu_baseline
+# ~5-10 minutes on GPU
 ```
 
 ### Step 4: Run 50-Step Baseline (As per 2-hour plan)

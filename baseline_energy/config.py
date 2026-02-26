@@ -44,8 +44,8 @@ POWER_SAMPLING_INTERVAL_MS = 100  # 10 samples/second
 RESULTS_DIR = "results/gpu_baseline"
 
 # Device Configuration
-USE_GPU = True  # Set to False for CPU-only testing
-FP16 = True  # Use FP16 for baseline (standard practice)
+USE_GPU = False  # f2.6xlarge has NO GPU - set to False
+FP16 = False  # Disable FP16 when no GPU
 
 # Logging Configuration
 LOG_EVERY_N_STEPS = 10
@@ -56,7 +56,7 @@ VERBOSE = True
 MEASURE_PHASES = True  # Track rollout/reward/gradient separately
 
 # FPGA Offload Configuration
-USE_FPGA_OFFLOAD = True  # Enable FPGA matmul offload
-USE_MOCK_FPGA = True  # Use mock FPGA for testing (no real hardware needed)
+USE_FPGA_OFFLOAD = False  # DISABLE for pure CPU training (no mock FPGA)
+USE_MOCK_FPGA = False  # Disabled
 FPGA_DEVICE_ID = 0  # FPGA device ID (for AWS F2)
 FPGA_VERBOSE = False  # Print detailed FPGA offload info
