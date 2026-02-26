@@ -8,12 +8,13 @@ MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 REWARD_MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"  # Same base, will add scalar head
 
 # Dataset Configuration
-DATASET_NAME = "Anthropic/hh-rlhf"
-DATASET_SPLIT = "train"
-NUM_SAMPLES = 1000  # Fixed benchmark size
-TRAIN_SIZE = 800
-EVAL_SIZE = 200
-RANDOM_SEED = 42
+# Use fixed dataset for reproducible experiments
+DATASET_NAME = "hivamoh/cs217-rlhf-dataset"  # Fixed HH-RLHF dataset on HuggingFace Hub
+USE_HUB_DATASET = True  # Set to False to use local dataset
+LOCAL_DATASET_PATH = "data/cs217_rlhf_dataset"  # Path if using local dataset
+TRAIN_SPLIT = "train"  # 1000 samples
+TEST_SPLIT = "test"  # 200 samples
+RANDOM_SEED = 42  # Fixed seed used to create the dataset
 
 # Sequence Configuration
 MAX_SEQ_LENGTH = 512  # Cap to reduce memory traffic
