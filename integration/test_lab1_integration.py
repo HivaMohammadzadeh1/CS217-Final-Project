@@ -119,9 +119,12 @@ def test_fpga_offload_tiled():
     # Get stats
     stats = offloader.get_stats()
     print(f"\nFPGA Statistics:")
-    print(f"  Total matmuls: {stats['total_matmuls']}")
-    print(f"  Total tiles: {stats['total_tiles']}")
-    print(f"  Avg tiles per matmul: {stats['total_tiles'] / max(stats['total_matmuls'], 1):.1f}")
+    total_matmuls = stats.get('total_matmuls', stats.get('num_calls', 0))
+    total_tiles = stats.get('total_tiles', 0)
+    print(f"  Total matmuls: {total_matmuls}")
+    print(f"  Total tiles: {total_tiles}")
+    if total_matmuls > 0:
+        print(f"  Avg tiles per matmul: {total_tiles / total_matmuls:.1f}")
 
     # Check if tests passed
     tolerance = 1e-3
@@ -164,8 +167,8 @@ def test_mock_mode():
 
     stats = offloader.get_stats()
     print(f"\nMock FPGA Statistics:")
-    print(f"  Total matmuls: {stats['total_matmuls']}")
-    print(f"  Total tiles: {stats['total_tiles']}")
+    print(f"  Total matmuls: {stats.get('total_matmuls', 'N/A')}")
+    print(f"  Total tiles: {stats.get('total_tiles', stats.get('num_calls', 0))}")
 
     if error < 1e-6:  # Mock should be exact
         print(f"\n✓ TEST PASSED (error < 1e-6)")
