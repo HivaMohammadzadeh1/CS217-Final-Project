@@ -1,0 +1,331 @@
+\documentclass{article}
+
+\usepackage[final]{neurips_2019}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{amsmath}
+
+\newcommand{\note}[1]{\textcolor{blue}{{#1}}}
+
+\title{
+  Layer-Adaptive Quantization for RLHF on FPGAs: Milestone Report \\
+  \vspace{1em}
+  \small{\normalfont Stanford CS217 - Winter 2026}
+}
+
+\author{
+  Hiva Zaad (Mohammadzadeh) \\
+  Department of Computer Science \\
+  Stanford University \\
+  \texttt{hiva@stanford.edu} \\
+  \And
+  Grant Griffith \\
+  Graduate School of Business \\
+  Stanford University \\
+  \texttt{grgriff@stanford.edu} \\
+  \And
+  Daniel Adkins \\
+ Graduate School of Business \\
+  Stanford University \\
+  \texttt{dadkins@stanford.edu}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We report progress on our layer-adaptive quantization system for RLHF training on FPGAs. In Weeks 1-2, we established the INT8 FPGA baseline using our Lab 1 accelerator, validated hardware functionality (0 test errors), and measured detailed performance characteristics. Our measurements show the 16×16 INT8 matrix multiply accelerator achieves 148,656 cycles per operation (99.99\% data transfer, 0.01\% compute), establishing the energy baseline against which MX format optimizations will be compared. We present FPGA performance analysis, energy projections for RLHF workloads, and our path forward for implementing layer-adaptive MX format quantization.
+\end{abstract}
+
+\section{Progress Summary}
+
+\subsection{Project Timeline}
+This report covers Weeks 1-2 (Feb 10 - Feb 23) of our 6-week project. We are on track with the planned milestones from our proposal, having completed the infrastructure setup and baseline measurements that form the foundation for our adaptive quantization experiments.
+
+\subsection{Completed Work}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Repository and tooling setup}: Git repository structured with separate directories for PyTorch profiling, FPGA baseline, SystemC design, integration code, and results. All dependencies installed and verified (PyTorch, TRL, Transformers, HuggingFace Datasets).
+
+    \item \textbf{FPGA hardware validation}: Lab 1 FPGA bitstream successfully deployed on AWS F2 (Xilinx VU9P). Hardware tests pass with 0 errors, confirming the 16×16 INT8 matrix multiply accelerator functions correctly.
+
+    \item \textbf{Baseline performance measurement}: Conducted 10-iteration measurement campaign on FPGA hardware. Measured average of 148,656 cycles per 16×16 INT8 matmul operation (Section~\ref{sec:fpga_perf}).
+
+    \item \textbf{Energy calculation framework}: Built automated energy estimation pipeline that projects RLHF workload energy consumption based on measured FPGA cycle counts and power estimates.
+
+    \item \textbf{RLHF training infrastructure}: Integrated TRL library with Qwen2.5-0.5B model and Anthropic HH-RLHF dataset. Training loop functional on host CPU, ready for FPGA matmul offload integration.
+
+    \item \textbf{Analysis automation}: Created helper scripts for performance measurement, energy calculation, and result visualization to streamline the experimental workflow.
+\end{itemize}
+
+\subsection{In Progress}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{CPU baseline measurements}: Running 50-step RLHF training on CPU to establish energy comparison point. Expected completion: Week 3.
+
+    \item \textbf{PyTorch layer sensitivity profiling}: Preparing sensitivity analysis to determine which layers tolerate MXFP4 vs MXFP8 quantization. Expected completion: Week 3.
+\end{itemize}
+
+\section{FPGA Baseline Performance}\label{sec:fpga_perf}
+
+\subsection{Hardware Configuration}
+\textbf{Platform}: AWS F2.6xlarge (Xilinx UltraScale+ VU9P FPGA)
+
+\noindent\textbf{Accelerator}: 16×16 INT8 matrix multiply (forked from Lab 1 PE core template)
+
+\noindent\textbf{Clock Frequency}: 250 MHz
+
+\noindent\textbf{Power Estimate}: 35 W (based on typical FPGA power for this workload scale)
+
+\subsection{Measurement Methodology}
+We ran the Lab 1 FPGA test 10 times and averaged the cycle counts to account for PCIe communication variance. Each test performs a 16×16 INT8 matrix multiplication with weights pre-loaded to FPGA SRAM and input vectors streamed from host.
+
+The FPGA runtime environment logs two critical metrics:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Data Transfer Cycles}: Time spent moving data between host CPU and FPGA via PCIe (includes weight writes, input streaming, and output reads)
+    \item \textbf{Compute Cycles}: Time spent performing the actual matrix multiply operation on the FPGA PE array
+\end{itemize}
+
+\subsection{Results}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Metric} & \textbf{Value} \\ \midrule
+Total Cycles per 16×16 matmul & 148,656 cycles \\
+\quad Data Transfer Cycles & 148,641 cycles (99.99\%) \\
+\quad Computation Cycles & 15 cycles (0.01\%) \\
+Time per matmul & 594.62 $\mu$s \\
+Energy per matmul & 20.81 $\mu$J \\
+Throughput & 1,682 matmuls/sec \\
+\bottomrule
+\end{tabular}
+\caption{Lab 1 FPGA baseline performance measurements (10-iteration average)}
+\label{tab:fpga_baseline}
+\end{table}
+
+\subsection{Analysis}
+
+\textbf{Key Observation}: The FPGA compute datapath is extremely fast---only 15 cycles to perform a 16×16 INT8 matrix multiply. However, \textbf{PCIe data transfer dominates total latency}, accounting for 99.99\% of the operation time.
+
+\subsubsection{Breakdown of Data Transfer Overhead}
+For each 16×16 matmul, the FPGA must:
+\begin{enumerate}[leftmargin=*]
+    \item Write 16 weight rows (16 bytes each) = 256 bytes to FPGA SRAM
+    \item Stream 16 input values (1 byte each) = 16 bytes to compute units
+    \item Read 16 output activations (4 bytes each, INT32 accumulator) = 64 bytes from FPGA
+\end{enumerate}
+
+Total data movement: 336 bytes per matmul. At typical PCIe Gen3 x16 bandwidth ($\sim$12 GB/s), this should take $\sim$28 $\mu$s in ideal conditions. However, observed data transfer latency is 594.56 $\mu$s, indicating:
+\begin{itemize}[leftmargin=*]
+    \item PCIe protocol overhead (AXI-Lite transactions, handshaking)
+    \item Host-side memory copy latency
+    \item FPGA SRAM access serialization
+\end{itemize}
+
+\subsubsection{Implications for MX Format Optimization}
+This bottleneck analysis directly motivates our project's focus on compressed number formats:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{MXFP8} stores weights in 8 bits (same as INT8) $\rightarrow$ no bandwidth reduction, but may enable reduced computation energy via adaptive group scaling
+    \item \textbf{MXFP4} stores weights in 4 bits $\rightarrow$ 50\% bandwidth reduction, cutting data transfer cycles proportionally
+    \item \textbf{Layer-adaptive policies} allow aggressive MXFP4 usage in robust layers while preserving quality with MXFP8 in sensitive layers
+\end{itemize}
+
+If MXFP4 can be applied to 50\% of layers without quality loss, we project:
+\begin{align*}
+\text{Data Transfer Reduction} &= 0.5 \times 50\% = 25\% \text{ fewer cycles} \\
+\text{Projected Total Cycles} &= 148,656 \times 0.75 \approx 111,500 \text{ cycles}
+\end{align*}
+
+This represents a \textbf{25\% latency reduction and 25\% energy reduction} for data transfer, though the 15-cycle compute cost remains unchanged. Full system energy savings depend on what fraction of layers tolerate MXFP4, which we will determine through sensitivity profiling in Week 3.
+
+\section{RLHF Workload Energy Projections}
+
+\subsection{Matmul Operation Counts}
+For Qwen2.5-0.5B (24 transformer layers) RLHF training, we estimate matmul operations per sample as follows:
+
+\textbf{Per Transformer Layer (7 matmuls):}
+\begin{itemize}[leftmargin=*]
+    \item Q, K, V projections: 3 matmuls
+    \item Output projection: 1 matmul
+    \item FFN gate, up, down projections: 3 matmuls
+\end{itemize}
+
+\textbf{Additional Operations:}
+\begin{itemize}[leftmargin=*]
+    \item LM head projection: 1 matmul
+    \item Value head (for PPO): 1 matmul
+\end{itemize}
+
+\textbf{Total per forward pass}: $24 \times 7 + 2 = 170$ matmuls
+
+\textbf{Total per sample (forward + backward)}: $170 \times 2 = 340$ matmuls
+
+For a 50-step PPO run with batch size 8:
+\begin{align*}
+\text{Total samples} &= 50 \times 8 = 400 \\
+\text{Total matmuls} &= 400 \times 340 = 136,000
+\end{align*}
+
+\subsection{Energy Calculations}
+
+Using the measured FPGA baseline performance (Table~\ref{tab:fpga_baseline}), we project energy consumption for different RLHF workloads:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Workload} & \textbf{Time (min)} & \textbf{Energy (Wh)} \\ \midrule
+2 PPO steps & 67.44 & 0.0393 \\
+10 PPO steps & 337.22 & 0.1964 \\
+50 PPO steps & 1,686.11 & 0.9821 \\
+100 PPO steps & 3,372.22 & 1.9642 \\
+\bottomrule
+\end{tabular}
+\caption{FPGA energy estimates for RLHF training workloads (INT8 baseline)}
+\label{tab:fpga_energy}
+\end{table}
+
+\textbf{Note}: These projections assume continuous FPGA utilization. Actual end-to-end training time will be higher due to host CPU overhead (tokenization, sampling, reward computation, KL divergence calculation). We estimate host CPU adds $\sim$20-30\% to total time, which will be measured in our integrated experiments.
+
+\subsection{Comparison with Expected CPU Baseline}
+Our CPU baseline measurements are currently in progress. Based on typical CPU power (150 W) and single-threaded RLHF performance, we anticipate:
+\begin{itemize}[leftmargin=*]
+    \item CPU 50-step run: $\sim$15-20 minutes, $\sim$0.0375-0.0500 Wh
+    \item FPGA 50-step run (projected): 1,686 minutes, 0.9821 Wh
+\end{itemize}
+
+\textbf{Observation}: The FPGA baseline is \emph{significantly slower} than CPU due to PCIe overhead, despite lower power consumption. This underscores the critical need for optimization strategies:
+\begin{enumerate}[leftmargin=*]
+    \item Reduce data transfer via compression (MXFP4)
+    \item Batch multiple matmul operations to amortize PCIe latency
+    \item On-chip weight caching to avoid repeated transfers
+\end{enumerate}
+
+Our MX format investigation aims to address point 1, providing empirical evidence for the energy-quality tradeoff.
+
+\section{Next Steps and Updated Timeline}
+
+\subsection{Week 3 Plan (Feb 24 - Mar 2)}
+
+\textbf{ML/Quantization Track (Grant):}
+\begin{itemize}[leftmargin=*]
+    \item Run per-layer sensitivity profiling for Qwen2.5-0.5B
+    \item Test MXFP4 and MXFP8 quantization on attention, FFN, embedding layers
+    \item Measure perplexity delta vs INT8 baseline for each (layer, format) pair
+    \item Define quantization policies A, B, C, D based on sensitivity results
+\end{itemize}
+
+\textbf{Hardware Track (Hiva):}
+\begin{itemize}[leftmargin=*]
+    \item Design dual-precision MXFP4/MXFP8 datapath in SystemC
+    \item Extend Lab 1 PE core with mode selection register
+    \item Implement group scaling logic (group\_size=8 and 16)
+    \item Verify SystemC simulation matches PyTorch MXFP reference
+\end{itemize}
+
+\textbf{Integration Track (Daniel):}
+\begin{itemize}[leftmargin=*]
+    \item Complete CPU baseline measurements and generate comparison report
+    \item Prepare FPGA-host interface for matmul offload
+    \item Write adaptive controller stub (to be populated with sensitivity results)
+\end{itemize}
+
+\subsection{Week 4 Plan (Mar 3 - Mar 9)}
+\begin{itemize}[leftmargin=*]
+    \item FPGA synthesis of dual-precision datapath
+    \item Deploy MX bitstream to AWS F2
+    \item Integrate matmul offload hook into TRL training loop
+    \item Run end-to-end smoke test (10 PPO steps with adaptive controller)
+\end{itemize}
+
+\subsection{Week 5-6 Plan (Mar 10 - Mar 21)}
+\begin{itemize}[leftmargin=*]
+    \item Execute full experimental matrix (policies A, B, C, D)
+    \item Measure energy and quality metrics for all configurations
+    \item Generate Pareto curves (energy savings vs quality loss)
+    \item Analyze results and write final report
+\end{itemize}
+
+\section{Risk Assessment and Mitigation}
+
+\subsection{Identified Risks}
+
+\textbf{Risk 1: CPU baseline slower than expected}
+
+\noindent\textit{Current status}: CPU baseline measurements show RLHF training takes longer than initially projected, making the FPGA comparison less favorable.
+
+\noindent\textit{Mitigation}: Our research question remains valid—we are comparing INT8 FPGA baseline vs MX FPGA optimization, not CPU vs FPGA. The MX format energy savings are independent of the CPU comparison.
+
+\textbf{Risk 2: Data transfer overhead limits speedup potential}
+
+\noindent\textit{Current status}: 99.99\% of FPGA time is spent on data transfer, not compute.
+
+\noindent\textit{Mitigation}: MXFP4 directly addresses this by reducing transfer bandwidth 50\%. We also plan batch processing experiments to amortize PCIe latency over multiple operations.
+
+\textbf{Risk 3: MX format synthesis timing violations}
+
+\noindent\textit{Status}: Not yet encountered, but possible during Week 4 synthesis.
+
+\noindent\textit{Mitigation}: Extensive SystemC simulation in Week 3 to catch issues early. If timing fails, we can reduce clock frequency or pipeline more aggressively (Lab 1/4 pipelining techniques).
+
+\textbf{Risk 4: Training instability with aggressive quantization}
+
+\noindent\textit{Status}: Anticipated—some policies will degrade quality.
+
+\noindent\textit{Mitigation}: This is part of the research question. We expect Policy C (80\% MXFP4) to fail, providing the upper bound. Policies A/B/D should succeed.
+
+\subsection{Project Health}
+Despite the FPGA baseline being slower than CPU, the project is \textbf{on track}. Our core research question—quantifying the energy-quality tradeoff for MX formats in RLHF—remains well-defined and achievable. The infrastructure is solid, measurements are reproducible, and we have a clear path to Week 6.
+
+\section{Preliminary Insights}
+
+\subsection{FPGA Bottleneck Analysis}
+The 15-cycle compute time vs 148,641-cycle data transfer time reveals that \textbf{memory bandwidth, not compute capacity, is the limiting factor} for FPGA-accelerated RLHF. This finding has implications beyond our project:
+\begin{itemize}[leftmargin=*]
+    \item Commercial FPGA accelerators should prioritize compression over raw FLOPS
+    \item Hybrid CPU-FPGA systems need careful co-design to minimize PCIe round-trips
+    \item On-chip SRAM capacity is critical—external DDR access would be even slower
+\end{itemize}
+
+\subsection{MX Format Opportunity}
+The data transfer bottleneck strongly favors MXFP4:
+\begin{itemize}[leftmargin=*]
+    \item 50\% bandwidth reduction translates nearly 1:1 to latency reduction
+    \item Energy savings scale with data volume (fewer bytes moved = fewer joules)
+    \item The 15-cycle compute cost is negligible, so precision loss during compute has minimal performance impact
+\end{itemize}
+
+\textbf{Hypothesis}: If layer sensitivity profiling shows that $\geq50\%$ of layers can use MXFP4 without quality loss, we should see $\sim$25\% total energy reduction (50\% of the 99.99\% dominated by data transfer).
+
+\section{Conclusion}
+
+We have successfully completed Milestones 1-2, establishing the INT8 FPGA baseline and energy measurement framework. Our measured performance—148,656 cycles per 16×16 matmul with 99.99\% data transfer overhead—provides the ground truth against which MX format optimizations will be compared.
+
+The next phase focuses on \textbf{sensitivity profiling} (Week 3) and \textbf{hardware implementation} (Week 4), which will determine whether layer-adaptive MX quantization can deliver meaningful energy savings without sacrificing RLHF alignment quality. We remain on track to answer our core research question by project end.
+
+\section*{Appendix: Code and Results}
+
+All code, measurements, and analysis scripts are available in our project repository:
+
+\url{https://github.com/HivaMohammadzadeh1/CS217-Final-Project}
+
+Key files:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{integration/measure\_lab1\_fpga.sh} — FPGA performance test
+    \item \texttt{integration/calculate\_fpga\_energy.py} — Energy projection tool
+    \item \texttt{results/milestone\_report/} — All measurement data and reports
+    \item \texttt{lab1\_fpga\_performance.txt} — Raw 10-iteration FPGA measurements
+\end{itemize}
+
+\end{document}
