@@ -15,10 +15,13 @@ Usage:
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import time
 import json
 import argparse
 import sys
+import math
+import numpy as np
 from pathlib import Path
 
 # Add integration directory to path
@@ -375,6 +378,215 @@ class RLHFWithFPGATrainer:
         # Save results
         self.save_results(training_stats)
 
+    def evaluate(self):
+        """
+        Post-training evaluation to measure quality degradation from FPGA quantization.
+
+        Compares the FPGA-trained policy model against the frozen reference model
+        on the held-out eval set. Tracks:
+          - Reward scores (policy vs reference)
+          - Perplexity (policy vs reference)
+          - Win rate (how often policy is preferred over reference)
+          - Sample generations for qualitative inspection
+        """
+        print(f"\n{'='*60}")
+        print("Post-Training Evaluation: Quantization Quality Check")
+        print(f"{'='*60}\n")
+
+        eval_prompts = []
+        for example in self.eval_dataset:
+            chosen_text = example["chosen"]
+            prompt = chosen_text.split("Assistant:")[0] + "Assistant:"
+            eval_prompts.append(prompt)
+
+        num_eval = min(len(eval_prompts), self.args.eval_samples)
+        eval_prompts = eval_prompts[:num_eval]
+        print(f"Evaluating on {num_eval} held-out examples...\n")
+
+        policy_rewards = []
+        ref_rewards = []
+        policy_perplexities = []
+        ref_perplexities = []
+        wins, losses, ties = 0, 0, 0
+        sample_outputs = []
+
+        self.model.eval()
+        self.ref_model.eval()
+
+        for i, prompt in enumerate(eval_prompts):
+            prompt_inputs = self.tokenizer(
+                prompt,
+                return_tensors="pt",
+                max_length=config.MAX_PROMPT_LENGTH,
+                truncation=True,
+            )
+            prompt_ids = prompt_inputs.input_ids.to(self.device)
+
+            with torch.no_grad():
+                # --- Generate from policy (FPGA-quantized) model ---
+                policy_output_ids = self.model.pretrained_model.generate(
+                    prompt_ids,
+                    max_new_tokens=config.MAX_RESPONSE_LENGTH,
+                    do_sample=True,
+                    top_k=50,
+                    top_p=0.95,
+                )
+                policy_text = self.tokenizer.decode(
+                    policy_output_ids[0], skip_special_tokens=True
+                )
+
+                # --- Generate from reference (unquantized) model ---
+                ref_output_ids = self.ref_model.pretrained_model.generate(
+                    prompt_ids,
+                    max_new_tokens=config.MAX_RESPONSE_LENGTH,
+                    do_sample=True,
+                    top_k=50,
+                    top_p=0.95,
+                )
+                ref_text = self.tokenizer.decode(
+                    ref_output_ids[0], skip_special_tokens=True
+                )
+
+                # --- Reward scores ---
+                policy_reward = self._score_text(policy_text)
+                ref_reward = self._score_text(ref_text)
+                policy_rewards.append(policy_reward)
+                ref_rewards.append(ref_reward)
+
+                # --- Perplexity ---
+                policy_ppl = self._compute_perplexity(policy_output_ids)
+                ref_ppl = self._compute_perplexity(ref_output_ids)
+                policy_perplexities.append(policy_ppl)
+                ref_perplexities.append(ref_ppl)
+
+                # --- Win rate ---
+                if policy_reward > ref_reward + 0.01:
+                    wins += 1
+                elif ref_reward > policy_reward + 0.01:
+                    losses += 1
+                else:
+                    ties += 1
+
+            # Collect a few sample outputs for qualitative review
+            if i < 5:
+                sample_outputs.append({
+                    "prompt": prompt[:200],
+                    "policy_response": policy_text[:300],
+                    "ref_response": ref_text[:300],
+                    "policy_reward": policy_reward,
+                    "ref_reward": ref_reward,
+                    "policy_ppl": policy_ppl,
+                    "ref_ppl": ref_ppl,
+                })
+
+            if (i + 1) % 10 == 0 or (i + 1) == num_eval:
+                print(f"  [{i+1}/{num_eval}] "
+                      f"policy_reward={np.mean(policy_rewards):.3f}  "
+                      f"ref_reward={np.mean(ref_rewards):.3f}  "
+                      f"win_rate={wins/(wins+losses+ties):.1%}")
+
+        # Aggregate metrics
+        eval_results = {
+            "num_eval_samples": num_eval,
+            "policy_model": {
+                "mean_reward": float(np.mean(policy_rewards)),
+                "std_reward": float(np.std(policy_rewards)),
+                "mean_perplexity": float(np.mean(policy_perplexities)),
+                "median_perplexity": float(np.median(policy_perplexities)),
+            },
+            "reference_model": {
+                "mean_reward": float(np.mean(ref_rewards)),
+                "std_reward": float(np.std(ref_rewards)),
+                "mean_perplexity": float(np.mean(ref_perplexities)),
+                "median_perplexity": float(np.median(ref_perplexities)),
+            },
+            "quality_delta": {
+                "reward_diff": float(np.mean(policy_rewards) - np.mean(ref_rewards)),
+                "reward_diff_pct": float(
+                    (np.mean(policy_rewards) - np.mean(ref_rewards))
+                    / (abs(np.mean(ref_rewards)) + 1e-8) * 100
+                ),
+                "perplexity_diff": float(
+                    np.mean(policy_perplexities) - np.mean(ref_perplexities)
+                ),
+                "perplexity_diff_pct": float(
+                    (np.mean(policy_perplexities) - np.mean(ref_perplexities))
+                    / (abs(np.mean(ref_perplexities)) + 1e-8) * 100
+                ),
+            },
+            "win_rate": {
+                "wins": wins,
+                "losses": losses,
+                "ties": ties,
+                "win_pct": float(wins / (wins + losses + ties) * 100),
+            },
+            "sample_outputs": sample_outputs,
+        }
+
+        # Save eval results
+        with open(self.output_dir / "eval_results.json", "w") as f:
+            json.dump(eval_results, f, indent=2)
+
+        # Print summary
+        print(f"\n{'='*60}")
+        print("Evaluation Summary (FPGA-Quantized vs Reference)")
+        print(f"{'='*60}")
+        print(f"  {'Metric':<25s} {'Policy (FPGA)':>14s} {'Reference':>14s} {'Delta':>10s}")
+        print(f"  {'-'*63}")
+        print(f"  {'Mean Reward':<25s} "
+              f"{eval_results['policy_model']['mean_reward']:>14.4f} "
+              f"{eval_results['reference_model']['mean_reward']:>14.4f} "
+              f"{eval_results['quality_delta']['reward_diff']:>+10.4f}")
+        print(f"  {'Mean Perplexity':<25s} "
+              f"{eval_results['policy_model']['mean_perplexity']:>14.2f} "
+              f"{eval_results['reference_model']['mean_perplexity']:>14.2f} "
+              f"{eval_results['quality_delta']['perplexity_diff']:>+10.2f}")
+        print(f"  {'Win Rate':<25s} "
+              f"{eval_results['win_rate']['win_pct']:>13.1f}% "
+              f"{'':>14s} "
+              f"({wins}W/{losses}L/{ties}T)")
+        print(f"{'='*60}")
+
+        reward_diff_pct = abs(eval_results["quality_delta"]["reward_diff_pct"])
+        if reward_diff_pct < 2.0:
+            print("  -> Quantization impact: NEGLIGIBLE (<2% reward change)")
+        elif reward_diff_pct < 5.0:
+            print("  -> Quantization impact: MINOR (2-5% reward change)")
+        elif reward_diff_pct < 10.0:
+            print("  -> Quantization impact: MODERATE (5-10% reward change)")
+        else:
+            print("  -> Quantization impact: SIGNIFICANT (>10% reward change)")
+        print()
+
+        return eval_results
+
+    def _score_text(self, text):
+        """Score a single text string with the reward model."""
+        inputs = self.tokenizer(
+            text,
+            return_tensors="pt",
+            max_length=config.MAX_SEQ_LENGTH,
+            truncation=True,
+        ).to(self.device)
+        with torch.no_grad():
+            outputs = self.reward_model(**inputs)
+        return outputs.logits[0, 0].item()
+
+    def _compute_perplexity(self, token_ids):
+        """
+        Compute perplexity of the policy model on the given token sequence.
+        Uses the underlying causal LM (before the value head).
+        """
+        try:
+            with torch.no_grad():
+                outputs = self.model.pretrained_model(token_ids, labels=token_ids)
+                loss = outputs.loss
+                if loss is None:
+                    return float("nan")
+                return math.exp(min(loss.item(), 100))
+        except Exception:
+            return float("nan")
+
     def save_results(self, training_stats):
         """Save training results and timing breakdown."""
         print("💾 Saving results...")
@@ -422,7 +634,7 @@ def main():
     parser.add_argument(
         "--steps",
         type=int,
-        default=50,  # Default to 50 for the 2-hour plan
+        default=50,
         help="Number of PPO steps to run",
     )
     parser.add_argument(
@@ -430,6 +642,19 @@ def main():
         type=str,
         default="results/fpga_baseline",
         help="Output directory for results",
+    )
+    parser.add_argument(
+        "--eval-samples",
+        type=int,
+        default=50,
+        dest="eval_samples",
+        help="Number of held-out samples for post-training quality evaluation",
+    )
+    parser.add_argument(
+        "--skip-eval",
+        action="store_true",
+        dest="skip_eval",
+        help="Skip post-training evaluation",
     )
     args = parser.parse_args()
 
@@ -442,6 +667,10 @@ def main():
 
     # Train with FPGA offload
     trainer.train()
+
+    # Evaluate quantization quality degradation
+    if not args.skip_eval:
+        trainer.evaluate()
 
     print("🎉 FPGA baseline measurement complete!")
 
