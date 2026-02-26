@@ -336,7 +336,7 @@ class RLHFWithFPGATrainer:
         power_log_path = self.output_dir / config.POWER_LOG_FILE
         with GPUPowerMonitor(str(power_log_path), config.POWER_SAMPLING_INTERVAL_MS):
 
-# Training loop - collect full batches before PPO step
+            # Training loop - collect full batches before PPO step
             batch_num = 0
             num_batches = len(prompts) // config.BATCH_SIZE
 
