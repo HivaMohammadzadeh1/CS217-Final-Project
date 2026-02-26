@@ -336,68 +336,82 @@ class RLHFWithFPGATrainer:
         power_log_path = self.output_dir / config.POWER_LOG_FILE
         with GPUPowerMonitor(str(power_log_path), config.POWER_SAMPLING_INTERVAL_MS):
 
-            # Training loop
-            for step, prompt in enumerate(prompts):
-                print(f"\n📍 Step {step+1}/{len(prompts)}")
+# Training loop - collect full batches before PPO step
+            batch_num = 0
+            num_batches = len(prompts) // config.BATCH_SIZE
 
-                # Reset FPGA stats for this step
+            for batch_start in range(0, len(prompts), config.BATCH_SIZE):
+                batch_prompts = prompts[batch_start:batch_start + config.BATCH_SIZE]
+                if len(batch_prompts) < config.BATCH_SIZE:
+                    break  # Skip incomplete final batch
+
+                batch_num += 1
+                print(f"\n📍 Batch {batch_num}/{num_batches} (steps {batch_start+1}-{batch_start+len(batch_prompts)})", flush=True)
+
+                # Reset FPGA stats for this batch
                 self.fpga_offloader.reset_stats()
 
-                # Phase 1: Rollout
+                # Phase 1: Rollout - generate responses for entire batch
                 rollout_start = time.time()
-                prompt_tensors = self.tokenizer(
-                    prompt,
-                    return_tensors="pt",
-                    max_length=config.MAX_PROMPT_LENGTH,
-                    truncation=True,
-                ).input_ids.squeeze(0).to(self.device)  # Remove batch dimension for PPO
+                query_tensors = []
+                response_tensors = []
 
-                with torch.no_grad():
-                    response_tensors = ppo_trainer.generate(
-                        prompt_tensors,
-                        max_new_tokens=config.MAX_RESPONSE_LENGTH,
-                        do_sample=True,
-                        top_k=50,
-                        top_p=0.95,
-                    )
+                for prompt in batch_prompts:
+                    prompt_tensor = self.tokenizer(
+                        prompt,
+                        return_tensors="pt",
+                        max_length=config.MAX_PROMPT_LENGTH,
+                        truncation=True,
+                    ).input_ids.squeeze(0).to(self.device)
 
+                    with torch.no_grad():
+                        response_tensor = ppo_trainer.generate(
+                            prompt_tensor,
+                            max_new_tokens=config.MAX_RESPONSE_LENGTH,
+                            do_sample=True,
+                            top_k=50,
+                            top_p=0.95,
+                        )
+
+                    query_tensors.append(prompt_tensor)
+                    response_tensors.append(response_tensor.squeeze(0))
+                    print(f"  Generated response {len(query_tensors)}/{config.BATCH_SIZE}", flush=True)
+
+                rollout_time = time.time() - rollout_start
+                self.phase_times["rollout"].append(rollout_time)
+
+                # Phase 2: Reward computation for batch
                 responses = [
                     self.tokenizer.decode(r, skip_special_tokens=True)
                     for r in response_tensors
                 ]
-                rollout_time = time.time() - rollout_start
-                self.phase_times["rollout"].append(rollout_time)
-
-                # Phase 2: Reward computation
                 rewards = self.compute_reward(responses)
+                rewards_list = [rewards[i] for i in range(len(rewards))]
 
-                # Phase 3: Gradient update
+                # Phase 3: Gradient update with full batch
+                print(f"  Running PPO gradient update...", flush=True)
                 gradient_start = time.time()
-                stats = ppo_trainer.step(
-                    [prompt_tensors], [response_tensors.squeeze(0)], [rewards]
-                )
+                stats = ppo_trainer.step(query_tensors, response_tensors, rewards_list)
                 gradient_time = time.time() - gradient_start
                 self.phase_times["gradient"].append(gradient_time)
 
-                # Get FPGA stats for this step
+                # Get FPGA stats for this batch
                 fpga_stats = self.fpga_offloader.get_stats()
                 self.fpga_stats["total_matmuls"] += fpga_stats["num_calls"]
                 self.fpga_stats["total_tiles"] += fpga_stats["total_tiles"]
 
                 # Log stats
-                training_stats["steps"].append(step)
+                training_stats["steps"].append(batch_num)
                 training_stats["rewards"].append(rewards.mean().item())
-                training_stats["kl_divergence"].append(
-                    stats.get("objective/kl", 0.0)
-                )
+                training_stats["kl_divergence"].append(stats.get("objective/kl", 0.0))
 
-                if (step + 1) % config.LOG_EVERY_N_STEPS == 0:
+                if batch_num % config.LOG_EVERY_N_STEPS == 0:
                     print(f"  Reward: {rewards.mean():.3f}")
                     print(f"  KL: {stats.get('objective/kl', 0.0):.4f}")
                     print(f"  Rollout: {rollout_time:.2f}s")
-                    print(f"  Reward: {self.phase_times['reward'][-1]:.2f}s")
+                    print(f"  Reward time: {self.phase_times['reward'][-1]:.2f}s")
                     print(f"  Gradient: {gradient_time:.2f}s")
-                    print(f"  FPGA tiles: {fpga_stats['total_tiles']}")
+                    print(f"  FPGA tiles: {fpga_stats['total_tiles']}", flush=True)
 
         print("\n✓ Training complete\n")
 
