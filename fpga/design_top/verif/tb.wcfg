@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb.wdb" id="1">
+         <top_modules>
+            <top_module name="\$unit_concat_PECore_v_510932356 " />
+            <top_module name="anp_base_pkg" />
+            <top_module name="arch_package" />
+            <top_module name="design_top_base_test" />
+            <top_module name="glbl" />
+            <top_module name="proj_package" />
+            <top_module name="std" />
+            <top_module name="tb" />
+            <top_module name="tb_type_defines_pkg" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="6,871.775 ns"></ZoomStartTime>
+      <ZoomEndTime time="7,051.476 ns"></ZoomEndTime>
+      <Cursor1Time time="6,941.255 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="266"></NameColumnWidth>
+      <ValueColumnWidth column_width="58"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="127" />
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/clk">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/clk_main_a0">
+      <obj_property name="ElementShortName">clk_main_a0</obj_property>
+      <obj_property name="ObjectShortName">clk_main_a0</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/rva_in_val">
+      <obj_property name="ElementShortName">rva_in_val</obj_property>
+      <obj_property name="ObjectShortName">rva_in_val</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/rva_in_rdy">
+      <obj_property name="ElementShortName">rva_in_rdy</obj_property>
+      <obj_property name="ObjectShortName">rva_in_rdy</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/rva_in_msg">
+      <obj_property name="ElementShortName">rva_in_msg[96:0]</obj_property>
+      <obj_property name="ObjectShortName">rva_in_msg[96:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/clk">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/rst">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/start_val">
+      <obj_property name="ElementShortName">start_val</obj_property>
+      <obj_property name="ObjectShortName">start_val</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/start_rdy">
+      <obj_property name="ElementShortName">start_rdy</obj_property>
+      <obj_property name="ObjectShortName">start_rdy</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/start_msg">
+      <obj_property name="ElementShortName">start_msg</obj_property>
+      <obj_property name="ObjectShortName">start_msg</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/input_port_val">
+      <obj_property name="ElementShortName">input_port_val</obj_property>
+      <obj_property name="ObjectShortName">input_port_val</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/input_port_rdy">
+      <obj_property name="ElementShortName">input_port_rdy</obj_property>
+      <obj_property name="ObjectShortName">input_port_rdy</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/input_port_msg">
+      <obj_property name="ElementShortName">input_port_msg[73:0]</obj_property>
+      <obj_property name="ObjectShortName">input_port_msg[73:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/rva_in_val">
+      <obj_property name="ElementShortName">rva_in_val</obj_property>
+      <obj_property name="ObjectShortName">rva_in_val</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/rva_in_rdy">
+      <obj_property name="ElementShortName">rva_in_rdy</obj_property>
+      <obj_property name="ObjectShortName">rva_in_rdy</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/rva_in_msg">
+      <obj_property name="ElementShortName">rva_in_msg[96:0]</obj_property>
+      <obj_property name="ObjectShortName">rva_in_msg[96:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/rva_out_val">
+      <obj_property name="ElementShortName">rva_out_val</obj_property>
+      <obj_property name="ObjectShortName">rva_out_val</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/rva_out_rdy">
+      <obj_property name="ElementShortName">rva_out_rdy</obj_property>
+      <obj_property name="ObjectShortName">rva_out_rdy</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/rva_out_msg">
+      <obj_property name="ElementShortName">rva_out_msg[63:0]</obj_property>
+      <obj_property name="ObjectShortName">rva_out_msg[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/act_port_val">
+      <obj_property name="ElementShortName">act_port_val</obj_property>
+      <obj_property name="ObjectShortName">act_port_val</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/act_port_rdy">
+      <obj_property name="ElementShortName">act_port_rdy</obj_property>
+      <obj_property name="ObjectShortName">act_port_rdy</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/act_port_msg">
+      <obj_property name="ElementShortName">act_port_msg[255:0]</obj_property>
+      <obj_property name="ObjectShortName">act_port_msg[255:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/SC_SRAM_CONFIG">
+      <obj_property name="ElementShortName">SC_SRAM_CONFIG[31:0]</obj_property>
+      <obj_property name="ObjectShortName">SC_SRAM_CONFIG[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsci_radr_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsci_radr_d[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsci_radr_d[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsci_d_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsci_d_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsci_d_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsci_q_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsci_q_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsci_q_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsci_radr_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsci_radr_d[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsci_radr_d[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsci_d_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsci_d_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsci_d_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsci_q_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsci_q_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsci_q_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsci_radr_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsci_radr_d[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsci_radr_d[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsci_d_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsci_d_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsci_d_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsci_q_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsci_q_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsci_q_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsci_radr_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsci_radr_d[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsci_radr_d[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsci_d_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsci_d_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsci_d_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsci_q_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsci_q_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsci_q_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsci_radr_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsci_radr_d[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsci_radr_d[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsci_d_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsci_d_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsci_d_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsci_q_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsci_q_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsci_q_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsci_radr_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsci_radr_d[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsci_radr_d[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsci_d_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsci_d_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsci_d_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsci_q_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsci_q_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsci_q_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsci_radr_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsci_radr_d[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsci_radr_d[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsci_d_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsci_d_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsci_d_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsci_q_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsci_q_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsci_q_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsci_radr_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_radr_d[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_radr_d[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsci_d_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_d_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_d_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsci_q_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_q_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_q_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsc_we">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsc_we</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsc_we</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsc_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsc_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsc_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsc_wadr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsc_wadr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsc_wadr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsc_q">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsc_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsc_q[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsc_re">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsc_re</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsc_re</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsc_radr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsc_radr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsc_radr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsc_we">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsc_we</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsc_we</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsc_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsc_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsc_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsc_wadr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsc_wadr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsc_wadr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsc_q">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsc_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsc_q[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsc_re">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsc_re</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsc_re</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsc_radr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsc_radr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsc_radr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsc_we">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsc_we</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsc_we</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsc_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsc_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsc_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsc_wadr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsc_wadr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsc_wadr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsc_q">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsc_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsc_q[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsc_re">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsc_re</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsc_re</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsc_radr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsc_radr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsc_radr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsc_we">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsc_we</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsc_we</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsc_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsc_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsc_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsc_wadr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsc_wadr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsc_wadr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsc_q">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsc_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsc_q[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsc_re">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsc_re</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsc_re</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsc_radr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsc_radr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsc_radr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsc_we">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsc_we</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsc_we</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsc_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsc_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsc_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsc_wadr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsc_wadr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsc_wadr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsc_q">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsc_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsc_q[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsc_re">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsc_re</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsc_re</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsc_radr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsc_radr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsc_radr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsc_we">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsc_we</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsc_we</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsc_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsc_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsc_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsc_wadr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsc_wadr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsc_wadr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsc_q">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsc_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsc_q[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsc_re">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsc_re</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsc_re</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsc_radr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsc_radr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsc_radr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsc_we">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsc_we</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsc_we</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsc_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsc_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsc_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsc_wadr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsc_wadr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsc_wadr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsc_q">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsc_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsc_q[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsc_re">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsc_re</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsc_re</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsc_radr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsc_radr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsc_radr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsc_we">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsc_we</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsc_we</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsc_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsc_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsc_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsc_wadr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsc_wadr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsc_wadr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsc_q">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsc_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsc_q[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsc_re">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsc_re</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsc_re</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsc_radr">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsc_radr[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsc_radr[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsci_wadr_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsci_wadr_d_iff[11:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsci_wadr_d_iff[11:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsci_we_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsci_we_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsci_we_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data0_rsci_re_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data0_rsci_re_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data0_rsci_re_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsci_we_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsci_we_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsci_we_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data1_rsci_re_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data1_rsci_re_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data1_rsci_re_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsci_we_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsci_we_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsci_we_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data2_rsci_re_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data2_rsci_re_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data2_rsci_re_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsci_we_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsci_we_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsci_we_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data3_rsci_re_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data3_rsci_re_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data3_rsci_re_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsci_we_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsci_we_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsci_we_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data4_rsci_re_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data4_rsci_re_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data4_rsci_re_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsci_we_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsci_we_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsci_we_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data5_rsci_re_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data5_rsci_re_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data5_rsci_re_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsci_we_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsci_we_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsci_we_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data6_rsci_re_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data6_rsci_re_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data6_rsci_re_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsci_we_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_we_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_we_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/weight_mem_banks_bank_array_impl_data7_rsci_re_d_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_re_d_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_re_d_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/clk">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/rst">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_q_d">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_q_d[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_q_d[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/PECoreRun_wen">
+      <obj_property name="ElementShortName">PECoreRun_wen</obj_property>
+      <obj_property name="ObjectShortName">PECoreRun_wen</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/PECoreRun_wten">
+      <obj_property name="ElementShortName">PECoreRun_wten</obj_property>
+      <obj_property name="ObjectShortName">PECoreRun_wten</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_oswt_1">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_oswt_1</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_oswt_1</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_q_d_mxwt">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_q_d_mxwt[63:0]</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_q_d_mxwt[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_we_d_pff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_we_d_pff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_we_d_pff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_iswt0_pff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_iswt0_pff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_iswt0_pff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_re_d_pff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_re_d_pff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_re_d_pff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_oswt_1_pff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_oswt_1_pff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_oswt_1_pff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_biwt_1">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_biwt_1</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_biwt_1</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_bdwt_2">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_bdwt_2</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_bdwt_2</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_we_d_PECoreRun_sct_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_we_d_PECoreRun_sct_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_we_d_PECoreRun_sct_iff</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb/card/fpga/CL/u_pecore/PECore_PECoreRun_inst/PECore_PECoreRun_weight_mem_banks_bank_array_impl_data7_rsci_1_inst/weight_mem_banks_bank_array_impl_data7_rsci_re_d_PECoreRun_sct_iff">
+      <obj_property name="ElementShortName">weight_mem_banks_bank_array_impl_data7_rsci_re_d_PECoreRun_sct_iff</obj_property>
+      <obj_property name="ObjectShortName">weight_mem_banks_bank_array_impl_data7_rsci_re_d_PECoreRun_sct_iff</obj_property>
+   </wvobject>
+</wave_config>
