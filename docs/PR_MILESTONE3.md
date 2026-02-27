@@ -1,103 +1,124 @@
-# PR: Milestone 3 - Dual-Precision MX Datapath Simulation (MXFP4/MXFP8)
+# PR: Milestone 3 Completion - MX Datapath + Integration Hardening
 
 ## Why this PR exists
 
-Milestone 3 requires a working dual-precision MX datapath design that can be tested before FPGA deployment.
+Milestone 3 needs two things to be practically useful:
 
-This PR adds a complete simulation implementation in `systemc/` with:
+1. A correct dual-precision MX datapath model.
+2. A clear integration contract so RLHF/offload code can control precision safely.
+
+This PR delivers both.
+
+It includes:
 
 - MXFP8 (E4M3) and MXFP4 (E2M1) support
 - Group scaling (group size 8 or 16)
-- Mode switching safety (flush required between precision changes)
-- A runnable testbench with clear pass/fail output
-- A clear README in plain language
+- Explicit mode switching safety (flush required between precision changes)
+- Integration APIs (`configure_precision`, `flush_pipeline`) in offload path
+- Deterministic unit/integration tests
+- Clear human-language docs for exactly what works now vs what is hardware-next
 
 ## What changed
 
-### New core implementation files
+### A) SystemC simulation implementation (from Milestone 3 build-out)
 
 - `systemc/mx_types.h`
-  - Precision mode enum and format specs.
+  - Precision modes and minifloat specs.
 - `systemc/group_scaler.h`
-  - Shared exponent computation and quantize/dequantize logic.
+  - Shared exponent quantize/dequantize logic.
 - `systemc/mxfp_pe.h`
-  - Processing element wrappers for MXFP8 and MXFP4 MAC.
+  - MXFP8/MXFP4 PE wrappers.
 - `systemc/mx_datapath.h`
-  - Dual-precision datapath with:
-    - `RequestMode(...)`
-    - `FlushPipeline()`
-    - MAC and GEMM execution
-    - safety checks that block compute if flush is pending.
-
-### New test + build files
-
+  - Dual-precision datapath with safe mode switch semantics.
 - `systemc/testbench.cpp`
-  - End-to-end validation:
-    - quantization reconstruction quality
-    - MAC accuracy
-    - 16x16 GEMM accuracy
-    - mode switching + pipeline flush correctness
-    - group-size trend check (8 vs 16).
+  - End-to-end C++ testbench for quantization/MAC/GEMM/mode switching.
 - `systemc/Makefile`
-  - `make`, `make run`, `make clean`.
-
-### New HLS-support files
-
+  - Local build/run.
 - `systemc/mx_datapath_hls.cpp`
-  - fixed-size top function `mx_datapath_top` for HLS flow.
+  - HLS top function.
 - `systemc/testbench_hls.cpp`
-  - small C-sim smoke test for HLS top.
+  - HLS C-sim smoke test.
 - `systemc/run_simulation.tcl`
-  - Vivado HLS script for `csim_design` and `csynth_design`.
+  - Vivado HLS csim/csynth script.
 - `systemc/resource_estimator.py`
-  - report parser/default estimator for DSP/LUT/BRAM summary.
+  - Resource summary helper.
+- `systemc/README.md`
+  - Rewritten in plain language with exact run flow and guarantees.
 
-### Documentation
+### B) Integration hardening added in this pass
 
-- Rewrote `systemc/README.md` in clear human language:
-  - what is implemented now
-  - exact run commands
-  - how group scaling works
-  - how mode-switch flush works
-  - optional Vivado HLS flow
-  - Milestone 4 handoff notes.
+- `integration/mx_precision_sim.py`
+  - Deterministic Python reference model for MXFP8/MXFP4 + group scaling + flush contract.
+- `integration/fpga_matmul_offload.py`
+  - Added precision-aware APIs:
+    - `configure_precision(mode, group_size, flush=...)`
+    - `flush_pipeline()`
+  - Supports `INT8`, `MXFP8`, `MXFP4`.
+  - Safe switch behavior enforced in mock and fallback paths.
+- `integration/lab1_fpga_interface.py`
+  - Added compatible precision control state + flush semantics for integration consistency.
+  - Keeps Lab1 INT8 behavior unchanged.
+- `baseline_energy/config.py`
+  - Added:
+    - `FPGA_PRECISION_MODE`
+    - `FPGA_GROUP_SIZE`
+- `baseline_energy/config_lab1_fpga.py`
+  - Added same precision config knobs.
+- `baseline_energy/rlhf_with_fpga.py`
+  - Passes precision/group config into `FPGAMatmulOffload(...)`.
+- `integration/README.md`
+  - Rewritten to describe concrete current integration behavior.
+
+### C) New tests
+
+- `integration/test_mx_precision_sim.py`
+  - Unit tests for minifloat encoding, quantization quality, and mode-switch safety.
+- `integration/test_mx_offload_integration.py`
+  - Integration tests for offload precision API, flush requirement, and stats metadata.
+- `integration/test_mx_pytorch_optional.py`
+  - Optional parity check (skips cleanly if mx-pytorch/microxcaling is unavailable).
 
 ## Validation run
 
-Executed locally:
+Executed and passing:
 
 ```bash
 make -C systemc clean
 make -C systemc
 make -C systemc run
+
+python3 -m unittest integration.test_mx_precision_sim integration.test_mx_offload_integration integration.test_mx_pytorch_optional -v
+python3 -m py_compile integration/*.py baseline_energy/*.py
 ```
 
-Result: `ALL CHECKS PASSED`
-
-Also executed:
-
-```bash
-g++ -std=c++17 -O2 -Wall -Wextra -pedantic systemc/mx_datapath_hls.cpp systemc/testbench_hls.cpp -o /tmp/mx_hls_tb
-/tmp/mx_hls_tb
-```
-
-Result: `HLS C-sim smoke test passed.`
+Result:
+- SystemC testbench: `ALL CHECKS PASSED`
+- Python tests: all pass, optional mx-pytorch parity test cleanly skipped when package is absent.
 
 ## Important design decisions
 
-- Prioritized clarity and correctness over early micro-optimization.
-- Enforced explicit flush on mode switch to match hardware safety behavior.
-- Kept group-size validation strict (`8` or `16`) to prevent silent invalid configs.
-- Added HLS wrapper separately so simulation model stays easy to read.
+- Keep a single safe precision contract everywhere:
+  - request/switch precision
+  - flush pipeline
+  - compute
+- Preserve old INT8 behavior by default so baseline runs stay stable.
+- Make MX behavior deterministic in software now, so hardware comparison later is straightforward.
+- Keep unsupported external dependencies optional (mx-pytorch parity check is skip-safe).
 
-## What this PR does not do
+## What is complete vs pending
 
-- Does not integrate adaptive policy controller yet.
-- Does not connect to AXI-lite registers yet.
-- Does not provide real FPGA bitstream deployment (Milestone 4+).
+### Complete in this PR
+- Milestone 3 simulation datapath and safety semantics.
+- Integration-level precision control APIs and tests.
+- RLHF config plumbing for selecting precision mode.
+
+### Still hardware-next
+- True AXI-lite register write to an MX-capable FPGA bitstream.
+- End-to-end adaptive controller that switches precision per layer/phase.
+- Hardware-vs-software parity against deployed MX RTL.
 
 ## Suggested follow-up PRs
 
-1. Integrate this datapath model into `integration/` precision policy flow.
-2. Add `AdaptiveController` and policy-driven precision per layer/phase.
-3. Add AXI-lite mode register plumbing for real hardware mode switching.
+1. Add `AdaptiveController` and use it to call `configure_precision(...)` per layer/phase.
+2. Hook AXI-lite mode register writes in real MX hardware path.
+3. Add strict parity tests against deployed MX bitstream outputs.

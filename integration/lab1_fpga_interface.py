@@ -39,6 +39,14 @@ class Lab1FPGAInterface:
         self.NUM_LANES = 16
         self.TILE_SIZE = 16
 
+        # Milestone 3 precision control state.
+        # Current Lab 1 bitstream supports INT8 compute. MX modes are modeled
+        # in software above this layer until MX hardware is deployed.
+        self.precision_mode = "INT8"
+        self.pending_precision_mode = "INT8"
+        self.precision_switch_pending = False
+        self.pipeline_flush_count = 0
+
         # Performance tracking
         self.total_calls = 0
         self.total_data_transfer_cycles = 0
@@ -109,6 +117,42 @@ class Lab1FPGAInterface:
                 print("    Using software fallback")
             self.use_hardware = False
 
+    def configure_precision(self, precision_mode, flush=True):
+        """
+        Configure compute precision mode.
+
+        Supported:
+          - INT8  (native Lab 1 support)
+          - MXFP8 (accepted for API compatibility; hardware fallback path)
+          - MXFP4 (accepted for API compatibility; hardware fallback path)
+
+        If/when a dedicated MX bitstream is deployed, this method is where an
+        AXI-lite mode register write should be issued.
+        """
+        mode = str(precision_mode).upper()
+        if mode not in ("INT8", "MXFP8", "MXFP4"):
+            raise ValueError(f"Unsupported precision mode: {precision_mode}")
+
+        self.pending_precision_mode = mode
+        self.precision_switch_pending = (self.pending_precision_mode != self.precision_mode)
+
+        if flush:
+            self.flush_pipeline()
+
+    def flush_pipeline(self):
+        """
+        Apply pending precision change.
+
+        In current Lab 1 INT8 hardware this is a software-level state update.
+        For future MX hardware this should also trigger hardware pipeline drain
+        semantics around mode transitions.
+        """
+        if not self.precision_switch_pending:
+            return
+        self.precision_mode = self.pending_precision_mode
+        self.precision_switch_pending = False
+        self.pipeline_flush_count += 1
+
     def matmul_16x16(self, A, B):
         """
         Perform 16x16 matrix multiplication using Lab 1 FPGA.
@@ -122,6 +166,11 @@ class Lab1FPGAInterface:
         """
         assert A.shape == (16, 16), f"A must be 16x16, got {A.shape}"
         assert B.shape == (16, 16), f"B must be 16x16, got {B.shape}"
+
+        if self.precision_switch_pending:
+            raise RuntimeError(
+                "Precision switch pending. Call flush_pipeline() before matmul_16x16()."
+            )
 
         if self.use_hardware:
             return self._matmul_hardware(A, B)
@@ -352,6 +401,9 @@ class Lab1FPGAInterface:
             'data_transfer_cycles': self.total_data_transfer_cycles,
             'compute_cycles': self.total_compute_cycles,
             'using_hardware': self.use_hardware,
+            'precision_mode': self.precision_mode,
+            'switch_pending': self.precision_switch_pending,
+            'pipeline_flush_count': self.pipeline_flush_count,
         }
 
     def reset_stats(self):
@@ -359,6 +411,7 @@ class Lab1FPGAInterface:
         self.total_calls = 0
         self.total_data_transfer_cycles = 0
         self.total_compute_cycles = 0
+        self.pipeline_flush_count = 0
 
     def __del__(self):
         """Cleanup FPGA resources."""
