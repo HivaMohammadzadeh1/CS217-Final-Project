@@ -150,7 +150,9 @@ class RLHFWithFPGATrainer:
             use_mock=config.USE_MOCK_FPGA,
             verbose=config.FPGA_VERBOSE,
             use_lab1=config.USE_LAB1_FPGA,
-            device_id=config.FPGA_DEVICE_ID
+            device_id=config.FPGA_DEVICE_ID,
+            precision_mode=getattr(config, "FPGA_PRECISION_MODE", "INT8"),
+            group_size=getattr(config, "FPGA_GROUP_SIZE", 8),
         )
 
         # Phase timing

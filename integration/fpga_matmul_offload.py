@@ -19,24 +19,87 @@ Usage:
 """
 
 import numpy as np
-import torch
 import time
 from pathlib import Path
 
+# Milestone 3 software reference for MX precision behavior.
+try:
+    # Package import path (e.g. python -m unittest integration....)
+    from .mx_precision_sim import DualPrecisionMXSimulator, PrecisionMode
+except ImportError:
+    # Script import path (e.g. python integration/fpga_matmul_offload.py)
+    from mx_precision_sim import DualPrecisionMXSimulator, PrecisionMode
+
 # Try to import Lab 1 FPGA interface
 try:
-    from lab1_fpga_interface import Lab1FPGAInterface
+    # Package import path.
+    from .lab1_fpga_interface import Lab1FPGAInterface
     LAB1_AVAILABLE = True
 except ImportError:
-    LAB1_AVAILABLE = False
+    try:
+        # Script import path.
+        from lab1_fpga_interface import Lab1FPGAInterface
+        LAB1_AVAILABLE = True
+    except ImportError:
+        LAB1_AVAILABLE = False
 
 
 class MockFPGAInterface:
     """Mock FPGA interface for testing without real hardware."""
 
-    def __init__(self):
+    def __init__(self, precision_mode="INT8", group_size=8):
         self.num_calls = 0
         self.total_tiles_processed = 0
+        self.precision_mode = "INT8"
+        self.group_size = group_size
+        self.mode_switch_count = 0
+        self.flush_count = 0
+        self._sim = DualPrecisionMXSimulator(group_size=group_size)
+
+        # Route through common path to validate inputs.
+        self.configure_precision(precision_mode, group_size=group_size, flush=True)
+
+    def configure_precision(self, precision_mode, group_size=None, flush=True):
+        """
+        Configure tile compute precision.
+
+        Supported modes:
+          - INT8  (mocked as exact np.matmul)
+          - MXFP8 (software MX simulator)
+          - MXFP4 (software MX simulator)
+        """
+        if group_size is not None:
+            if group_size not in (8, 16):
+                raise ValueError("group_size must be 8 or 16.")
+            if group_size != self.group_size:
+                self.group_size = group_size
+                self._sim = DualPrecisionMXSimulator(group_size=group_size)
+
+        mode = str(precision_mode).upper()
+        if mode not in ("INT8", "MXFP8", "MXFP4"):
+            raise ValueError(f"Unsupported precision mode: {precision_mode}")
+
+        if mode == self.precision_mode:
+            return
+
+        self.mode_switch_count += 1
+
+        if mode == "INT8":
+            self.precision_mode = "INT8"
+            return
+
+        next_mode = PrecisionMode.MXFP8 if mode == "MXFP8" else PrecisionMode.MXFP4
+        self._sim.request_mode(next_mode)
+        self.precision_mode = mode
+
+        if flush:
+            self.flush_pipeline()
+
+    def flush_pipeline(self):
+        """Apply a pending precision change before compute."""
+        if self.precision_mode in ("MXFP8", "MXFP4"):
+            self._sim.flush_pipeline()
+        self.flush_count += 1
 
     def matmul_16x16(self, tile_a, tile_b):
         """
@@ -55,8 +118,12 @@ class MockFPGAInterface:
         # Simulate FPGA latency (adjust based on your FPGA specs)
         time.sleep(0.0001)  # 0.1ms per tile
 
-        # Perform actual computation (in real FPGA, this happens in hardware)
-        result = np.matmul(tile_a, tile_b)
+        if self.precision_mode == "INT8":
+            # Keep previous behavior for baseline comparisons.
+            result = np.matmul(tile_a, tile_b)
+        else:
+            # Milestone 3: run through explicit MX simulation model.
+            result = self._sim.matmul_16x16(tile_a, tile_b)
 
         return result
 
@@ -64,19 +131,27 @@ class MockFPGAInterface:
         """Return statistics about FPGA usage."""
         return {
             'num_calls': self.num_calls,
-            'total_tiles': self.total_tiles_processed
+            'total_tiles': self.total_tiles_processed,
+            'precision_mode': self.precision_mode,
+            'group_size': self.group_size,
+            'mode_switches': self.mode_switch_count,
+            'flush_count': self.flush_count,
+            'switch_pending': bool(self._sim.switch_pending) if self.precision_mode != "INT8" else False,
         }
 
     def reset_stats(self):
         """Reset statistics counters."""
         self.num_calls = 0
         self.total_tiles_processed = 0
+        self.mode_switch_count = 0
+        self.flush_count = 0
 
 
 class RealFPGAInterface:
     """Real FPGA interface using Lab 1 hardware."""
 
-    def __init__(self, device_id=0, verbose=False, use_lab1=True):
+    def __init__(self, device_id=0, verbose=False, use_lab1=True,
+                 precision_mode="INT8", group_size=8):
         """
         Initialize real FPGA connection.
 
@@ -88,6 +163,11 @@ class RealFPGAInterface:
         self.device_id = device_id
         self.verbose = verbose
         self.use_lab1 = use_lab1
+        self.precision_mode = "INT8"
+        self.group_size = group_size
+        self.mode_switch_count = 0
+        self.flush_count = 0
+        self._mx_fallback = DualPrecisionMXSimulator(group_size=group_size)
 
         if use_lab1 and LAB1_AVAILABLE:
             # Use Lab 1 FPGA interface
@@ -103,6 +183,52 @@ class RealFPGAInterface:
             # Generic FPGA interface (not implemented)
             raise NotImplementedError("Generic FPGA interface not yet implemented")
 
+        self.configure_precision(precision_mode, group_size=group_size, flush=True)
+
+    def configure_precision(self, precision_mode, group_size=None, flush=True):
+        """
+        Configure precision mode for real interface.
+
+        Current hardware support:
+          - INT8: handled by Lab 1 path.
+          - MXFP8/MXFP4: software fallback in this interface until MX RTL is deployed.
+        """
+        mode = str(precision_mode).upper()
+        if mode not in ("INT8", "MXFP8", "MXFP4"):
+            raise ValueError(f"Unsupported precision mode: {precision_mode}")
+
+        if group_size is not None:
+            if group_size not in (8, 16):
+                raise ValueError("group_size must be 8 or 16.")
+            if group_size != self.group_size:
+                self.group_size = group_size
+                self._mx_fallback = DualPrecisionMXSimulator(group_size=group_size)
+
+        if mode == self.precision_mode:
+            return
+
+        self.mode_switch_count += 1
+        self.precision_mode = mode
+
+        if self.use_lab1 and hasattr(self.fpga, "configure_precision"):
+            self.fpga.configure_precision(mode, flush=False)
+
+        if mode in ("MXFP8", "MXFP4"):
+            next_mode = PrecisionMode.MXFP8 if mode == "MXFP8" else PrecisionMode.MXFP4
+            self._mx_fallback.request_mode(next_mode)
+            if self.verbose:
+                print(f"⚠️  {mode} requested; using software fallback until MX hardware is available.")
+            if flush:
+                self.flush_pipeline()
+
+    def flush_pipeline(self):
+        """Apply a pending precision change before compute."""
+        if self.use_lab1 and hasattr(self.fpga, "flush_pipeline"):
+            self.fpga.flush_pipeline()
+        if self.precision_mode in ("MXFP8", "MXFP4"):
+            self._mx_fallback.flush_pipeline()
+        self.flush_count += 1
+
     def matmul_16x16(self, tile_a, tile_b):
         """
         Send 16x16 tiles to FPGA for matmul.
@@ -114,6 +240,9 @@ class RealFPGAInterface:
         Returns:
             (16, 16) numpy array result
         """
+        if self.precision_mode in ("MXFP8", "MXFP4"):
+            return self._mx_fallback.matmul_16x16(tile_a, tile_b)
+
         if self.use_lab1:
             # Use Lab 1 FPGA hardware (or software fallback if hardware unavailable)
             return self.fpga.matmul_16x16(tile_a, tile_b)
@@ -123,13 +252,23 @@ class RealFPGAInterface:
     def get_stats(self):
         """Return FPGA statistics."""
         if self.use_lab1:
-            return self.fpga.get_stats()
+            stats = self.fpga.get_stats()
+            stats.update({
+                "precision_mode": self.precision_mode,
+                "group_size": self.group_size,
+                "mode_switches": self.mode_switch_count,
+                "flush_count": self.flush_count,
+                "switch_pending": bool(self._mx_fallback.switch_pending) if self.precision_mode != "INT8" else False,
+            })
+            return stats
         return {}
 
     def reset_stats(self):
         """Reset FPGA statistics."""
         if self.use_lab1:
             self.fpga.reset_stats()
+        self.mode_switch_count = 0
+        self.flush_count = 0
 
 
 class FPGAMatmulOffload:
@@ -139,7 +278,8 @@ class FPGAMatmulOffload:
 
     TILE_SIZE = 16  # Fixed 16x16 tile size for FPGA
 
-    def __init__(self, use_mock=True, device_id=0, verbose=False, use_lab1=True):
+    def __init__(self, use_mock=True, device_id=0, verbose=False, use_lab1=True,
+                 precision_mode="INT8", group_size=8):
         """
         Initialize FPGA matmul offloader.
 
@@ -148,18 +288,37 @@ class FPGAMatmulOffload:
             device_id: FPGA device ID (for real FPGA)
             verbose: Print detailed tiling information
             use_lab1: Use Lab 1 FPGA interface (when use_mock=False)
+            precision_mode: INT8, MXFP8, or MXFP4
+            group_size: shared exponent group size for MX modes (8 or 16)
         """
         self.use_mock = use_mock
         self.verbose = verbose
 
         if use_mock:
-            self.fpga = MockFPGAInterface()
+            self.fpga = MockFPGAInterface(
+                precision_mode=precision_mode,
+                group_size=group_size
+            )
             if verbose:
                 print("🔧 Using MOCK FPGA interface")
         else:
-            self.fpga = RealFPGAInterface(device_id=device_id, verbose=verbose, use_lab1=use_lab1)
+            self.fpga = RealFPGAInterface(
+                device_id=device_id,
+                verbose=verbose,
+                use_lab1=use_lab1,
+                precision_mode=precision_mode,
+                group_size=group_size
+            )
             if verbose:
                 print(f"🔧 Connected to real FPGA (device {device_id})")
+
+    def configure_precision(self, precision_mode, group_size=None, flush=True):
+        """Public precision configuration API used by adaptive control logic."""
+        self.fpga.configure_precision(precision_mode, group_size=group_size, flush=flush)
+
+    def flush_pipeline(self):
+        """Public pipeline flush API used after a precision switch."""
+        self.fpga.flush_pipeline()
 
     def matmul(self, A, B):
         """
@@ -172,8 +331,9 @@ class FPGAMatmulOffload:
         Returns:
             Result matrix of shape (M, N) - same type as input
         """
-        # Convert torch tensors to numpy if needed
-        is_torch = isinstance(A, torch.Tensor)
+        # Convert tensor-like inputs to numpy when needed without requiring a
+        # hard torch import at module import time.
+        is_torch = hasattr(A, "detach") and hasattr(A, "device") and hasattr(A, "cpu")
         if is_torch:
             A_np = A.detach().cpu().numpy()
             B_np = B.detach().cpu().numpy()
@@ -196,6 +356,7 @@ class FPGAMatmulOffload:
 
         # Convert back to torch if needed
         if is_torch:
+            import torch
             result = torch.from_numpy(result).to(device)
 
         return result
@@ -349,19 +510,24 @@ if __name__ == "__main__":
     print(f"\n✅ Max error vs NumPy: {error:.2e}")
     print(f"   FPGA stats: {offloader.get_stats()}")
 
-    # Test 3: PyTorch tensor support
-    print("\n📝 Test 3: PyTorch tensor matmul")
-    print("-" * 60)
-    A_torch = torch.randn(16, 16)
-    B_torch = torch.randn(16, 16)
+    # Test 3: Optional PyTorch tensor support
+    try:
+        import torch
 
-    offloader.reset_stats()
-    result_fpga = offloader.matmul(A_torch, B_torch)
-    result_pytorch = torch.matmul(A_torch, B_torch)
-    error = torch.max(torch.abs(result_fpga - result_pytorch)).item()
+        print("\n📝 Test 3: PyTorch tensor matmul")
+        print("-" * 60)
+        A_torch = torch.randn(16, 16)
+        B_torch = torch.randn(16, 16)
 
-    print(f"\n✅ Max error vs PyTorch: {error:.2e}")
-    print(f"   FPGA stats: {offloader.get_stats()}")
+        offloader.reset_stats()
+        result_fpga = offloader.matmul(A_torch, B_torch)
+        result_pytorch = torch.matmul(A_torch, B_torch)
+        error = torch.max(torch.abs(result_fpga - result_pytorch)).item()
+
+        print(f"\n✅ Max error vs PyTorch: {error:.2e}")
+        print(f"   FPGA stats: {offloader.get_stats()}")
+    except Exception as exc:
+        print("\n⚠️  Skipping PyTorch tensor test:", exc)
 
     print("\n" + "=" * 60)
     print("✅ All tests passed!")

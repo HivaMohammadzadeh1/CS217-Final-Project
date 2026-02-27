@@ -1,111 +1,81 @@
-# Integration - Adaptive Controller & RLHF Loop
+# Integration Layer (Milestone 3 Completion)
 
-This directory contains the adaptive controller and RLHF training loop integration.
+This directory now includes a clear precision-control contract between the
+RLHF host code and the FPGA/offload path.
 
-## Purpose
+## What is implemented now
 
-Connect the FPGA MX datapath to the RLHF training loop with layer-adaptive precision control.
+### 1) Precision-aware offload API
 
-## Key Components
+`fpga_matmul_offload.py` now supports:
 
-1. **Adaptive Controller**: Selects MX format per layer and phase
-2. **RLHF Training Loop**: PPO-based RLHF using TRL library
-3. **FPGA Integration**: Host-FPGA communication for offloaded operations
-4. **Experiment Runner**: Automated experiment execution across policies
+- `INT8` mode (existing baseline behavior)
+- `MXFP8` mode (software MX simulator)
+- `MXFP4` mode (software MX simulator)
+- explicit mode switching:
+  - `configure_precision(mode, group_size, flush=...)`
+  - `flush_pipeline()`
 
-## Files (to be added)
+This gives a clean control path for later adaptive policy integration.
 
-- `adaptive_controller.py`: Layer-adaptive precision controller
-- `rlhf_loop.py`: RLHF training loop with FPGA integration
-- `experiment_runner.py`: Run all policy experiments
-- `config.py`: Configuration for policies and RLHF parameters
-- `utils.py`: Helper functions
+### 2) Deterministic MX simulator
 
-## Adaptive Controller API
+`mx_precision_sim.py` provides a software reference model:
 
-```python
-from adaptive_controller import AdaptiveController
+- E4M3 and E2M1 encode/decode
+- shared group scaling (group size 8 or 16)
+- 16x16 tile matmul
+- strict "switch pending until flush" behavior
 
-# Initialize controller
-controller = AdaptiveController(
-    sensitivity_matrix='../results/sensitivity_matrix.csv',
-    policy='D',  # A/B/C/D
-    fpga_device=fpga
-)
+### 3) Lab1 interface compatibility
 
-# Get precision for a specific layer and phase
-precision = controller.get_precision(
-    layer_name='transformer.h.0.attn',
-    phase='rollout'  # rollout/reward/gradient
-)
-# Returns: 'MXFP4' or 'MXFP8' or 'FP16'
+`lab1_fpga_interface.py` now exposes:
 
-# Configure FPGA with selected precision
-controller.configure_fpga(precision)
+- `configure_precision(...)`
+- `flush_pipeline()`
 
-# Load pre-quantized weights
-controller.load_quantized_weights(layer_name, precision)
-```
+Current Lab1 hardware remains INT8. MX modes are accepted for API
+compatibility and handled by software fallback until an MX bitstream exists.
 
-## RLHF Training Loop
+## Test coverage added
 
-```python
-from rlhf_loop import RLHFTrainer
-
-# Initialize trainer
-trainer = RLHFTrainer(
-    model_name='Qwen/Qwen2.5-0.5B-Instruct',
-    dataset='Anthropic/hh-rlhf',
-    controller=controller,
-    config=rlhf_config
-)
-
-# Run training
-metrics = trainer.train(
-    num_steps=100,
-    log_energy=True,
-    output_dir='../results/policy_D'
-)
-```
-
-## Experiment Runner
+### Unit tests (math + safety)
 
 ```bash
-# Run all policies
-python experiment_runner.py --policies A B C D --output ../results/
-
-# Run specific policy
-python experiment_runner.py --policy D --num_steps 100 --seed 42
+python -m unittest integration.test_mx_precision_sim -v
 ```
 
-## Configuration
+Covers:
+- known minifloat code points for simple values
+- MXFP8 vs MXFP4 expected accuracy ordering
+- mode switch requires flush
+- tile-level error bounds
 
-Edit `config.py` to define:
-- PPO hyperparameters (learning rate, clip range, etc.)
-- Batch size and sequence length
-- Policy definitions (which layers use which format in each phase)
-- Energy measurement settings
+### Integration tests (offload API behavior)
 
-## Experiment Workflow
+```bash
+python -m unittest integration.test_mx_offload_integration -v
+```
 
-1. Load sensitivity matrix from PyTorch profiling
-2. Initialize adaptive controller with policy
-3. Load model and dataset
-4. Start energy monitoring
-5. Run RLHF training loop:
-   - For each layer in each phase:
-     - Query controller for precision
-     - Configure FPGA
-     - Load quantized weights
-     - Execute forward/backward pass
-6. Stop energy monitoring
-7. Evaluate policy quality (win rate, KL divergence)
-8. Log results to CSV
+Covers:
+- INT8 path exactness
+- mode switch pending error until flush
+- precision metadata in stats
+- real-interface fallback behavior when MX hardware is unavailable
 
-## Output Format
+## How RLHF picks precision now
 
-Results saved to `../results/<policy_name>/`:
-- `energy.csv`: Energy breakdown by phase
-- `metrics.csv`: Quality metrics (win rate, KL, reward)
-- `training_log.txt`: Detailed training log
-- `config.json`: Experiment configuration
+In `baseline_energy/config.py`:
+
+- `FPGA_PRECISION_MODE = "INT8" | "MXFP8" | "MXFP4"`
+- `FPGA_GROUP_SIZE = 8 | 16`
+
+`rlhf_with_fpga.py` passes these into `FPGAMatmulOffload(...)`.
+
+This gives one consistent knob for experiments while keeping code simple.
+
+## What remains for full hardware integration
+
+- AXI-lite mode register write to actual MX datapath in RTL
+- bitstream supporting MXFP8/MXFP4 in hardware (instead of software fallback)
+- adaptive per-layer/per-phase controller on top of this API
