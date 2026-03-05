@@ -167,7 +167,14 @@ class RLHFWithFPGATrainer:
         }
 
     def load_models(self):
-        """Load policy and reward models."""
+        """Load policy and reward models.
+
+        Only the reward model gets FPGA-offloaded layers. The policy and
+        reference models stay on CPU so autoregressive generation (which
+        calls every layer per token) isn't bottlenecked by PCIe latency.
+        The reward model only does a single forward pass per response,
+        making FPGA offload practical there.
+        """
         print("📥 Loading models...")
 
         # Load tokenizer
@@ -175,24 +182,14 @@ class RLHFWithFPGATrainer:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        # Load policy model
-        print("  Loading policy model...")
+        # Load policy model (NO FPGA — autoregressive generation is too slow with per-tile PCIe)
+        print("  Loading policy model (CPU-only, no FPGA)...")
         self.model = AutoModelForCausalLMWithValueHead.from_pretrained(
             config.MODEL_NAME,
             torch_dtype=torch.float16 if config.FP16 else torch.float32,
         )
         if not config.USE_GPU:
             self.model = self.model.to(self.device)
-
-        # Replace linear layers with FPGA offload
-        if config.USE_FPGA_OFFLOAD:
-            print("  Replacing linear layers with FPGA offload...")
-            num_replaced = replace_linear_with_fpga(
-                self.model,
-                self.fpga_offloader,
-                verbose=True
-            )
-            print(f"  ✓ Replaced {num_replaced} linear layers")
 
         # Load reward model
         print("  Loading reward model...")
@@ -204,17 +201,18 @@ class RLHFWithFPGATrainer:
         self.reward_model = self.reward_model.to(self.device)
         self.reward_model.eval()
 
-        # Replace linear layers in reward model
+        # Only the reward model gets FPGA offload (single forward pass, not autoregressive)
         if config.USE_FPGA_OFFLOAD:
+            print("  Replacing reward model layers with FPGA offload...")
             num_replaced = replace_linear_with_fpga(
                 self.reward_model,
                 self.fpga_offloader,
-                verbose=False
+                verbose=True
             )
             print(f"  ✓ Replaced {num_replaced} linear layers in reward model")
 
-        # Load reference model
-        print("  Loading reference model...")
+        # Load reference model (NO FPGA — used in PPO step forward passes)
+        print("  Loading reference model (CPU-only, no FPGA)...")
         self.ref_model = AutoModelForCausalLMWithValueHead.from_pretrained(
             config.MODEL_NAME,
             torch_dtype=torch.float16 if config.FP16 else torch.float32,
@@ -223,16 +221,7 @@ class RLHFWithFPGATrainer:
             self.ref_model = self.ref_model.to(self.device)
         self.ref_model.eval()
 
-        # Replace linear layers in reference model
-        if config.USE_FPGA_OFFLOAD:
-            num_replaced = replace_linear_with_fpga(
-                self.ref_model,
-                self.fpga_offloader,
-                verbose=False
-            )
-            print(f"  ✓ Replaced {num_replaced} linear layers in reference model")
-
-        print("✓ Models loaded with FPGA offload enabled\n")
+        print("✓ Models loaded (FPGA offload on reward model only)\n")
 
     def load_dataset(self):
         """Load and prepare HH-RLHF dataset."""
@@ -634,10 +623,8 @@ class RLHFWithFPGATrainer:
         fpga_was_active = config.USE_FPGA_OFFLOAD
         if fpga_was_active:
             print("  Restoring FPGA layers to nn.Linear for serialization...")
-            n_policy = restore_fpga_to_linear(self.model)
             n_reward = restore_fpga_to_linear(self.reward_model)
-            n_ref = restore_fpga_to_linear(self.ref_model)
-            print(f"    Restored: policy={n_policy}, reward={n_reward}, ref={n_ref}")
+            print(f"    Restored: reward={n_reward}")
 
         # ── 2. Save policy model (causal-LM without value head) ──
         model_dir = self.output_dir / "trained_model"
@@ -710,12 +697,10 @@ class RLHFWithFPGATrainer:
             json.dump(meta, f, indent=2)
         print(f"  ✓ Training metadata: {self.output_dir / 'training_meta.json'}")
 
-        # ── 8. Re-apply FPGA layers if training/eval will continue ──
+        # ── 8. Re-apply FPGA layers to reward model if training/eval will continue ──
         if fpga_was_active:
-            print("  Re-applying FPGA offload layers...")
-            replace_linear_with_fpga(self.model, self.fpga_offloader)
+            print("  Re-applying FPGA offload layers to reward model...")
             replace_linear_with_fpga(self.reward_model, self.fpga_offloader)
-            replace_linear_with_fpga(self.ref_model, self.fpga_offloader)
 
         print(f"\n{'='*60}")
         print(f"All artifacts saved to: {self.output_dir}/")

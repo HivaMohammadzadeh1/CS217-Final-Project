@@ -21,7 +21,7 @@ RANDOM_SEED = 42  # Fixed seed used to create the dataset
 # Sequence Configuration
 MAX_SEQ_LENGTH = 512  # Cap to reduce memory traffic
 MAX_PROMPT_LENGTH = 256
-MAX_RESPONSE_LENGTH = 256
+MAX_RESPONSE_LENGTH = 64
 
 # PPO Training Configuration
 NUM_PPO_STEPS = 100  # For full baseline measurement
