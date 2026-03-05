@@ -65,5 +65,5 @@ FPGA_POLICY_BLOCKS = [0, 23]  # Which transformer blocks to FPGA-offload in poli
 FPGA_RESPONSE_LENGTH = 16  # Max new tokens during generation when FPGA is active on policy model
 
 # Reward Model Pre-training
-PRETRAIN_REWARD_STEPS = 300  # Steps to fine-tune reward head on preference pairs before RLHF
+PRETRAIN_REWARD_STEPS = 100  # Steps to fine-tune reward head on preference pairs before RLHF
 PRETRAIN_REWARD_LR = 5e-4  # Learning rate for reward head pre-training
