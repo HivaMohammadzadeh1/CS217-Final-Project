@@ -347,7 +347,7 @@ class RLHFWithFPGATrainer:
             if chosen_score.item() > rejected_score.item():
                 correct += 1
 
-            if (step + 1) % 25 == 0:
+            if (step + 1) % 5 == 0:
                 pretrain_fpga = self.fpga_offloader.get_stats()
                 print(f"  [{step+1}/{steps}] loss={total_loss/(step+1):.4f} "
                       f"accuracy={correct/(step+1):.1%} "
