@@ -498,11 +498,12 @@ class RLHFWithFPGATrainer:
                     "ref_ppl": ref_ppl,
                 })
 
-            if (i + 1) % 10 == 0 or (i + 1) == num_eval:
-                print(f"  [{i+1}/{num_eval}] "
-                      f"policy_reward={np.mean(policy_rewards):.3f}  "
-                      f"ref_reward={np.mean(ref_rewards):.3f}  "
-                      f"win_rate={wins/(wins+losses+ties):.1%}")
+            print(f"  [{i+1}/{num_eval}] "
+                  f"policy_reward={policy_reward:.3f}  "
+                  f"ref_reward={ref_reward:.3f}  "
+                  f"{'WIN' if policy_reward > ref_reward + 0.01 else 'LOSS' if ref_reward > policy_reward + 0.01 else 'TIE'}  "
+                  f"(avg: {np.mean(policy_rewards):.3f} vs {np.mean(ref_rewards):.3f}, "
+                  f"win_rate={wins/(wins+losses+ties):.1%})", flush=True)
 
         # Aggregate metrics
         eval_results = {
