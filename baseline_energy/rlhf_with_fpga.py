@@ -296,11 +296,11 @@ class RLHFWithFPGATrainer:
     def pretrain_reward_model(self):
         """Fine-tune the reward model's scalar head on preference pairs.
 
+        Uses the Bradley-Terry log-sigmoid loss (standard in RLHF):
+            loss = -log(sigmoid(chosen_score - rejected_score))
+
         The transformer body is frozen; only the ``score`` head is trained.
-        Because we only need gradients for the score head (not the
-        transformer), FPGA layers can stay active — they produce correct
-        forward-pass values and the score head builds its own autograd
-        graph on top of the (gradient-free) hidden states.
+        FPGA layers stay active since we only need gradients for the head.
         """
         steps = config.PRETRAIN_REWARD_STEPS
         lr = config.PRETRAIN_REWARD_LR
@@ -337,7 +337,8 @@ class RLHFWithFPGATrainer:
             chosen_score = self.reward_model(**chosen_inputs).logits[0, 0]
             rejected_score = self.reward_model(**rejected_inputs).logits[0, 0]
 
-            loss = F.relu(1.0 - (chosen_score - rejected_score))
+            # Bradley-Terry log-sigmoid loss (standard RLHF reward model loss)
+            loss = -F.logsigmoid(chosen_score - rejected_score)
 
             optimizer.zero_grad()
             loss.backward()
@@ -751,44 +752,33 @@ class RLHFWithFPGATrainer:
             n_ref = restore_fpga_to_linear(self.ref_model)
             print(f"    Restored: policy={n_policy}, reward={n_reward}, ref={n_ref}")
 
-        # ── 2. Save policy model (causal-LM without value head) ──
-        model_dir = self.output_dir / "trained_model"
-        model_dir.mkdir(parents=True, exist_ok=True)
-        self.model.pretrained_model.save_pretrained(str(model_dir))
-        self.tokenizer.save_pretrained(str(model_dir))
-        print(f"  ✓ Policy model (causal-LM): {model_dir}/")
+        # ── 2-6. Save model checkpoints (skipped by default to save disk) ──
+        if self.args.save_models:
+            model_dir = self.output_dir / "trained_model"
+            model_dir.mkdir(parents=True, exist_ok=True)
+            self.model.pretrained_model.save_pretrained(str(model_dir))
+            self.tokenizer.save_pretrained(str(model_dir))
+            print(f"  ✓ Policy model: {model_dir}/")
 
-        # ── 3. Save full PPO model (with value head) for resume ──
-        ppo_dir = self.output_dir / "trained_model_ppo"
-        ppo_dir.mkdir(parents=True, exist_ok=True)
-        self.model.save_pretrained(str(ppo_dir))
-        self.tokenizer.save_pretrained(str(ppo_dir))
-        print(f"  ✓ PPO model (with value head): {ppo_dir}/")
+            ppo_dir = self.output_dir / "trained_model_ppo"
+            ppo_dir.mkdir(parents=True, exist_ok=True)
+            self.model.save_pretrained(str(ppo_dir))
+            self.tokenizer.save_pretrained(str(ppo_dir))
+            print(f"  ✓ PPO model: {ppo_dir}/")
 
-        # ── 4. Save reward model for reproducible future evals ──
-        reward_dir = self.output_dir / "reward_model"
-        reward_dir.mkdir(parents=True, exist_ok=True)
-        self.reward_model.save_pretrained(str(reward_dir))
-        self.tokenizer.save_pretrained(str(reward_dir))
-        print(f"  ✓ Reward model: {reward_dir}/")
+            reward_dir = self.output_dir / "reward_model"
+            reward_dir.mkdir(parents=True, exist_ok=True)
+            self.reward_model.save_pretrained(str(reward_dir))
+            self.tokenizer.save_pretrained(str(reward_dir))
+            print(f"  ✓ Reward model: {reward_dir}/")
 
-        # ── 5. Save reference model for future comparisons ──
-        ref_dir = self.output_dir / "reference_model"
-        ref_dir.mkdir(parents=True, exist_ok=True)
-        self.ref_model.pretrained_model.save_pretrained(str(ref_dir))
-        self.tokenizer.save_pretrained(str(ref_dir))
-        print(f"  ✓ Reference model: {ref_dir}/")
-
-        # ── 6. Save raw state dicts as .pt files (fail-safe backup) ──
-        torch.save(
-            self.model.pretrained_model.state_dict(),
-            str(self.output_dir / "policy_state_dict.pt"),
-        )
-        torch.save(
-            self.reward_model.state_dict(),
-            str(self.output_dir / "reward_state_dict.pt"),
-        )
-        print(f"  ✓ State-dict backups (.pt): {self.output_dir}/")
+            ref_dir = self.output_dir / "reference_model"
+            ref_dir.mkdir(parents=True, exist_ok=True)
+            self.ref_model.pretrained_model.save_pretrained(str(ref_dir))
+            self.tokenizer.save_pretrained(str(ref_dir))
+            print(f"  ✓ Reference model: {ref_dir}/")
+        else:
+            print("  Skipping model checkpoints (use --save-models to enable)")
 
         # ── 7. Training metadata for provenance ──
         meta = {
@@ -911,6 +901,13 @@ def main():
         default=False,
         dest="skip_eval",
         help="Skip post-training evaluation",
+    )
+    parser.add_argument(
+        "--save-models",
+        action="store_true",
+        default=False,
+        dest="save_models",
+        help="Save full model checkpoints (~4GB). Off by default to avoid disk overflow.",
     )
     args = parser.parse_args()
 
