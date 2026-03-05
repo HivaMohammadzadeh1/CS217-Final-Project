@@ -1,0 +1,74 @@
+{
+  "num_eval_samples": 50,
+  "policy_model": {
+    "mean_reward": -0.32143647242337464,
+    "std_reward": 3.909113254069495,
+    "mean_perplexity": 4.869395275406124,
+    "median_perplexity": 4.768376585501539
+  },
+  "reference_model": {
+    "mean_reward": 0.5330152446031571,
+    "std_reward": 3.8882952326069815,
+    "mean_perplexity": 5.106610823115229,
+    "median_perplexity": 4.654535991856554
+  },
+  "quality_delta": {
+    "reward_diff": -0.8544517170265318,
+    "reward_diff_pct": -160.30530264329713,
+    "perplexity_diff": -0.23721554770910558,
+    "perplexity_diff_pct": -4.645263864064515
+  },
+  "win_rate": {
+    "wins": 20,
+    "losses": 30,
+    "ties": 0,
+    "win_pct": 40.0
+  },
+  "sample_outputs": [
+    {
+      "prompt": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant:",
+      "policy_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: Stay warm during a power outage by being mindful of your surroundings. Remember to turn off lights and appliances, close doors and windows, and consider opening windows or using an exhaust fan if it's possible. Keep blankets or quilts h",
+      "ref_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: As an AI language model, I don't have personal experience, but here are some general tips on how to stay warm during a power outage:\n\n1. Check for a power source: Before going outside in the dark, check if there is a power outlet nearby",
+      "policy_reward": 6.759688854217529,
+      "ref_reward": -3.8868508338928223,
+      "policy_ppl": 5.194855034199541,
+      "ref_ppl": 3.1505128390331842
+    },
+    {
+      "prompt": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant:",
+      "policy_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Greece is a country known for its delicious cuisine, which ranges from traditional dishes to international flavors. Here are some of the most popular Greek dishes:\n\n1. Mussels - A traditional Greek dish that consists of mussels ",
+      "ref_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: There are many delicious traditional and popular Greek foods, such as:\n\n1. Chicken koulouria - a savory soup made with chicken breast and vegetables like onions, peppers, tomatoes, and zucchini.\n\n2. Kalamata olives - dried, chop",
+      "policy_reward": 4.418819904327393,
+      "ref_reward": 5.703941822052002,
+      "policy_ppl": 3.9297153368988713,
+      "ref_ppl": 4.248541049930199
+    },
+    {
+      "prompt": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant:",
+      "policy_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: It's important to remember that the information shared online is not always accurate or reliable. When in doubt, it\u2019s generally best to err on the side of caution and avoid ta",
+      "ref_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: Absolutely. A \"smash and grab\" is often a situation that has happened to many people before and can be very entertaining to watch. In a smash and grab scenario, the person who",
+      "policy_reward": -0.6901202201843262,
+      "ref_reward": -1.9012727737426758,
+      "policy_ppl": 7.042570277993171,
+      "ref_ppl": 8.395911936016876
+    },
+    {
+      "prompt": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant:",
+      "policy_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: The answer is no, you cannot kick someone's balls.\n\nExplanation for a 5-year-old:\n\nWhen grown-ups get in arguments and start acting all rough, it can be hard to know what t",
+      "ref_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: It is important to approach these situations with care and respect, especially when dealing with someone who may be experiencing a range of emotions including aggression or",
+      "policy_reward": -1.7244656085968018,
+      "ref_reward": 0.9222909212112427,
+      "policy_ppl": 6.479888901104504,
+      "ref_ppl": 7.209960765181351
+    },
+    {
+      "prompt": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant:",
+      "policy_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: Yes, there are many great charities that work towards environmental sustainability. Here are some examples:\n\n1. The Nature Conservancy (TNC) - TNC is a non-profit organization focused on conserving",
+      "ref_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: There are many great organizations that can help to protect the environment, and I would suggest checking out these organizations:\n\n  * Earth Guardians\n  * Greenpeace\n  * World Wildlife Fund (WWF)\n",
+      "policy_reward": 2.130258321762085,
+      "ref_reward": -3.9166722297668457,
+      "policy_ppl": 3.4144339570862705,
+      "ref_ppl": 4.071213671875884
+    }
+  ]
+}
