@@ -98,6 +98,37 @@ def replace_linear_with_fpga(model, fpga_offloader, verbose=False):
 
     return count
 
+
+def replace_linear_with_fpga_selective(model, fpga_offloader, target_blocks, verbose=False):
+    """Replace attention projections with FPGA offload only in specific
+    transformer blocks, leaving other blocks on CPU for speed.
+
+    Works with Qwen2 naming: ``*.layers.{i}.self_attn.{q,k,v,o}_proj``
+    and with the TRL value-head wrapper that nests under ``pretrained_model``.
+    """
+    count = 0
+    target_prefixes = {f"layers.{i}." for i in target_blocks}
+
+    for name, module in model.named_modules():
+        if not isinstance(module, nn.Linear):
+            continue
+        leaf_name = name.rsplit(".", 1)[-1]
+        if leaf_name not in FPGA_TARGET_LAYERS:
+            continue
+        if not any(prefix in name for prefix in target_prefixes):
+            continue
+
+        parts = name.split(".")
+        parent = model
+        for part in parts[:-1]:
+            parent = getattr(parent, part)
+        setattr(parent, leaf_name, FPGALinearLayer(module, fpga_offloader))
+        count += 1
+        if verbose:
+            print(f"   Replaced {name} with FPGA offload")
+
+    return count
+
 def restore_fpga_to_linear(model):
     """
     Convert all FPGALinearLayer modules back to standard nn.Linear so the
@@ -139,6 +170,8 @@ class RLHFWithFPGATrainer:
         print(f"Steps: {args.steps}")
         print(f"Output: {args.output}")
         print(f"FPGA Mode: {'MOCK' if config.USE_MOCK_FPGA else 'REAL'}")
+        print(f"FPGA Policy Blocks: {config.FPGA_POLICY_BLOCKS}")
+        print(f"FPGA Response Length: {config.FPGA_RESPONSE_LENGTH}")
         print(f"{'='*60}\n")
 
         # Create output directory
@@ -169,7 +202,15 @@ class RLHFWithFPGATrainer:
         }
 
     def load_models(self):
-        """Load policy and reward models."""
+        """Load policy, reward, and reference models with FPGA offload.
+
+        - Reward model: ALL attention layers replaced (single forward pass
+          per response — fast enough for full FPGA coverage).
+        - Policy & reference models: only the transformer blocks listed in
+          ``config.FPGA_POLICY_BLOCKS`` are replaced so autoregressive
+          generation stays feasible.  Generation length is capped at
+          ``config.FPGA_RESPONSE_LENGTH`` to keep tile count manageable.
+        """
         print("📥 Loading models...")
 
         # Load tokenizer
@@ -186,17 +227,15 @@ class RLHFWithFPGATrainer:
         if not config.USE_GPU:
             self.model = self.model.to(self.device)
 
-        # Replace linear layers with FPGA offload
-        if config.USE_FPGA_OFFLOAD:
-            print("  Replacing linear layers with FPGA offload...")
-            num_replaced = replace_linear_with_fpga(
-                self.model,
-                self.fpga_offloader,
-                verbose=True
+        if config.USE_FPGA_OFFLOAD and config.FPGA_POLICY_BLOCKS:
+            print(f"  Replacing policy model blocks {config.FPGA_POLICY_BLOCKS} with FPGA offload...")
+            num_replaced = replace_linear_with_fpga_selective(
+                self.model, self.fpga_offloader,
+                target_blocks=config.FPGA_POLICY_BLOCKS, verbose=True,
             )
-            print(f"  ✓ Replaced {num_replaced} linear layers")
+            print(f"  ✓ Replaced {num_replaced} linear layers in policy model")
 
-        # Load reward model
+        # Load reward model (full FPGA replacement — non-autoregressive)
         print("  Loading reward model...")
         self.reward_model = AutoModelForSequenceClassification.from_pretrained(
             config.REWARD_MODEL_NAME,
@@ -206,16 +245,14 @@ class RLHFWithFPGATrainer:
         self.reward_model = self.reward_model.to(self.device)
         self.reward_model.eval()
 
-        # Replace linear layers in reward model
         if config.USE_FPGA_OFFLOAD:
+            print("  Replacing ALL reward model layers with FPGA offload...")
             num_replaced = replace_linear_with_fpga(
-                self.reward_model,
-                self.fpga_offloader,
-                verbose=False
+                self.reward_model, self.fpga_offloader, verbose=True,
             )
             print(f"  ✓ Replaced {num_replaced} linear layers in reward model")
 
-        # Load reference model
+        # Load reference model (selective FPGA — used for KL in PPO, no grads)
         print("  Loading reference model...")
         self.ref_model = AutoModelForCausalLMWithValueHead.from_pretrained(
             config.MODEL_NAME,
@@ -225,16 +262,16 @@ class RLHFWithFPGATrainer:
             self.ref_model = self.ref_model.to(self.device)
         self.ref_model.eval()
 
-        # Replace linear layers in reference model
-        if config.USE_FPGA_OFFLOAD:
-            num_replaced = replace_linear_with_fpga(
-                self.ref_model,
-                self.fpga_offloader,
-                verbose=False
+        if config.USE_FPGA_OFFLOAD and config.FPGA_POLICY_BLOCKS:
+            print(f"  Replacing reference model blocks {config.FPGA_POLICY_BLOCKS} with FPGA offload...")
+            num_replaced = replace_linear_with_fpga_selective(
+                self.ref_model, self.fpga_offloader,
+                target_blocks=config.FPGA_POLICY_BLOCKS, verbose=False,
             )
             print(f"  ✓ Replaced {num_replaced} linear layers in reference model")
 
-        print("✓ Models loaded with FPGA offload enabled\n")
+        blocks_desc = config.FPGA_POLICY_BLOCKS if config.USE_FPGA_OFFLOAD else "none"
+        print(f"✓ Models loaded (reward=full FPGA, policy/ref blocks={blocks_desc})\n")
 
     def load_dataset(self):
         """Load and prepare HH-RLHF dataset."""
@@ -257,6 +294,75 @@ class RLHFWithFPGATrainer:
         print(f"  Train: {len(self.train_dataset)} examples")
         print(f"  Eval:  {len(self.eval_dataset)} examples")
         print("✓ Dataset loaded\n")
+
+    def pretrain_reward_model(self):
+        """Fine-tune the reward model's scalar head on preference pairs.
+
+        Uses the Bradley-Terry log-sigmoid loss (standard in RLHF):
+            loss = -log(sigmoid(chosen_score - rejected_score))
+
+        The transformer body is frozen; only the ``score`` head is trained.
+        FPGA layers stay active since we only need gradients for the head.
+        """
+        steps = config.PRETRAIN_REWARD_STEPS
+        lr = config.PRETRAIN_REWARD_LR
+        print(f"🎓 Pre-training reward model head ({steps} steps, lr={lr})...")
+        if config.USE_FPGA_OFFLOAD:
+            print("  FPGA layers remain active during pre-training")
+
+        self.reward_model.train()
+
+        # Only train the classification head, freeze the transformer body
+        for param in self.reward_model.parameters():
+            param.requires_grad = False
+        for param in self.reward_model.score.parameters():
+            param.requires_grad = True
+
+        optimizer = torch.optim.Adam(self.reward_model.score.parameters(), lr=lr)
+        self.fpga_offloader.reset_stats()
+
+        total_loss = 0.0
+        correct = 0
+        for step in range(steps):
+            idx = step % len(self.train_dataset)
+            example = self.train_dataset[idx]
+
+            chosen_inputs = self.tokenizer(
+                example["chosen"], return_tensors="pt",
+                max_length=config.MAX_SEQ_LENGTH, truncation=True,
+            ).to(self.device)
+            rejected_inputs = self.tokenizer(
+                example["rejected"], return_tensors="pt",
+                max_length=config.MAX_SEQ_LENGTH, truncation=True,
+            ).to(self.device)
+
+            chosen_score = self.reward_model(**chosen_inputs).logits[0, 0]
+            rejected_score = self.reward_model(**rejected_inputs).logits[0, 0]
+
+            # Bradley-Terry log-sigmoid loss (standard RLHF reward model loss)
+            loss = -F.logsigmoid(chosen_score - rejected_score)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+            if chosen_score.item() > rejected_score.item():
+                correct += 1
+
+            if (step + 1) % 5 == 0:
+                pretrain_fpga = self.fpga_offloader.get_stats()
+                print(f"  [{step+1}/{steps}] loss={total_loss/(step+1):.4f} "
+                      f"accuracy={correct/(step+1):.1%} "
+                      f"fpga_tiles={pretrain_fpga['total_tiles']}", flush=True)
+
+        self.reward_model.eval()
+        for param in self.reward_model.parameters():
+            param.requires_grad = False
+
+        pretrain_fpga = self.fpga_offloader.get_stats()
+        print(f"✓ Reward head pre-trained (accuracy={correct/steps:.1%}, "
+              f"fpga_tiles={pretrain_fpga['total_tiles']})\n")
 
     def build_dataset_for_ppo(self):
         """Convert HH-RLHF preference pairs to prompts for PPO."""
@@ -356,10 +462,13 @@ class RLHFWithFPGATrainer:
                         truncation=True,
                     ).input_ids.squeeze(0).to(self.device)
 
+                    gen_length = (config.FPGA_RESPONSE_LENGTH
+                                  if config.USE_FPGA_OFFLOAD and config.FPGA_POLICY_BLOCKS
+                                  else config.MAX_RESPONSE_LENGTH)
                     with torch.no_grad():
                         response_tensor = ppo_trainer.generate(
                             prompt_tensor,
-                            max_new_tokens=config.MAX_RESPONSE_LENGTH,
+                            max_new_tokens=gen_length,
                             do_sample=True,
                             top_k=50,
                             top_p=0.95,
@@ -454,11 +563,14 @@ class RLHFWithFPGATrainer:
             )
             prompt_ids = prompt_inputs.input_ids.to(self.device)
 
+            eval_gen_length = (config.FPGA_RESPONSE_LENGTH
+                               if config.USE_FPGA_OFFLOAD and config.FPGA_POLICY_BLOCKS
+                               else config.MAX_RESPONSE_LENGTH)
             with torch.no_grad():
                 # --- Generate from policy (FPGA-quantized) model ---
                 policy_output_ids = self.model.pretrained_model.generate(
                     prompt_ids,
-                    max_new_tokens=config.MAX_RESPONSE_LENGTH,
+                    max_new_tokens=eval_gen_length,
                     do_sample=True,
                     top_k=50,
                     top_p=0.95,
@@ -467,10 +579,10 @@ class RLHFWithFPGATrainer:
                     policy_output_ids[0], skip_special_tokens=True
                 )
 
-                # --- Generate from reference (unquantized) model ---
+                # --- Generate from reference model ---
                 ref_output_ids = self.ref_model.pretrained_model.generate(
                     prompt_ids,
-                    max_new_tokens=config.MAX_RESPONSE_LENGTH,
+                    max_new_tokens=eval_gen_length,
                     do_sample=True,
                     top_k=50,
                     top_p=0.95,
@@ -511,11 +623,12 @@ class RLHFWithFPGATrainer:
                     "ref_ppl": ref_ppl,
                 })
 
-            if (i + 1) % 10 == 0 or (i + 1) == num_eval:
-                print(f"  [{i+1}/{num_eval}] "
-                      f"policy_reward={np.mean(policy_rewards):.3f}  "
-                      f"ref_reward={np.mean(ref_rewards):.3f}  "
-                      f"win_rate={wins/(wins+losses+ties):.1%}")
+            print(f"  [{i+1}/{num_eval}] "
+                  f"policy_reward={policy_reward:.3f}  "
+                  f"ref_reward={ref_reward:.3f}  "
+                  f"{'WIN' if policy_reward > ref_reward + 0.01 else 'LOSS' if ref_reward > policy_reward + 0.01 else 'TIE'}  "
+                  f"(avg: {np.mean(policy_rewards):.3f} vs {np.mean(ref_rewards):.3f}, "
+                  f"win_rate={wins/(wins+losses+ties):.1%})", flush=True)
 
         # Aggregate metrics
         eval_results = {
@@ -641,44 +754,33 @@ class RLHFWithFPGATrainer:
             n_ref = restore_fpga_to_linear(self.ref_model)
             print(f"    Restored: policy={n_policy}, reward={n_reward}, ref={n_ref}")
 
-        # ── 2. Save policy model (causal-LM without value head) ──
-        model_dir = self.output_dir / "trained_model"
-        model_dir.mkdir(parents=True, exist_ok=True)
-        self.model.pretrained_model.save_pretrained(str(model_dir))
-        self.tokenizer.save_pretrained(str(model_dir))
-        print(f"  ✓ Policy model (causal-LM): {model_dir}/")
+        # ── 2-6. Save model checkpoints (skipped by default to save disk) ──
+        if self.args.save_models:
+            model_dir = self.output_dir / "trained_model"
+            model_dir.mkdir(parents=True, exist_ok=True)
+            self.model.pretrained_model.save_pretrained(str(model_dir))
+            self.tokenizer.save_pretrained(str(model_dir))
+            print(f"  ✓ Policy model: {model_dir}/")
 
-        # ── 3. Save full PPO model (with value head) for resume ──
-        ppo_dir = self.output_dir / "trained_model_ppo"
-        ppo_dir.mkdir(parents=True, exist_ok=True)
-        self.model.save_pretrained(str(ppo_dir))
-        self.tokenizer.save_pretrained(str(ppo_dir))
-        print(f"  ✓ PPO model (with value head): {ppo_dir}/")
+            ppo_dir = self.output_dir / "trained_model_ppo"
+            ppo_dir.mkdir(parents=True, exist_ok=True)
+            self.model.save_pretrained(str(ppo_dir))
+            self.tokenizer.save_pretrained(str(ppo_dir))
+            print(f"  ✓ PPO model: {ppo_dir}/")
 
-        # ── 4. Save reward model for reproducible future evals ──
-        reward_dir = self.output_dir / "reward_model"
-        reward_dir.mkdir(parents=True, exist_ok=True)
-        self.reward_model.save_pretrained(str(reward_dir))
-        self.tokenizer.save_pretrained(str(reward_dir))
-        print(f"  ✓ Reward model: {reward_dir}/")
+            reward_dir = self.output_dir / "reward_model"
+            reward_dir.mkdir(parents=True, exist_ok=True)
+            self.reward_model.save_pretrained(str(reward_dir))
+            self.tokenizer.save_pretrained(str(reward_dir))
+            print(f"  ✓ Reward model: {reward_dir}/")
 
-        # ── 5. Save reference model for future comparisons ──
-        ref_dir = self.output_dir / "reference_model"
-        ref_dir.mkdir(parents=True, exist_ok=True)
-        self.ref_model.pretrained_model.save_pretrained(str(ref_dir))
-        self.tokenizer.save_pretrained(str(ref_dir))
-        print(f"  ✓ Reference model: {ref_dir}/")
-
-        # ── 6. Save raw state dicts as .pt files (fail-safe backup) ──
-        torch.save(
-            self.model.pretrained_model.state_dict(),
-            str(self.output_dir / "policy_state_dict.pt"),
-        )
-        torch.save(
-            self.reward_model.state_dict(),
-            str(self.output_dir / "reward_state_dict.pt"),
-        )
-        print(f"  ✓ State-dict backups (.pt): {self.output_dir}/")
+            ref_dir = self.output_dir / "reference_model"
+            ref_dir.mkdir(parents=True, exist_ok=True)
+            self.ref_model.pretrained_model.save_pretrained(str(ref_dir))
+            self.tokenizer.save_pretrained(str(ref_dir))
+            print(f"  ✓ Reference model: {ref_dir}/")
+        else:
+            print("  Skipping model checkpoints (use --save-models to enable)")
 
         # ── 7. Training metadata for provenance ──
         meta = {
@@ -688,6 +790,8 @@ class RLHFWithFPGATrainer:
             "fpga_offload": config.USE_FPGA_OFFLOAD,
             "fpga_mock": config.USE_MOCK_FPGA,
             "use_lab1_fpga": config.USE_LAB1_FPGA,
+            "fpga_policy_blocks": config.FPGA_POLICY_BLOCKS,
+            "fpga_response_length": config.FPGA_RESPONSE_LENGTH,
             "fp16": config.FP16,
             "learning_rate": config.LEARNING_RATE,
             "batch_size": config.BATCH_SIZE,
@@ -715,9 +819,16 @@ class RLHFWithFPGATrainer:
         # ── 8. Re-apply FPGA layers if training/eval will continue ──
         if fpga_was_active:
             print("  Re-applying FPGA offload layers...")
-            replace_linear_with_fpga(self.model, self.fpga_offloader)
             replace_linear_with_fpga(self.reward_model, self.fpga_offloader)
-            replace_linear_with_fpga(self.ref_model, self.fpga_offloader)
+            if config.FPGA_POLICY_BLOCKS:
+                replace_linear_with_fpga_selective(
+                    self.model, self.fpga_offloader,
+                    target_blocks=config.FPGA_POLICY_BLOCKS,
+                )
+                replace_linear_with_fpga_selective(
+                    self.ref_model, self.fpga_offloader,
+                    target_blocks=config.FPGA_POLICY_BLOCKS,
+                )
 
         print(f"\n{'='*60}")
         print(f"All artifacts saved to: {self.output_dir}/")
@@ -793,6 +904,13 @@ def main():
         dest="skip_eval",
         help="Skip post-training evaluation",
     )
+    parser.add_argument(
+        "--save-models",
+        action="store_true",
+        default=False,
+        dest="save_models",
+        help="Save full model checkpoints (~4GB). Off by default to avoid disk overflow.",
+    )
     args = parser.parse_args()
 
     # Initialize trainer
@@ -801,6 +919,9 @@ def main():
     # Load everything
     trainer.load_models()
     trainer.load_dataset()
+
+    # Pre-train reward model head on preference pairs
+    trainer.pretrain_reward_model()
 
     # Train with FPGA offload
     trainer.train()

@@ -21,7 +21,7 @@ RANDOM_SEED = 42  # Fixed seed used to create the dataset
 # Sequence Configuration
 MAX_SEQ_LENGTH = 512  # Cap to reduce memory traffic
 MAX_PROMPT_LENGTH = 256
-MAX_RESPONSE_LENGTH = 256
+MAX_RESPONSE_LENGTH = 64
 
 # PPO Training Configuration
 NUM_PPO_STEPS = 100  # For full baseline measurement
@@ -63,3 +63,9 @@ FPGA_DEVICE_ID = 0  # FPGA device ID (for AWS F2 - typically slot 0)
 FPGA_VERBOSE = False  # Print detailed FPGA offload info
 FPGA_PRECISION_MODE = "INT8"  # INT8, MXFP8, or MXFP4
 FPGA_GROUP_SIZE = 8  # Shared scaling group size for MX modes (8 or 16)
+FPGA_POLICY_BLOCKS = [0, 23]  # Which transformer blocks to FPGA-offload in policy/ref models (first + last block)
+FPGA_RESPONSE_LENGTH = 16  # Max new tokens during generation when FPGA is active on policy model
+
+# Reward Model Pre-training
+PRETRAIN_REWARD_STEPS = 100  # Steps to fine-tune reward head on preference pairs before RLHF
+PRETRAIN_REWARD_LR = 5e-4  # Learning rate for reward head pre-training

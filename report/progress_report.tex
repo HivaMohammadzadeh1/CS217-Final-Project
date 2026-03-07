@@ -1,0 +1,148 @@
+\documentclass[10pt]{article}
+
+\usepackage[final]{neurips_2019}
+\usepackage[top=0.7in, bottom=0.7in, left=0.75in, right=0.75in]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{lipsum}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{colortbl}
+\usepackage{float}
+\usepackage{fancyhdr}
+
+
+
+\newcommand{\note}[1]{\textcolor{blue}{{#1}}}
+
+% Remove headers and footers
+\pagestyle{empty}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\title{
+  Layer-Adaptive MX Format Quantization for RLHF Energy Optimization on FPGAs \\
+  \vspace{0.5em}
+  \small{\normalfont Stanford CS217 Project -- Progress Report}  % Progress Report
+}
+
+\author{
+  Hiva Zaad (Mohammadzadeh) \\
+  Department of Computer Science \\
+  Stanford University \\
+  \texttt{hiva@stanford.edu} \\
+  \And
+  Grant Griffith \\
+  Graduate School of Business \\
+  Stanford University \\
+  \texttt{grgriff@stanford.edu} \\
+  \And
+  Daniel Adkins \\
+ Graduate School of Business \\
+  Stanford University \\
+  \texttt{dadkins@stanford.edu}
+}
+
+\begin{document}
+
+\maketitle
+\vspace{-1em}
+
+\begin{abstract}
+\small
+This project investigates whether layer-adaptive Microscaling (MX) format quantization can reduce the energy consumption of matrix multiply (GEMM) operations during RLHF training on an FPGA, compared to an INT8 baseline. The model is Qwen2.5-0.5B trained with PPO on 1,200 Anthropic HH-RLHF preference pairs (1000 train / 200 eval). All GEMM operations are offloaded to an AWS F2 FPGA (Xilinx VU9P) via AXI interface; the host CPU handles the full training loop.
+\end{abstract}
+\vspace{-0.5em}
+
+\section{Milestone Status}
+\vspace{-0.3em}
+
+\begin{table}[H]
+\raggedright
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{@{}p{3cm}p{1.2cm}p{1.6cm}p{7.5cm}@{}}
+\toprule
+\textbf{Milestone} & \textbf{Owner} & \textbf{Status} & \textbf{Key Deliverables} \\
+\midrule
+\textbf{M1: Environment Setup (Week 1)} & All & \cellcolor{green!30}\textbf{COMPLETE} &
+Repo structured. Lab 1 INT8 PE core forked. AWS F2 FPGA access confirmed. Qwen2.5-0.5B validated. Energy protocol: Power × Runtime via XPE.
+
+\textbf{Github:} \scriptsize\url{https://github.com/HivaMohammadzadeh1/CS217-Final-Project/tree/main}
+
+\textbf{Dataset:} \scriptsize\url{https://huggingface.co/datasets/hivamoh/cs217-rlhf-dataset} \\
+\midrule
+\textbf{M2.1: INT8 FPGA Baseline Energy (Week 2)} & All & \cellcolor{green!30}\textbf{COMPLETE} &
+RLHF loop with FPGA matmul offload. 50 PPO steps on 1000 pairs (Qwen2.5-0.5B + reward model). Per-phase energy logged. XPE power estimates extracted, baseline CSV generated. \\
+\midrule
+\textbf{M2.2: PyTorch MX Sensitivity Profiling (Week 2)} & Grant & \cellcolor{orange!50}\textbf{IN PROGRESS} &
+mx-pytorch installed. Per-layer sweep: MXFP4/MXFP8 on transformer layers with group sizes 8, 16. Perplexity deltas logged. Sensitivity matrix and policies (A--D) to be finalized. \\
+\midrule
+\textbf{M3: SystemC MX Datapath (Week 3)} & Hiva & \cellcolor{gray!30}\textbf{UPCOMING} &
+Dual-precision MXFP4/MXFP8 PE in SystemC. Testbenches vs PyTorch reference. \\
+\midrule
+\textbf{M4: FPGA Synthesis + Integration (Week 4)} & Hiva + Daniel & \cellcolor{gray!30}\textbf{UPCOMING} &
+HLS synthesis. Bitstream generation and AWS F2 deployment. End-to-end validation. \\
+\midrule
+\textbf{M5: Energy Experiments (Week 5)} & All & \cellcolor{gray!30}\textbf{UPCOMING} &
+Run MX policies (A--D) on FPGA. Compare energy vs INT8. Generate Pareto curves. \\
+\midrule
+\textbf{M6: Analysis + Report (Week 6)} & All & \cellcolor{gray!30}\textbf{UPCOMING} &
+Final report with Pareto analysis, policy recommendation, and MX viability conclusions. \\
+\bottomrule
+\end{tabular}
+\end{table}
+\vspace{-0.5em}
+
+\section{Milestone 2.1 Detail: INT8 FPGA Baseline Energy}
+\vspace{-0.3em}
+
+\small
+The baseline energy measurement establishes the reference point for all subsequent MX format comparisons. Every claimed energy saving in the final report is expressed as a delta from this number.
+
+\subsection{What Was Built}
+\vspace{-0.2em}
+
+\begin{itemize}[leftmargin=*, noitemsep, topsep=0pt]
+\item \textbf{Tiling + offload:} Breaks matmuls into 16×16 tiles, sends to FPGA via AXI.
+\item \textbf{RLHF script:} Loads Qwen2.5-0.5B + reward model, hooks matmul offload into PPO loop.
+\item \textbf{Baseline run:} 50 PPO steps on 1000 pairs. Runtime logged by phase.
+\item \textbf{Energy:} XPE power × Runtime for each phase, written to CSV.
+\end{itemize}
+\vspace{-0.2em}
+
+\subsection{Output Artifact}
+\vspace{-0.2em}
+Baseline CSV: layer\_type, rlhf\_phase, avg\_power\_W, runtime\_s, energy\_J.
+\vspace{-0.2em}
+
+\subsection{Dataset}
+\vspace{-0.2em}
+HuggingFace: hivamoh/cs217-rlhf-dataset. 1,200 pairs (1000/200 split), 512 tokens max.
+\vspace{-0.2em}
+
+\subsection{Next Steps (Week 2)}
+\vspace{-0.2em}
+
+\begin{itemize}[leftmargin=*, noitemsep, topsep=0pt]
+\item Finalize per-layer sweep MXFP4/MXFP8/INT8. Define 2\% perplexity tolerance.
+\item Produce sensitivity matrix: layers × format × group size vs. INT8 baseline.
+\item Define MX policies (Conservative, Balanced, Aggressive, Phase-Adaptive) for Week 5.
+\item Hand off sensitivity results for Week 3 SystemC datapath design.
+\end{itemize}
+\vspace{0.3em}
+
+\noindent\scriptsize{GitHub: github.com/HivaMohammadzadeh1/CS217-Final-Project | Dataset: huggingface.co/datasets/hivamoh/cs217-rlhf-dataset}
+
+\end{document}

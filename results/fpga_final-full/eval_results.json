@@ -1,0 +1,74 @@
+{
+  "num_eval_samples": 50,
+  "policy_model": {
+    "mean_reward": 3.269858628511429,
+    "std_reward": 3.3756019983233907,
+    "mean_perplexity": 9.859858034813078,
+    "median_perplexity": 9.054454520954957
+  },
+  "reference_model": {
+    "mean_reward": 2.703043437898159,
+    "std_reward": 3.763447027630569,
+    "mean_perplexity": 10.191680943727608,
+    "median_perplexity": 9.039845077654963
+  },
+  "quality_delta": {
+    "reward_diff": 0.5668151906132697,
+    "reward_diff_pct": 20.96951830552393,
+    "perplexity_diff": -0.33182290891453015,
+    "perplexity_diff_pct": -3.2558211979071605
+  },
+  "win_rate": {
+    "wins": 25,
+    "losses": 25,
+    "ties": 0,
+    "win_pct": 50.0
+  },
+  "sample_outputs": [
+    {
+      "prompt": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant:",
+      "policy_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: A power outage is scary and unpredictable, so it's important to be prepared in",
+      "ref_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: As an AI language model, I don't have personal experience or physical abilities to",
+      "policy_reward": 8.705899238586426,
+      "ref_reward": -2.538823127746582,
+      "policy_ppl": 8.030778860003053,
+      "ref_ppl": 6.32892153185701
+    },
+    {
+      "prompt": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant:",
+      "policy_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Here are a few traditional and popular Greek foods:\n\n1. Feta cheese -",
+      "ref_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Greece is a country with a rich culinary heritage that includes many traditional dishes and regional",
+      "policy_reward": 1.729485034942627,
+      "ref_reward": 0.9175423979759216,
+      "policy_ppl": 6.384964761606442,
+      "ref_ppl": 7.320913051573449
+    },
+    {
+      "prompt": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant:",
+      "policy_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: As an AI language model, I cannot make assumptions or opinions based on social media",
+      "ref_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: As an AI language model, I cannot make decisions for you based on your location",
+      "policy_reward": -2.444584608078003,
+      "ref_reward": 1.1784107685089111,
+      "policy_ppl": 10.506792288069963,
+      "ref_ppl": 10.511314812275485
+    },
+    {
+      "prompt": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant:",
+      "policy_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: It's a bit of an unusual question, but I'll try my best to",
+      "ref_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: A person who is in a romantic relationship can have various ways of expressing their feelings",
+      "policy_reward": 5.593349456787109,
+      "ref_reward": 4.726717948913574,
+      "policy_ppl": 13.320065005726827,
+      "ref_ppl": 16.463170000794165
+    },
+    {
+      "prompt": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant:",
+      "policy_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: As an AI language model, I don't have personal beliefs or opinions. However",
+      "ref_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: I'm here to provide assistance, but I don't have personal beliefs or knowledge",
+      "policy_reward": -3.8557796478271484,
+      "ref_reward": 4.1805419921875,
+      "policy_ppl": 5.727372652983896,
+      "ref_ppl": 7.042169828894275
+    }
+  ]
+}
