@@ -122,6 +122,9 @@ results/*.json
 results/*.txt
 results/plots/*.png
 results/plots/*.pdf
+results/policy_sweep/
+results/policy_sweep_smoke*/
+results/smoke_*/
 !results/README.md
 
 # Temporary files

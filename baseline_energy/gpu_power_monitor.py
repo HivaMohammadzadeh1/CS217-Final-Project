@@ -7,6 +7,7 @@ import subprocess
 import time
 import os
 import signal
+import shutil
 import pandas as pd
 from pathlib import Path
 
@@ -25,15 +26,21 @@ class GPUPowerMonitor:
         self.interval_ms = interval_ms
         self.process = None
         self.start_time = None
+        self.enabled = False
 
     def __enter__(self):
         """Start monitoring."""
+        if shutil.which("nvidia-smi") is None:
+            print("🔋 Skipping GPU power monitoring (nvidia-smi not available)")
+            return self
+
         print(f"🔋 Starting GPU power monitoring...")
         print(f"   Output: {self.output_file}")
         print(f"   Interval: {self.interval_ms}ms")
 
         # Start nvidia-smi in background
         self.start_time = time.time()
+        self.enabled = True
         self.process = subprocess.Popen(
             ["bash", "baseline_energy/monitor_gpu_power.sh",
              self.output_file, str(self.interval_ms)],
@@ -49,7 +56,7 @@ class GPUPowerMonitor:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Stop monitoring."""
-        if self.process:
+        if self.enabled and self.process:
             print("\n🛑 Stopping GPU power monitoring...")
             self.process.send_signal(signal.SIGINT)
             self.process.wait(timeout=5)
@@ -65,6 +72,9 @@ class GPUPowerMonitor:
         Returns:
             float: Average power in watts
         """
+        if not self.enabled:
+            print("⚠️  GPU power monitoring was disabled for this run.")
+            return None
         if not os.path.exists(self.output_file):
             raise FileNotFoundError(f"Power log not found: {self.output_file}")
 
