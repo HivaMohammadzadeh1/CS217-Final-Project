@@ -33,6 +33,27 @@ class TestPolicySweepRunner(unittest.TestCase):
         self.assertIn("--allow-gradient-offload", cmd)
         self.assertIn("16", cmd)
 
+    def test_build_command_appends_passthrough_args(self):
+        args = SimpleNamespace(
+            steps=2,
+            policy_json="baseline_energy/data/smoke_policies.json",
+            eval_samples=None,
+            skip_eval=False,
+            save_models=False,
+            precision_mode=None,
+            group_size=None,
+            allow_gradient_offload=False,
+        )
+
+        cmd = build_command(
+            args,
+            "A",
+            Path("results/policy_sweep/policy_A"),
+            passthrough_args=["--use-mock-fpga", "--model-name", "tiny-model"],
+        )
+
+        self.assertEqual(cmd[-3:], ["--use-mock-fpga", "--model-name", "tiny-model"])
+
 
 if __name__ == "__main__":
     unittest.main()

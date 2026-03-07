@@ -75,6 +75,7 @@ FPGA_GROUP_SIZE = 8  # Shared scaling group size for MX modes (8 or 16)
 FPGA_POLICY_JSON = None  # Optional path to generated policy JSON for phase-aware precision
 FPGA_POLICY_NAME = None  # Optional named policy to load from FPGA_POLICY_JSON (A/B/C/D)
 FPGA_ALLOW_GRADIENT_OFFLOAD = False  # Keep gradient phase on native PyTorch until an autograd-safe offload path exists
+FPGA_REWARD_BLOCKS = None  # Optional reward-model block list; None means offload all reward attention blocks
 
 # Note: If Lab 1 hardware is not available (library not found, bitstream not loaded),
 # the system will automatically fall back to software implementation

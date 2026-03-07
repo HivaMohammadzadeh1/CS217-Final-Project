@@ -42,6 +42,91 @@ from adaptive_controller import AdaptivePrecisionController
 from fpga_matmul_offload import FPGAMatmulOffload
 
 
+def parse_int_list(raw_value):
+    """Parse a comma-separated integer list."""
+    if raw_value is None:
+        return None
+    values = []
+    for item in str(raw_value).split(","):
+        item = item.strip()
+        if not item:
+            continue
+        values.append(int(item))
+    return values
+
+
+def apply_runtime_overrides(args):
+    """Apply CLI overrides directly onto the shared config module."""
+    scalar_overrides = {
+        "MODEL_NAME": args.model_name,
+        "REWARD_MODEL_NAME": args.reward_model_name,
+        "DATASET_NAME": args.dataset_name,
+        "LOCAL_DATASET_PATH": args.local_dataset_path,
+        "NUM_SAMPLES": args.num_samples,
+        "TRAIN_SIZE": args.train_size,
+        "EVAL_SIZE": args.eval_size,
+        "BATCH_SIZE": args.batch_size,
+        "MINI_BATCH_SIZE": args.mini_batch_size,
+        "MAX_SEQ_LENGTH": args.max_seq_length,
+        "MAX_PROMPT_LENGTH": args.max_prompt_length,
+        "MAX_RESPONSE_LENGTH": args.max_response_length,
+        "FPGA_RESPONSE_LENGTH": args.fpga_response_length,
+        "PRETRAIN_REWARD_STEPS": args.pretrain_reward_steps,
+        "FPGA_PRECISION_MODE": args.precision_mode,
+        "FPGA_GROUP_SIZE": args.group_size,
+        "FPGA_POLICY_JSON": args.policy_json,
+        "FPGA_POLICY_NAME": args.policy_name,
+    }
+
+    for attr, value in scalar_overrides.items():
+        if value is not None:
+            setattr(config, attr, value)
+
+    if args.use_mock_fpga:
+        config.USE_FPGA_OFFLOAD = True
+        config.USE_MOCK_FPGA = True
+        config.USE_LAB1_FPGA = False
+
+    if args.no_fpga_offload:
+        config.USE_FPGA_OFFLOAD = False
+
+    if args.use_hub_dataset:
+        config.USE_HUB_DATASET = True
+
+    if args.local_dataset_path:
+        config.USE_HUB_DATASET = False
+
+    if args.allow_gradient_offload:
+        config.FPGA_ALLOW_GRADIENT_OFFLOAD = True
+
+    if args.policy_blocks is not None:
+        config.FPGA_POLICY_BLOCKS = parse_int_list(args.policy_blocks)
+    if args.reward_policy_blocks is not None:
+        config.FPGA_REWARD_BLOCKS = parse_int_list(args.reward_policy_blocks)
+
+    if args.train_size is not None or args.eval_size is not None:
+        if args.num_samples is None:
+            config.NUM_SAMPLES = config.TRAIN_SIZE + config.EVAL_SIZE
+
+
+def get_reward_head_modules(model):
+    """Locate the sequence-classification head modules to train."""
+    modules = []
+    for attr in ("score", "classifier", "classification_head"):
+        module = getattr(model, attr, None)
+        if module is not None and any(True for _ in module.parameters()):
+            modules.append(module)
+
+    if modules:
+        return modules
+
+    linear_modules = [module for module in model.modules() if isinstance(module, nn.Linear)]
+    if linear_modules:
+        return [linear_modules[-1]]
+
+    raise RuntimeError("Could not locate a trainable reward head module.")
+
+
 class FPGALinearLayer(nn.Module):
     """
     Phase-aware replacement for nn.Linear.
@@ -210,6 +295,8 @@ class RLHFWithFPGATrainer:
     def __init__(self, args):
         self.args = args
         self.policy_blocks = list(getattr(config, "FPGA_POLICY_BLOCKS", []))
+        reward_blocks = getattr(config, "FPGA_REWARD_BLOCKS", None)
+        self.reward_blocks = None if reward_blocks is None else list(reward_blocks)
         self.fpga_response_length = getattr(config, "FPGA_RESPONSE_LENGTH", config.MAX_RESPONSE_LENGTH)
         self.device = torch.device("cuda" if torch.cuda.is_available() and config.USE_GPU else "cpu")
         self.precision_controller = AdaptivePrecisionController(
@@ -230,6 +317,7 @@ class RLHFWithFPGATrainer:
         print(f"Output: {args.output}")
         print(f"FPGA Mode: {'MOCK' if config.USE_MOCK_FPGA else 'REAL'}")
         print(f"FPGA Policy Blocks: {self.policy_blocks}")
+        print(f"FPGA Reward Blocks: {'ALL' if self.reward_blocks is None else self.reward_blocks}")
         print(f"FPGA Response Length: {self.fpga_response_length}")
         if self.precision_controller.policy is not None:
             print(f"Precision Policy: {self.precision_controller.policy_name} from {self.precision_controller.policy_path}")
@@ -258,17 +346,28 @@ class RLHFWithFPGATrainer:
             "reward": [],
             "gradient": [],
         }
+        self.dataset_source = None
 
         # FPGA stats
         self.fpga_stats = {
             "total_matmuls": 0,
             "total_tiles": 0,
         }
+        self.policy_device = self.device
+        self.reward_device = self.device
+        self.ref_device = self.device
 
     def _phase_scope(self, phase):
         if not config.USE_FPGA_OFFLOAD:
             return nullcontext()
         return self.precision_controller.phase_scope(phase)
+
+    @staticmethod
+    def _module_device(module):
+        try:
+            return next(module.parameters()).device
+        except StopIteration:
+            return torch.device("cpu")
 
     def load_models(self):
         """Load policy, reward, and reference models with FPGA offload.
@@ -307,7 +406,7 @@ class RLHFWithFPGATrainer:
             )
             print(f"  ✓ Replaced {num_replaced} linear layers in policy model")
 
-        # Load reward model (full FPGA replacement — non-autoregressive)
+        # Load reward model.
         print("  Loading reward model...")
         self.reward_model = AutoModelForSequenceClassification.from_pretrained(
             config.REWARD_MODEL_NAME,
@@ -318,14 +417,25 @@ class RLHFWithFPGATrainer:
         self.reward_model.eval()
 
         if config.USE_FPGA_OFFLOAD:
-            print("  Replacing ALL reward model layers with FPGA offload...")
-            num_replaced = replace_linear_with_fpga(
-                self.reward_model,
-                self.fpga_offloader,
-                controller=self.precision_controller,
-                model_role="reward",
-                verbose=True,
-            )
+            if self.reward_blocks is None:
+                print("  Replacing ALL reward model layers with FPGA offload...")
+                num_replaced = replace_linear_with_fpga(
+                    self.reward_model,
+                    self.fpga_offloader,
+                    controller=self.precision_controller,
+                    model_role="reward",
+                    verbose=True,
+                )
+            else:
+                print(f"  Replacing reward model blocks {self.reward_blocks} with FPGA offload...")
+                num_replaced = replace_linear_with_fpga_selective(
+                    self.reward_model,
+                    self.fpga_offloader,
+                    target_blocks=self.reward_blocks,
+                    controller=self.precision_controller,
+                    model_role="reward",
+                    verbose=True,
+                )
             print(f"  ✓ Replaced {num_replaced} linear layers in reward model")
 
         # Load reference model (selective FPGA — used for KL in PPO, no grads)
@@ -349,27 +459,47 @@ class RLHFWithFPGATrainer:
             )
             print(f"  ✓ Replaced {num_replaced} linear layers in reference model")
 
-        blocks_desc = self.policy_blocks if config.USE_FPGA_OFFLOAD else "none"
-        print(f"✓ Models loaded (reward=full FPGA, policy/ref blocks={blocks_desc})\n")
+        self.policy_device = self._module_device(self.model.pretrained_model)
+        self.reward_device = self._module_device(self.reward_model)
+        self.ref_device = self._module_device(self.ref_model.pretrained_model)
+        policy_desc = self.policy_blocks if config.USE_FPGA_OFFLOAD else "none"
+        reward_desc = "all" if self.reward_blocks is None else self.reward_blocks
+        print(f"  Devices: policy={self.policy_device}, reward={self.reward_device}, reference={self.ref_device}")
+        print(f"✓ Models loaded (reward blocks={reward_desc}, policy/ref blocks={policy_desc})\n")
 
     def load_dataset(self):
         """Load and prepare HH-RLHF dataset."""
         print("📊 Loading dataset...")
 
-        # Load full dataset
-        dataset = load_dataset(config.DATASET_NAME, split=config.DATASET_SPLIT)
+        if getattr(config, "USE_HUB_DATASET", True):
+            dataset = load_dataset(config.DATASET_NAME, split=config.DATASET_SPLIT)
+            dataset_desc = config.DATASET_NAME
+        else:
+            dataset = load_dataset("json", data_files=config.LOCAL_DATASET_PATH, split="train")
+            dataset_desc = config.LOCAL_DATASET_PATH
 
-        # Create fixed subset with seed (800 train + 200 eval = 1000 total)
+        available_samples = len(dataset)
+        requested_samples = min(config.NUM_SAMPLES, available_samples)
+        required_samples = config.TRAIN_SIZE + config.EVAL_SIZE
+        if required_samples > requested_samples:
+            raise ValueError(
+                f"Dataset only provides {requested_samples} samples after selection, "
+                f"but train_size + eval_size = {required_samples}."
+            )
+
+        # Create fixed subset with seed.
         dataset_subset = dataset.shuffle(seed=config.RANDOM_SEED).select(
-            range(config.NUM_SAMPLES)
+            range(requested_samples)
         )
 
         # Split train/eval
         self.train_dataset = dataset_subset.select(range(config.TRAIN_SIZE))
         self.eval_dataset = dataset_subset.select(
-            range(config.TRAIN_SIZE, config.NUM_SAMPLES)
+            range(config.TRAIN_SIZE, config.TRAIN_SIZE + config.EVAL_SIZE)
         )
 
+        self.dataset_source = dataset_desc
+        print(f"  Source: {dataset_desc}")
         print(f"  Train: {len(self.train_dataset)} examples")
         print(f"  Eval:  {len(self.eval_dataset)} examples")
         print("✓ Dataset loaded\n")
@@ -390,14 +520,18 @@ class RLHFWithFPGATrainer:
             print("  FPGA layers remain active during pre-training")
 
         self.reward_model.train()
+        reward_head_modules = get_reward_head_modules(self.reward_model)
 
         # Only train the classification head, freeze the transformer body
         for param in self.reward_model.parameters():
             param.requires_grad = False
-        for param in self.reward_model.score.parameters():
-            param.requires_grad = True
+        reward_head_params = []
+        for module in reward_head_modules:
+            for param in module.parameters():
+                param.requires_grad = True
+                reward_head_params.append(param)
 
-        optimizer = torch.optim.Adam(self.reward_model.score.parameters(), lr=lr)
+        optimizer = torch.optim.Adam(reward_head_params, lr=lr)
         self.fpga_offloader.reset_stats()
 
         total_loss = 0.0
@@ -409,11 +543,11 @@ class RLHFWithFPGATrainer:
             chosen_inputs = self.tokenizer(
                 example["chosen"], return_tensors="pt",
                 max_length=config.MAX_SEQ_LENGTH, truncation=True,
-            ).to(self.device)
+            ).to(self.reward_device)
             rejected_inputs = self.tokenizer(
                 example["rejected"], return_tensors="pt",
                 max_length=config.MAX_SEQ_LENGTH, truncation=True,
-            ).to(self.device)
+            ).to(self.reward_device)
 
             with self._phase_scope("reward"):
                 chosen_score = self.reward_model(**chosen_inputs).logits[0, 0]
@@ -467,7 +601,7 @@ class RLHFWithFPGATrainer:
                         return_tensors="pt",
                         max_length=config.MAX_SEQ_LENGTH,
                         truncation=True,
-                    ).to(self.device)
+                    ).to(self.reward_device)
 
                     reward_outputs = self.reward_model(**inputs)
                     reward = reward_outputs.logits[0, 0].item()
@@ -500,6 +634,8 @@ class RLHFWithFPGATrainer:
             ref_model=self.ref_model,
             tokenizer=self.tokenizer,
         )
+        self.policy_device = self._module_device(ppo_trainer.model)
+        self.ref_device = self._module_device(ppo_trainer.ref_model)
 
         # Get prompts
         prompts = self.build_dataset_for_ppo()
@@ -541,7 +677,7 @@ class RLHFWithFPGATrainer:
                         return_tensors="pt",
                         max_length=config.MAX_PROMPT_LENGTH,
                         truncation=True,
-                    ).input_ids.squeeze(0).to(self.device)
+                    ).input_ids.squeeze(0).to(self.policy_device)
 
                     gen_length = (self.fpga_response_length
                                   if config.USE_FPGA_OFFLOAD and self.policy_blocks
@@ -644,7 +780,8 @@ class RLHFWithFPGATrainer:
                 max_length=config.MAX_PROMPT_LENGTH,
                 truncation=True,
             )
-            prompt_ids = prompt_inputs.input_ids.to(self.device)
+            policy_prompt_ids = prompt_inputs.input_ids.to(self.policy_device)
+            ref_prompt_ids = prompt_inputs.input_ids.to(self.ref_device)
 
             eval_gen_length = (self.fpga_response_length
                                if config.USE_FPGA_OFFLOAD and self.policy_blocks
@@ -653,7 +790,7 @@ class RLHFWithFPGATrainer:
                 with torch.no_grad():
                 # --- Generate from policy (FPGA-quantized) model ---
                     policy_output_ids = self.model.pretrained_model.generate(
-                        prompt_ids,
+                        policy_prompt_ids,
                         max_new_tokens=eval_gen_length,
                         do_sample=True,
                         top_k=50,
@@ -665,7 +802,7 @@ class RLHFWithFPGATrainer:
 
                     # --- Generate from reference model ---
                     ref_output_ids = self.ref_model.pretrained_model.generate(
-                        prompt_ids,
+                        ref_prompt_ids,
                         max_new_tokens=eval_gen_length,
                         do_sample=True,
                         top_k=50,
@@ -796,7 +933,7 @@ class RLHFWithFPGATrainer:
             return_tensors="pt",
             max_length=config.MAX_SEQ_LENGTH,
             truncation=True,
-        ).to(self.device)
+        ).to(self.reward_device)
         with self._phase_scope("reward"):
             with torch.no_grad():
                 outputs = self.reward_model(**inputs)
@@ -877,6 +1014,7 @@ class RLHFWithFPGATrainer:
             "fpga_mock": config.USE_MOCK_FPGA,
             "use_lab1_fpga": config.USE_LAB1_FPGA,
             "fpga_policy_blocks": self.policy_blocks,
+            "fpga_reward_blocks": self.reward_blocks,
             "fpga_response_length": self.fpga_response_length,
             "fpga_precision_default": self.precision_controller.default_precision,
             "fpga_group_size": self.precision_controller.default_group_size,
@@ -890,7 +1028,7 @@ class RLHFWithFPGATrainer:
             "max_seq_length": config.MAX_SEQ_LENGTH,
             "max_prompt_length": config.MAX_PROMPT_LENGTH,
             "max_response_length": config.MAX_RESPONSE_LENGTH,
-            "dataset": config.DATASET_NAME,
+            "dataset": self.dataset_source or config.DATASET_NAME,
             "train_size": config.TRAIN_SIZE,
             "eval_size": config.EVAL_SIZE,
             "random_seed": config.RANDOM_SEED,
@@ -910,12 +1048,21 @@ class RLHFWithFPGATrainer:
         # ── 8. Re-apply FPGA layers if training/eval will continue ──
         if fpga_was_active:
             print("  Re-applying FPGA offload layers...")
-            replace_linear_with_fpga(
-                self.reward_model,
-                self.fpga_offloader,
-                controller=self.precision_controller,
-                model_role="reward",
-            )
+            if self.reward_blocks is None:
+                replace_linear_with_fpga(
+                    self.reward_model,
+                    self.fpga_offloader,
+                    controller=self.precision_controller,
+                    model_role="reward",
+                )
+            else:
+                replace_linear_with_fpga_selective(
+                    self.reward_model,
+                    self.fpga_offloader,
+                    target_blocks=self.reward_blocks,
+                    controller=self.precision_controller,
+                    model_role="reward",
+                )
             if self.policy_blocks:
                 replace_linear_with_fpga_selective(
                     self.model, self.fpga_offloader,
@@ -1043,7 +1190,123 @@ def main():
         default=False,
         help="Allow policy/controller to offload gradient-phase layers. Disabled by default because the current offload path is not autograd-safe.",
     )
+    parser.add_argument(
+        "--model-name",
+        type=str,
+        default=None,
+        help="Override the policy/reference base model.",
+    )
+    parser.add_argument(
+        "--reward-model-name",
+        type=str,
+        default=None,
+        help="Override the reward model checkpoint.",
+    )
+    parser.add_argument(
+        "--dataset-name",
+        type=str,
+        default=None,
+        help="Override the HuggingFace dataset name.",
+    )
+    parser.add_argument(
+        "--use-hub-dataset",
+        action="store_true",
+        default=False,
+        help="Force loading the dataset from HuggingFace Hub.",
+    )
+    parser.add_argument(
+        "--local-dataset-path",
+        type=str,
+        default=None,
+        help="Load a local JSON/JSONL dataset instead of the Hub dataset.",
+    )
+    parser.add_argument(
+        "--num-samples",
+        type=int,
+        default=None,
+        help="Override total dataset samples to draw after shuffling.",
+    )
+    parser.add_argument(
+        "--train-size",
+        type=int,
+        default=None,
+        help="Override the training subset size.",
+    )
+    parser.add_argument(
+        "--eval-size",
+        type=int,
+        default=None,
+        help="Override the held-out evaluation subset size.",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=None,
+        help="Override PPO batch size.",
+    )
+    parser.add_argument(
+        "--mini-batch-size",
+        type=int,
+        default=None,
+        help="Override PPO mini-batch size.",
+    )
+    parser.add_argument(
+        "--max-seq-length",
+        type=int,
+        default=None,
+        help="Override max sequence length.",
+    )
+    parser.add_argument(
+        "--max-prompt-length",
+        type=int,
+        default=None,
+        help="Override max prompt length.",
+    )
+    parser.add_argument(
+        "--max-response-length",
+        type=int,
+        default=None,
+        help="Override max generated response length.",
+    )
+    parser.add_argument(
+        "--fpga-response-length",
+        type=int,
+        default=None,
+        help="Override rollout/eval response length when FPGA offload is active.",
+    )
+    parser.add_argument(
+        "--pretrain-reward-steps",
+        type=int,
+        default=None,
+        help="Override reward-head pretraining steps.",
+    )
+    parser.add_argument(
+        "--policy-blocks",
+        type=str,
+        default=None,
+        help="Comma-separated transformer block indices to offload on the policy/reference models.",
+    )
+    parser.add_argument(
+        "--reward-policy-blocks",
+        type=str,
+        default=None,
+        help="Comma-separated transformer block indices to offload on the reward model. Omit to offload all reward blocks.",
+    )
+    parser.add_argument(
+        "--use-mock-fpga",
+        action="store_true",
+        default=False,
+        help="Force mock-FPGA mode for local smoke runs.",
+    )
+    parser.add_argument(
+        "--no-fpga-offload",
+        action="store_true",
+        default=False,
+        help="Disable FPGA offload entirely.",
+    )
     args = parser.parse_args()
+
+    apply_runtime_overrides(args)
 
     # Initialize trainer
     trainer = RLHFWithFPGATrainer(args)

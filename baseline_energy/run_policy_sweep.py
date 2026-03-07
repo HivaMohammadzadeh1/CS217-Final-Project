@@ -14,7 +14,7 @@ import subprocess
 import sys
 
 
-def build_command(args, policy_name: str, output_dir: Path):
+def build_command(args, policy_name: str, output_dir: Path, passthrough_args=None):
     cmd = [
         sys.executable,
         "baseline_energy/rlhf_with_fpga.py",
@@ -36,6 +36,8 @@ def build_command(args, policy_name: str, output_dir: Path):
         cmd.extend(["--group-size", str(args.group_size)])
     if args.allow_gradient_offload:
         cmd.append("--allow-gradient-offload")
+    if passthrough_args:
+        cmd.extend(passthrough_args)
 
     return cmd
 
@@ -114,7 +116,7 @@ def main():
         default=False,
         help="Print commands without executing them",
     )
-    args = parser.parse_args()
+    args, passthrough_args = parser.parse_known_args()
 
     policies = [item.strip() for item in args.policies.split(",") if item.strip()]
     output_root = Path(args.output_root)
@@ -131,7 +133,7 @@ def main():
     failed = False
     for policy_name in policies:
         output_dir = output_root / f"policy_{policy_name}"
-        cmd = build_command(args, policy_name, output_dir)
+        cmd = build_command(args, policy_name, output_dir, passthrough_args=passthrough_args)
         manifest["runs"].append({
             "policy": policy_name,
             "output_dir": str(output_dir),
