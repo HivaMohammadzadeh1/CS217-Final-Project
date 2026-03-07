@@ -3,24 +3,29 @@ AWS_DESIGN_NAME ?= design_top
 
 REPO_TOP 	?= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/)
 SRC_HOME 	?= $(REPO_TOP)/src
-HLS_HOME 	?= $(SRC_HOME)/hls
-AWS_HOME	?= ./$(AWS_DESIGN_NAME)
+HLS_HOME 	?= $(REPO_TOP)/hls
+AWS_HOME	?= $(REPO_TOP)/$(AWS_DESIGN_NAME)
+
+export REPO_TOP
+export AWS_HOME
 
 systemc_sim:
-	cd $(SRC_HOME)/$(DESIGN_NAME) && make sim_test && make run
+	$(MAKE) -C $(SRC_HOME)/$(DESIGN_NAME) sim_test REPO_TOP=$(REPO_TOP)
+	$(MAKE) -C $(SRC_HOME)/$(DESIGN_NAME) run REPO_TOP=$(REPO_TOP)
 
 hls_sim:
-	cd $(HLS_HOME)/$(DESIGN_NAME) && make hls && make vcs_sim
+	$(MAKE) -C $(HLS_HOME)/$(DESIGN_NAME) hls REPO_TOP=$(REPO_TOP)
+	$(MAKE) -C $(HLS_HOME)/$(DESIGN_NAME) vcs_sim REPO_TOP=$(REPO_TOP)
 	cp $(HLS_HOME)/$(DESIGN_NAME)/Catapult/$(DESIGN_NAME).v1/concat_$(DESIGN_NAME).v $(AWS_HOME)/design/
 
 hls_sim_debug:
-	cd $(HLS_HOME)/$(DESIGN_NAME) && make vcs_debug
+	$(MAKE) -C $(HLS_HOME)/$(DESIGN_NAME) vcs_debug REPO_TOP=$(REPO_TOP)
 	verdi -ssf $(HLS_HOME)/$(DESIGN_NAME)/default.fsdb -dbdir $(HLS_HOME)/$(DESIGN_NAME)/Catapult/$(DESIGN_NAME).v1/scverify/concat_sim_$(DESIGN_NAME)_v_vcs/sc_main.daidir/
 
 clean:
-	cd $(SRC_HOME)/$(DESIGN_NAME) && make clean
-	cd $(SRC_HOME)/$(DESIGN_NAME)/Datapath && make clean
-	cd $(HLS_HOME)/$(DESIGN_NAME) && make clean
+	$(MAKE) -C $(SRC_HOME)/$(DESIGN_NAME) clean REPO_TOP=$(REPO_TOP)
+	$(MAKE) -C $(SRC_HOME)/$(DESIGN_NAME)/Datapath clean REPO_TOP=$(REPO_TOP)
+	$(MAKE) -C $(HLS_HOME)/$(DESIGN_NAME) clean REPO_TOP=$(REPO_TOP)
 	rm -rf design_top/build/checkpoints/ \
 	design_top/build/constraints/generated_cl_clocks_aws.xdc  \
 	design_top/build/reports/ \
@@ -58,7 +63,6 @@ submission:
 	logs/systemc_sim.log.txt \
 	design_top/logs/f2_hw_sim.log.txt \
 	design_top/logs/fpga_test.log.txt
-
 
 
 

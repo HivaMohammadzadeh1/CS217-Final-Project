@@ -1,74 +1,75 @@
-# FPGA Synthesis and Deployment
+# FPGA Flow In This Repo
 
-This directory contains FPGA synthesis scripts and bitstream deployment files for AWS F2.
+This directory is the copied Stanford Lab 1 FPGA flow, not a placeholder.
 
-## Purpose
+Use it for:
+- PECore SystemC simulation on the Stanford HLS machines
+- Catapult HLS / RTL generation
+- AWS F2 hardware simulation
+- AFI generation, programming, and runtime test
 
-Synthesize the MX datapath design and deploy to AWS F2 FPGA (Xilinx VU9P).
+Use the standalone `/Users/dannyadkins/CS217-Final-Project/systemc` directory as the portable MX reference model. That reference runs locally on a normal machine. The `fpga/` flow is the lab-style shell and deployment infrastructure.
 
-## Target Platform
+## One entry point
 
-- **Device**: Xilinx VU9P (AWS F2 instance)
-- **Toolchain**: Vivado HLS 2021.1+
-- **Interface**: AXI4-Lite for control, AXI4 for data
-
-## Files (to be added)
-
-- `synthesis_script.tcl`: Vivado synthesis script
-- `constraints.xdc`: Timing and pin constraints
-- `deploy_to_f2.sh`: AWS F2 deployment script
-- `fpga_driver.py`: Host-side Python driver for FPGA
-- `power_measurement.py`: XPE-based power estimation
-
-## Build Flow
+Run everything through:
 
 ```bash
-# 1. Synthesize design
-vivado -mode batch -source synthesis_script.tcl
-
-# 2. Check timing
-grep "WNS" vivado.log  # Should be positive (no violations)
-
-# 3. Generate bitstream
-# (Included in synthesis_script.tcl)
-
-# 4. Deploy to AWS F2
-./deploy_to_f2.sh
+python3 fpga/run_lab_flow.py doctor
 ```
 
-## Power Measurement
+That command prints:
+- resolved repo paths
+- required environment variables
+- which tools are installed on the current machine
+- which stages are realistic locally vs on Stanford/AWS
+
+## Typical commands
+
+Local reference validation:
 
 ```bash
-# Run Xilinx Power Estimator
-vivado -mode batch -source run_xpe.tcl
-
-# Extract power estimate
-python power_measurement.py --report xpe_report.xml --output ../results/fpga_power.csv
+python3 fpga/run_lab_flow.py reference-sim
 ```
 
-## Host-FPGA Interface
+Stanford HLS machine:
 
-```python
-from fpga_driver import FPGAController
-
-# Initialize FPGA
-fpga = FPGAController(device_id=0)
-
-# Set precision mode
-fpga.set_mode('MXFP4')  # or 'MXFP8'
-
-# Load quantized weights
-fpga.load_weights(weights_fp4)
-
-# Run inference
-outputs = fpga.matmul(inputs)
+```bash
+python3 fpga/run_lab_flow.py systemc-sim
+python3 fpga/run_lab_flow.py hls-sim
 ```
 
-## Expected Performance
+AWS F2 instance:
 
-| Metric | Target |
-|--------|--------|
-| Frequency | 200-250 MHz |
-| Throughput | ~50 GOPS (MXFP8) / ~80 GOPS (MXFP4) |
-| Power | <20W total on-chip |
-| Latency | <10ms per layer (batch=1) |
+```bash
+python3 fpga/run_lab_flow.py hw-sim
+python3 fpga/run_lab_flow.py fpga-build
+python3 fpga/run_lab_flow.py generate-afi
+python3 fpga/run_lab_flow.py check-afi
+python3 fpga/run_lab_flow.py program-fpga
+python3 fpga/run_lab_flow.py run-fpga-test --slot-id 0
+```
+
+## Important details
+
+- The top-level `fpga/Makefile` now points HLS at `/Users/dannyadkins/CS217-Final-Project/fpga/hls`, which matches the checked-in repo layout.
+- The runner sets `REPO_TOP`, `AWS_HOME`, `CL_DIR`, and `CL_DESIGN_NAME` automatically so the copied lab makefiles do not depend on fragile shell state.
+- `fpga/design_top/Makefile` now accepts:
+  - `RTL_VARIANT=...`
+  - `SLOT_ID=...`
+  - `FPGA_TEST_ARGS="..."`
+
+## Current project status
+
+What is real today:
+- the lab-derived PECore/AWS shell flow in `fpga/`
+- the standalone MX reference model in `systemc/`
+- the Python RLHF/controller/offload infrastructure elsewhere in the repo
+
+What still requires FPGA-side implementation work:
+- wiring the MX arithmetic path into the PECore hardware that the AWS shell instantiates
+- deploying that MX-capable PECore as a new AFI
+
+So the correct mental model is:
+- `systemc/` answers "what should MX do?"
+- `fpga/` answers "how do we build/program/run hardware on the Stanford/AWS stack?"
