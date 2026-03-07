@@ -63,6 +63,9 @@ FPGA_DEVICE_ID = 0  # FPGA device ID (for AWS F2 - typically slot 0)
 FPGA_VERBOSE = False  # Print detailed FPGA offload info
 FPGA_PRECISION_MODE = "INT8"  # INT8, MXFP8, or MXFP4
 FPGA_GROUP_SIZE = 8  # Shared scaling group size for MX modes (8 or 16)
+FPGA_POLICY_JSON = None  # Optional path to generated policy JSON for phase-aware precision
+FPGA_POLICY_NAME = None  # Optional named policy to load from FPGA_POLICY_JSON (A/B/C/D)
+FPGA_ALLOW_GRADIENT_OFFLOAD = False  # Current FPGA path is inference-oriented; keep gradients on native PyTorch by default
 FPGA_POLICY_BLOCKS = [0, 23]  # Which transformer blocks to FPGA-offload in policy/ref models (first + last block)
 FPGA_RESPONSE_LENGTH = 16  # Max new tokens during generation when FPGA is active on policy model
 

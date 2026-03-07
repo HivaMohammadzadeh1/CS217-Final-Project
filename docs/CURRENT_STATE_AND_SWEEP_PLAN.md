@@ -23,6 +23,7 @@ System split:
 - Integration precision-control APIs exist:
   - `configure_precision(mode, group_size, flush=...)`
   - `flush_pipeline()`
+- Adaptive precision controller now exists and can load named policies from JSON.
 - Precision state-machine bugs were fixed:
   - flush contract enforced across INT8↔MX transitions,
   - group-size reconfigure now preserves requested mode,
@@ -32,9 +33,10 @@ System split:
 ## 3) What is *not* done yet
 
 - No deployed MX FPGA bitstream connected to real AXI precision register writes yet.
-- No adaptive per-layer/per-phase controller wired into live RLHF matmul calls yet.
 - No full end-to-end policy comparison table (A/B/C/D) with quality metrics and Pareto curve yet.
 - PyTorch sensitivity profiler still uses placeholder quantization logic in `sensitivity_profiler.py`.
+- Gradient-phase MX offload is still not autograd-safe, so controller defaults
+  to native PyTorch (`FP16`) there unless explicitly overridden.
 
 ## 4) What teammates mean by “architecture search/sweep”
 
@@ -56,9 +58,10 @@ Outputs per run:
 1. Replace placeholder quantization in `pytorch_profiling/sensitivity_profiler.py` with real MX library path (or clearly mark proxy mode in outputs).
 2. Generate sensitivity matrix CSV from real runs.
 3. Generate policy JSON via `define_policies.py`.
-4. Implement/adapt `AdaptiveController` to call `configure_precision(...)` before offloaded GEMMs.
-5. Run fixed benchmark across INT8 + policies A/B/C/D and write one canonical results CSV.
-6. Produce Pareto curve and phase breakdown for report.
+4. Run fixed benchmark across INT8 + policies A/B/C/D and write one canonical results CSV.
+5. Produce Pareto curve and phase breakdown for report.
+6. Decide whether gradient-phase MX usage is in-scope for the final project or
+   whether rollout/reward MX is the defensible evaluation boundary.
 
 ## 6) Definition of done for “next checkpoint”
 

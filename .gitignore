@@ -122,6 +122,7 @@ results/*.json
 results/*.txt
 results/plots/*.png
 results/plots/*.pdf
+results/policy_sweep/
 !results/README.md
 
 # Temporary files

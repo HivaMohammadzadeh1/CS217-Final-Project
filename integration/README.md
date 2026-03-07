@@ -18,6 +18,16 @@ RLHF host code and the FPGA/offload path.
 
 This gives a clean control path for later adaptive policy integration.
 
+### 1b) Adaptive precision controller
+
+`adaptive_controller.py` now provides:
+
+- policy loading from JSON (`A/B/C/D` style policies)
+- per-layer, per-phase precision selection
+- phase scoping (`rollout`, `reward`, `gradient`)
+- safe fallback of gradient phase to `FP16` by default, since the current
+  offload path is not autograd-safe
+
 ### 2) Deterministic MX simulator
 
 `mx_precision_sim.py` provides a software reference model:
@@ -76,10 +86,16 @@ In `baseline_energy/config.py`:
 
 `rlhf_with_fpga.py` passes these into `FPGAMatmulOffload(...)`.
 
+Optional policy config:
+
+- `FPGA_POLICY_JSON`
+- `FPGA_POLICY_NAME`
+- `FPGA_ALLOW_GRADIENT_OFFLOAD`
+
 This gives one consistent knob for experiments while keeping code simple.
 
 ## What remains for full hardware integration
 
 - AXI-lite mode register write to actual MX datapath in RTL
 - bitstream supporting MXFP8/MXFP4 in hardware (instead of software fallback)
-- adaptive per-layer/per-phase controller on top of this API
+- autograd-safe gradient-phase offload if you want real MX usage during PPO
