@@ -70,6 +70,8 @@ USE_MOCK_FPGA = False  # Use REAL Lab 1 FPGA hardware
 USE_LAB1_FPGA = True  # Enable Lab 1 16×16 matmul accelerator
 FPGA_DEVICE_ID = 0  # FPGA slot 0 (typically only one FPGA on f2.6xlarge)
 FPGA_VERBOSE = True  # Print detailed FPGA offload info for debugging
+FPGA_PRECISION_MODE = "INT8"  # Lab 1 hardware mode; MXFP8/MXFP4 use software fallback path
+FPGA_GROUP_SIZE = 8  # Shared scaling group size for MX modes (8 or 16)
 
 # Note: If Lab 1 hardware is not available (library not found, bitstream not loaded),
 # the system will automatically fall back to software implementation

@@ -170,11 +170,13 @@ def test_mock_mode():
     print(f"  Total matmuls: {stats.get('total_matmuls', 'N/A')}")
     print(f"  Total tiles: {stats.get('total_tiles', stats.get('num_calls', 0))}")
 
-    if error < 1e-6:  # Mock should be exact
-        print(f"\n✓ TEST PASSED (error < 1e-6)")
+    # Float32 tiled accumulation can differ by a few ULPs from direct matmul.
+    tolerance = 1e-5
+    if error < tolerance:
+        print(f"\n✓ TEST PASSED (error < {tolerance})")
         return True
     else:
-        print(f"\n✗ TEST FAILED (error > 1e-6)")
+        print(f"\n✗ TEST FAILED (error > {tolerance})")
         return False
 
 

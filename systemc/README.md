@@ -1,50 +1,110 @@
-# SystemC MX Datapath
+# Milestone 3: Dual-Precision MX Datapath (Simulation)
 
-This directory contains SystemC/HLS designs for the dual-precision MX datapath.
+This folder now contains a complete Milestone 3 simulation package:
 
-## Purpose
+- MXFP8 datapath (E4M3)
+- MXFP4 datapath (E2M1)
+- Group scaling (group size 8 or 16)
+- Dual-precision mode switching with explicit pipeline flush
+- Runnable testbench with clear pass/fail output
+- Optional Vivado HLS wrapper for C simulation and synthesis setup
 
-Design and simulate MXFP4/MXFP8 processing elements (PEs) before FPGA synthesis.
+The code is written to be easy to read first, then optimize later.
 
-## Key Components
+## What this gives you right now
 
-1. **MXFP8 Datapath**: E4M3 format (4 exponent, 3 mantissa bits)
-2. **MXFP4 Datapath**: E2M1 format (2 exponent, 1 mantissa bit)
-3. **Dual-Precision Controller**: Mode switching between FP4/FP8
-4. **Group Scaling Logic**: Shared scale factor computation
+You can answer these Milestone 3 questions with code:
 
-## Design Files (to be added)
+- "Can we quantize with MXFP8 and MXFP4 with shared scaling?" -> yes
+- "Can we switch precision safely at runtime?" -> yes (flush required)
+- "Do quantized MAC/GEMM results match float closely enough?" -> yes, tested
 
-- `mx_datapath.h`: Main dual-precision PE design
-- `mxfp8_pe.h`: MXFP8 processing element
-- `mxfp4_pe.h`: MXFP4 processing element
-- `group_scaler.h`: Group scaling logic
-- `testbench.cpp`: SystemC testbench
-- `run_simulation.tcl`: Vivado HLS simulation script
+## File map
 
-## Build Instructions
+- `mx_types.h`
+  Common types, precision enums, and MX format specs.
+- `group_scaler.h`
+  Shared-exponent quantization/dequantization logic.
+- `mxfp_pe.h`
+  Processing element implementations for MXFP8 and MXFP4.
+- `mx_datapath.h`
+  Dual-precision datapath with mode request + flush safety model.
+- `testbench.cpp`
+  End-to-end validation for quantization, MAC, GEMM, and mode switching.
+- `mx_datapath_hls.cpp`
+  Fixed-size top function (`mx_datapath_top`) for Vivado HLS flow.
+- `testbench_hls.cpp`
+  Small HLS C-sim testbench for the top function.
+- `run_simulation.tcl`
+  Vivado HLS script for csim + synthesis.
+- `resource_estimator.py`
+  Parse HLS reports (or use defaults) and print a DSP/LUT/BRAM table.
+- `Makefile`
+  Local compile/run for the software testbench.
+
+## Quick start (local simulation)
+
+From repo root:
 
 ```bash
-# Run SystemC simulation
-vivado_hls -f run_simulation.tcl
-
-# Check synthesis report
-cat solution1/syn/report/mx_datapath_csynth.rpt
+cd systemc
+make
+make run
 ```
 
-## Resource Estimates
+You should see a summary ending with:
 
-Target resource usage on Xilinx VU9P:
+```text
+ALL CHECKS PASSED
+```
 
-| Component | DSPs | LUTs | BRAMs |
-|-----------|------|------|-------|
-| MXFP8 PE  | ~8   | ~500 | 2     |
-| MXFP4 PE  | ~4   | ~300 | 2     |
-| Controller| 0    | ~100 | 0     |
+## How group scaling is modeled
 
-## Verification
+For each group (size 8 or 16):
 
-Testbench validates:
-1. Functional correctness vs PyTorch MX reference
-2. Mode switching without state corruption
-3. Pipeline throughput (1 MAC per cycle target)
+1. Find `max_abs` in the group.
+2. Compute one shared exponent: `floor(log2(max_abs))`.
+3. Scale each value by that shared exponent.
+4. Encode scaled values into minifloat (E4M3 or E2M1).
+5. Decode back and rescale for MAC.
+
+This follows the layer/group adaptive microscaling idea in a simple, explicit way.
+
+## How mode switching is modeled
+
+`DualPrecisionMXDatapath` uses a safe two-step mode switch:
+
+1. `request_mode(new_mode)`
+2. `flush_pipeline()`
+
+If you request a mode change and call `mac()` or `gemm()` before flush, the datapath throws an error. This models the "flush between mode switches" requirement from Milestone 3.
+
+## Vivado HLS flow (optional)
+
+If Vivado HLS is available:
+
+```bash
+cd systemc
+vivado_hls -f run_simulation.tcl
+```
+
+Reports are typically written under:
+
+- `mx_datapath_hls/solution1/syn/report/`
+
+Then summarize resources:
+
+```bash
+python3 resource_estimator.py \
+  --mxfp8-report mx_datapath_hls/solution1/syn/report/mx_datapath_top_csynth.rpt \
+  --mxfp4-report mx_datapath_hls/solution1/syn/report/mx_datapath_top_csynth.rpt
+```
+
+If you do not have reports yet, `resource_estimator.py` can print conservative defaults.
+
+## Notes for integration (Milestone 4)
+
+- Keep this simulation code as golden reference behavior.
+- In HLS RTL, preserve the same mode-switch contract:
+  request mode -> flush pipeline -> resume MAC.
+- Connect mode to AXI-lite register later in FPGA integration.

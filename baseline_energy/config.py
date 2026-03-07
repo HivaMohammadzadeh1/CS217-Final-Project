@@ -61,6 +61,8 @@ USE_MOCK_FPGA = False  # Set to True for mock FPGA testing (software fallback)
 USE_LAB1_FPGA = True  # Use Lab 1 FPGA hardware (16×16 matmul accelerator) when USE_FPGA_OFFLOAD=True and USE_MOCK_FPGA=False
 FPGA_DEVICE_ID = 0  # FPGA device ID (for AWS F2 - typically slot 0)
 FPGA_VERBOSE = False  # Print detailed FPGA offload info
+FPGA_PRECISION_MODE = "INT8"  # INT8, MXFP8, or MXFP4
+FPGA_GROUP_SIZE = 8  # Shared scaling group size for MX modes (8 or 16)
 FPGA_POLICY_BLOCKS = [0, 23]  # Which transformer blocks to FPGA-offload in policy/ref models (first + last block)
 FPGA_RESPONSE_LENGTH = 16  # Max new tokens during generation when FPGA is active on policy model
 

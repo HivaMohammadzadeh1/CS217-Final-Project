@@ -25,6 +25,7 @@ MANIFEST
 
 # Virtual Environments
 venv/
+.venv/
 env/
 ENV/
 env.bak/
@@ -95,6 +96,10 @@ vivado*
 simulations/
 *.vcd
 *.wlf
+systemc/mx_datapath_tb
+systemc/mx_datapath_tb_asan
+systemc/mx_datapath_hls_tb
+systemc/*.dSYM/
 
 # LaTeX
 *.aux
