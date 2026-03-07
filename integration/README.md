@@ -60,8 +60,12 @@ python -m unittest integration.test_mx_offload_integration -v
 Covers:
 - INT8 path exactness
 - mode switch pending error until flush
+- INT8 -> MXFP8 also requires flush (same safety contract)
+- same-mode reconfigure with `flush=True` completes pending switches
+- group-size reconfigure preserves requested MX mode
 - precision metadata in stats
 - real-interface fallback behavior when MX hardware is unavailable
+- real-interface `switch_pending` metadata matches runtime behavior
 
 ## How RLHF picks precision now
 

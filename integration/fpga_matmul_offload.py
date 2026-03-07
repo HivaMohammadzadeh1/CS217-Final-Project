@@ -51,13 +51,31 @@ class MockFPGAInterface:
         self.num_calls = 0
         self.total_tiles_processed = 0
         self.precision_mode = "INT8"
+        self.pending_precision_mode = "INT8"
+        self.precision_switch_pending = False
         self.group_size = group_size
         self.mode_switch_count = 0
         self.flush_count = 0
-        self._sim = DualPrecisionMXSimulator(group_size=group_size)
+        self._sim = DualPrecisionMXSimulator(
+            group_size=group_size,
+            initial_mode=PrecisionMode.MXFP8
+        )
 
         # Route through common path to validate inputs.
         self.configure_precision(precision_mode, group_size=group_size, flush=True)
+
+    @staticmethod
+    def _mode_to_sim(precision_mode):
+        return PrecisionMode.MXFP8 if precision_mode == "MXFP8" else PrecisionMode.MXFP4
+
+    def _rebuild_simulator(self):
+        initial_mode = PrecisionMode.MXFP4 if self.precision_mode == "MXFP4" else PrecisionMode.MXFP8
+        self._sim = DualPrecisionMXSimulator(
+            group_size=self.group_size,
+            initial_mode=initial_mode
+        )
+        if self.precision_switch_pending and self.pending_precision_mode in ("MXFP8", "MXFP4"):
+            self._sim.request_mode(self._mode_to_sim(self.pending_precision_mode))
 
     def configure_precision(self, precision_mode, group_size=None, flush=True):
         """
@@ -68,37 +86,47 @@ class MockFPGAInterface:
           - MXFP8 (software MX simulator)
           - MXFP4 (software MX simulator)
         """
+        mode = str(precision_mode).upper()
+        if mode not in ("INT8", "MXFP8", "MXFP4"):
+            raise ValueError(f"Unsupported precision mode: {precision_mode}")
+
+        group_size_changed = False
         if group_size is not None:
             if group_size not in (8, 16):
                 raise ValueError("group_size must be 8 or 16.")
             if group_size != self.group_size:
                 self.group_size = group_size
-                self._sim = DualPrecisionMXSimulator(group_size=group_size)
+                group_size_changed = True
 
-        mode = str(precision_mode).upper()
-        if mode not in ("INT8", "MXFP8", "MXFP4"):
-            raise ValueError(f"Unsupported precision mode: {precision_mode}")
-
-        if mode == self.precision_mode:
+        if mode == self.precision_mode and not self.precision_switch_pending and not group_size_changed:
             return
 
-        self.mode_switch_count += 1
+        if group_size_changed:
+            self._rebuild_simulator()
 
-        if mode == "INT8":
-            self.precision_mode = "INT8"
-            return
+        if self.precision_switch_pending:
+            if mode != self.pending_precision_mode:
+                self.mode_switch_count += 1
+        elif mode != self.precision_mode:
+            self.mode_switch_count += 1
 
-        next_mode = PrecisionMode.MXFP8 if mode == "MXFP8" else PrecisionMode.MXFP4
-        self._sim.request_mode(next_mode)
-        self.precision_mode = mode
+        self.pending_precision_mode = mode
+        self.precision_switch_pending = (self.pending_precision_mode != self.precision_mode)
+
+        if self.pending_precision_mode in ("MXFP8", "MXFP4"):
+            self._sim.request_mode(self._mode_to_sim(self.pending_precision_mode))
 
         if flush:
             self.flush_pipeline()
 
     def flush_pipeline(self):
         """Apply a pending precision change before compute."""
-        if self.precision_mode in ("MXFP8", "MXFP4"):
+        if not self.precision_switch_pending:
+            return
+        if self.pending_precision_mode in ("MXFP8", "MXFP4"):
             self._sim.flush_pipeline()
+        self.precision_mode = self.pending_precision_mode
+        self.precision_switch_pending = False
         self.flush_count += 1
 
     def matmul_16x16(self, tile_a, tile_b):
@@ -112,6 +140,11 @@ class MockFPGAInterface:
         Returns:
             (16, 16) numpy array result
         """
+        if self.precision_switch_pending:
+            raise RuntimeError(
+                "Precision switch pending. Call flush_pipeline() before matmul_16x16()."
+            )
+
         self.num_calls += 1
         self.total_tiles_processed += 1
 
@@ -136,7 +169,7 @@ class MockFPGAInterface:
             'group_size': self.group_size,
             'mode_switches': self.mode_switch_count,
             'flush_count': self.flush_count,
-            'switch_pending': bool(self._sim.switch_pending) if self.precision_mode != "INT8" else False,
+            'switch_pending': self.precision_switch_pending,
         }
 
     def reset_stats(self):
@@ -164,10 +197,15 @@ class RealFPGAInterface:
         self.verbose = verbose
         self.use_lab1 = use_lab1
         self.precision_mode = "INT8"
+        self.pending_precision_mode = "INT8"
+        self.precision_switch_pending = False
         self.group_size = group_size
         self.mode_switch_count = 0
         self.flush_count = 0
-        self._mx_fallback = DualPrecisionMXSimulator(group_size=group_size)
+        self._mx_fallback = DualPrecisionMXSimulator(
+            group_size=group_size,
+            initial_mode=PrecisionMode.MXFP8
+        )
 
         if use_lab1 and LAB1_AVAILABLE:
             # Use Lab 1 FPGA interface
@@ -185,6 +223,25 @@ class RealFPGAInterface:
 
         self.configure_precision(precision_mode, group_size=group_size, flush=True)
 
+    @staticmethod
+    def _mode_to_sim(precision_mode):
+        return PrecisionMode.MXFP8 if precision_mode == "MXFP8" else PrecisionMode.MXFP4
+
+    def _rebuild_mx_fallback(self):
+        initial_mode = PrecisionMode.MXFP4 if self.precision_mode == "MXFP4" else PrecisionMode.MXFP8
+        self._mx_fallback = DualPrecisionMXSimulator(
+            group_size=self.group_size,
+            initial_mode=initial_mode
+        )
+        if self.precision_switch_pending and self.pending_precision_mode in ("MXFP8", "MXFP4"):
+            self._mx_fallback.request_mode(self._mode_to_sim(self.pending_precision_mode))
+
+    def _switch_pending(self):
+        lab1_pending = False
+        if self.use_lab1 and hasattr(self.fpga, "precision_switch_pending"):
+            lab1_pending = bool(self.fpga.precision_switch_pending)
+        return bool(self.precision_switch_pending or self._mx_fallback.switch_pending or lab1_pending)
+
     def configure_precision(self, precision_mode, group_size=None, flush=True):
         """
         Configure precision mode for real interface.
@@ -197,36 +254,56 @@ class RealFPGAInterface:
         if mode not in ("INT8", "MXFP8", "MXFP4"):
             raise ValueError(f"Unsupported precision mode: {precision_mode}")
 
+        group_size_changed = False
         if group_size is not None:
             if group_size not in (8, 16):
                 raise ValueError("group_size must be 8 or 16.")
             if group_size != self.group_size:
                 self.group_size = group_size
-                self._mx_fallback = DualPrecisionMXSimulator(group_size=group_size)
+                group_size_changed = True
 
-        if mode == self.precision_mode:
+        if mode == self.precision_mode and not self.precision_switch_pending and not group_size_changed:
             return
 
-        self.mode_switch_count += 1
-        self.precision_mode = mode
+        if group_size_changed:
+            self._rebuild_mx_fallback()
+
+        if self.precision_switch_pending:
+            if mode != self.pending_precision_mode:
+                self.mode_switch_count += 1
+        elif mode != self.precision_mode:
+            self.mode_switch_count += 1
+
+        self.pending_precision_mode = mode
+        self.precision_switch_pending = (self.pending_precision_mode != self.precision_mode)
 
         if self.use_lab1 and hasattr(self.fpga, "configure_precision"):
             self.fpga.configure_precision(mode, flush=False)
 
-        if mode in ("MXFP8", "MXFP4"):
-            next_mode = PrecisionMode.MXFP8 if mode == "MXFP8" else PrecisionMode.MXFP4
-            self._mx_fallback.request_mode(next_mode)
+        if self.pending_precision_mode in ("MXFP8", "MXFP4"):
+            self._mx_fallback.request_mode(self._mode_to_sim(self.pending_precision_mode))
             if self.verbose:
-                print(f"⚠️  {mode} requested; using software fallback until MX hardware is available.")
-            if flush:
-                self.flush_pipeline()
+                print(
+                    f"⚠️  {self.pending_precision_mode} requested; using software fallback until MX hardware is available."
+                )
+
+        if flush:
+            self.flush_pipeline()
 
     def flush_pipeline(self):
         """Apply a pending precision change before compute."""
+        if not self._switch_pending():
+            return
+
         if self.use_lab1 and hasattr(self.fpga, "flush_pipeline"):
             self.fpga.flush_pipeline()
-        if self.precision_mode in ("MXFP8", "MXFP4"):
+        if self._mx_fallback.switch_pending:
             self._mx_fallback.flush_pipeline()
+
+        if self.precision_switch_pending:
+            self.precision_mode = self.pending_precision_mode
+            self.precision_switch_pending = False
+
         self.flush_count += 1
 
     def matmul_16x16(self, tile_a, tile_b):
@@ -240,6 +317,11 @@ class RealFPGAInterface:
         Returns:
             (16, 16) numpy array result
         """
+        if self._switch_pending():
+            raise RuntimeError(
+                "Precision switch pending. Call flush_pipeline() before matmul_16x16()."
+            )
+
         if self.precision_mode in ("MXFP8", "MXFP4"):
             return self._mx_fallback.matmul_16x16(tile_a, tile_b)
 
@@ -258,7 +340,7 @@ class RealFPGAInterface:
                 "group_size": self.group_size,
                 "mode_switches": self.mode_switch_count,
                 "flush_count": self.flush_count,
-                "switch_pending": bool(self._mx_fallback.switch_pending) if self.precision_mode != "INT8" else False,
+                "switch_pending": self._switch_pending(),
             })
             return stats
         return {}
