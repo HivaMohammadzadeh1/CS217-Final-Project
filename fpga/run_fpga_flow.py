@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Wrapper around the copied Stanford Lab 1 FPGA flow in this repo.
+Single entry point for the project's FPGA build and deployment path.
 
 This script does two things:
-1. Sets the environment variables that the copied Makefiles expect.
-2. Gives one stable entry point for local reference sim, Stanford HLS, and
-   AWS F2 commands.
+1. Sets the environment variables expected by the Stanford/AWS FPGA tooling.
+2. Gives one stable command surface for local reference simulation, HLS/RTL
+   build steps, and F2 deployment/runtime steps.
 
-It does not hide the current project status:
+Current repo split:
 - `systemc/` is the portable MX reference model.
-- `fpga/` is the lab-derived PECore + AWS shell flow.
+- `fpga/` is the hardware build/deploy path that targets AWS F2 from the
+  Stanford development environment.
 """
 
 from __future__ import annotations
@@ -52,7 +53,7 @@ def tool_status() -> List[Tuple[str, str]]:
 
 
 def render_doctor(env: Dict[str, str]) -> int:
-    print("FPGA flow environment")
+    print("FPGA build environment")
     print(f"  repo root:   {ROOT}")
     print(f"  fpga root:   {FPGA_ROOT}")
     print(f"  systemc ref: {ROOT / 'systemc'}")
@@ -66,10 +67,10 @@ def render_doctor(env: Dict[str, str]) -> int:
     for name, status in tool_status():
         print(f"  {name:<22} {status}")
     print("")
-    print("What works where")
-    print("  local machine:      python fpga/run_lab_flow.py reference-sim")
-    print("  Stanford HLS box:   python fpga/run_lab_flow.py systemc-sim / hls-sim")
-    print("  AWS F2 instance:    python fpga/run_lab_flow.py hw-sim / fpga-build / program-fpga / run-fpga-test")
+    print("Execution path")
+    print("  local machine:             python fpga/run_fpga_flow.py reference-sim")
+    print("  Stanford build machine:    python fpga/run_fpga_flow.py systemc-sim / hls-sim / hw-sim / fpga-build / generate-afi")
+    print("  F2 runtime host:           python fpga/run_fpga_flow.py program-fpga / run-fpga-test")
     return 0
 
 
@@ -116,7 +117,7 @@ def run_command(command: Sequence[str], cwd: Path, env: Dict[str, str], dry_run:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the copied Stanford/AWS FPGA flow from this repo.")
+    parser = argparse.ArgumentParser(description="Run the project's FPGA build/deploy path.")
     parser.add_argument(
         "action",
         choices=[

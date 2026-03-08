@@ -363,7 +363,7 @@ int main(int argc, char **argv) {
            precision_mode_name(precision_mode), group_size);
     if (precision_mode != PE_PRECISION_INT8) {
         printf("Note: current checked-in PECore compute remains baseline INT8 MAC; "
-               "MX control bits are staged through the Stanford lab flow for hardware integration.\n");
+               "MX control bits are staged through the hardware build path for integration.\n");
     }
 
     start_data_transfer_counter(bar_handle);

@@ -1,86 +1,72 @@
-# FPGA Flow In This Repo
+# FPGA Build Path
 
-This directory is the copied Stanford Lab 1 FPGA flow, not a placeholder.
+This directory is the project's hardware build and deployment path.
 
 Use it for:
-- PECore SystemC simulation on the Stanford HLS machines
+- PECore SystemC simulation on the Stanford build machines
 - Catapult HLS / RTL generation
 - AWS F2 hardware simulation
-- AFI generation, programming, and runtime test
+- AFI generation, programming, and runtime testing
 
-Use the standalone `/Users/dannyadkins/CS217-Final-Project/systemc` directory as the portable MX reference model. That reference runs locally on a normal machine. The `fpga/` flow is the lab-style shell and deployment infrastructure.
+Use `/Users/dannyadkins/CS217-Final-Project/systemc` as the portable MX reference model. That directory defines the intended MX behavior. This `fpga/` directory is how that behavior gets carried into the hardware build flow that targets F2.
 
 ## One entry point
 
-Run everything through:
-
 ```bash
-python3 fpga/run_lab_flow.py doctor
+python3 fpga/run_fpga_flow.py doctor
 ```
 
-That command prints:
+That command reports:
 - resolved repo paths
 - required environment variables
-- which tools are installed on the current machine
-- which stages are realistic locally vs on Stanford/AWS
+- installed tools
+- which stages belong on the local machine, Stanford build machine, and F2 runtime host
 
-## Typical commands
+## Core commands
 
 Local reference validation:
 
 ```bash
-python3 fpga/run_lab_flow.py reference-sim
+python3 fpga/run_fpga_flow.py reference-sim
 ```
 
-Stanford HLS machine:
+Stanford build machine:
 
 ```bash
-python3 fpga/run_lab_flow.py systemc-sim
-python3 fpga/run_lab_flow.py hls-sim
+python3 fpga/run_fpga_flow.py systemc-sim
+python3 fpga/run_fpga_flow.py hls-sim
+python3 fpga/run_fpga_flow.py hw-sim
+python3 fpga/run_fpga_flow.py fpga-build
+python3 fpga/run_fpga_flow.py generate-afi
+python3 fpga/run_fpga_flow.py check-afi
 ```
 
-AWS F2 instance:
+F2 runtime host:
 
 ```bash
-python3 fpga/run_lab_flow.py hw-sim
-python3 fpga/run_lab_flow.py fpga-build
-python3 fpga/run_lab_flow.py generate-afi
-python3 fpga/run_lab_flow.py check-afi
-python3 fpga/run_lab_flow.py program-fpga
-python3 fpga/run_lab_flow.py run-fpga-test --slot-id 0
+python3 fpga/run_fpga_flow.py program-fpga
+python3 fpga/run_fpga_flow.py run-fpga-test --slot-id 0
 ```
 
-To exercise the staged MX control path through the existing lab runtime:
+To push staged MX control bits through the runtime path:
 
 ```bash
-python3 fpga/run_lab_flow.py run-fpga-test --slot-id 0 --fpga-test-args "MXFP8 16"
+python3 fpga/run_fpga_flow.py run-fpga-test --slot-id 0 --fpga-test-args "MXFP8 16"
 ```
 
-## Important details
+## What is already true
 
-- The top-level `fpga/Makefile` now points HLS at `/Users/dannyadkins/CS217-Final-Project/fpga/hls`, which matches the checked-in repo layout.
-- The runner sets `REPO_TOP`, `AWS_HOME`, `CL_DIR`, and `CL_DESIGN_NAME` automatically so the copied lab makefiles do not depend on fragile shell state.
-- `fpga/design_top/Makefile` now accepts:
+- `fpga/Makefile` now points at the checked-in `fpga/hls` directory.
+- The runner sets `REPO_TOP`, `AWS_HOME`, `CL_DIR`, and `CL_DESIGN_NAME` automatically.
+- `fpga/design_top/Makefile` accepts:
   - `RTL_VARIANT=...`
   - `SLOT_ID=...`
   - `FPGA_TEST_ARGS="..."`
+- PEConfig now carries precision mode and MX group size through the existing hardware control path.
+- The runtime test binary can program those fields from CLI args.
 
-## Current project status
+## What still needs to happen
 
-What is real today:
-- the lab-derived PECore/AWS shell flow in `fpga/`
-- the standalone MX reference model in `systemc/`
-- the Python RLHF/controller/offload infrastructure elsewhere in the repo
-
-What still requires FPGA-side implementation work:
-- wiring the MX arithmetic path into the PECore hardware that the AWS shell instantiates
-- deploying that MX-capable PECore as a new AFI
-
-What is already structured correctly for that next step:
-- PEConfig now carries precision mode and MX group size through the existing lab control register path
-- the C runtime test can program those fields from CLI args
-- the Python Lab1 interface tracks the same precision/group-size contract
-
-So the correct mental model is:
-- `systemc/` answers "what should MX do?"
-- `fpga/` answers "how do we build/program/run hardware on the Stanford/AWS stack?"
+- Replace the baseline integer compute path in `PECore` with real MX arithmetic.
+- Build and deploy an MX-capable AFI.
+- Run the real policy experiments against that deployed hardware.

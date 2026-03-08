@@ -1,9 +1,9 @@
 import unittest
 
-from fpga.run_lab_flow import DESIGN_TOP, FPGA_ROOT, build_env, dispatch_command
+from fpga.run_fpga_flow import DESIGN_TOP, FPGA_ROOT, build_env, dispatch_command
 
 
-class RunLabFlowTests(unittest.TestCase):
+class RunFPGAFlowTests(unittest.TestCase):
     def test_build_env_sets_repo_defaults(self):
         env = build_env()
         self.assertEqual(env["REPO_TOP"], str(FPGA_ROOT))

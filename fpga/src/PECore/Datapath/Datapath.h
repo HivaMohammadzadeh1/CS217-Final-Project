@@ -61,8 +61,8 @@ inline void Datapath(spec::VectorType weight_in[spec::kNumVectorLanes],
   //  2. Store the result in accum_out
   //  3. You can use pragmas to optimize the loop for HLS synthesis 
   //  4. It is important to remember that input is broadcasted to all lanes
-  //  5. The control path now carries MX mode + group size so the Stanford/AWS
-  //     lab flow can configure them. The arithmetic here remains the baseline
+  //  5. The control path now carries MX mode + group size so the hardware
+  //     build/deploy path can configure them. The arithmetic here remains the baseline
   //     integer MAC until the MX datapath replaces it in PECore.
 
   //////// YOUR CODE STARTS HERE ////////

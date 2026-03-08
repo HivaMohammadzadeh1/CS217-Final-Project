@@ -53,7 +53,7 @@ clean:
 	rm -rf ./*.vpd 
 
 submission:
-	zip -r lab1-submission.zip src/PECore/Datapath/Datapath.h \
+	zip -r fpga-submission.zip src/PECore/Datapath/Datapath.h \
 	src/PECore/PECore.h \
 	src/include/Spec.h \
 	design_top/software/src/design_top.c \
@@ -63,6 +63,5 @@ submission:
 	logs/systemc_sim.log.txt \
 	design_top/logs/f2_hw_sim.log.txt \
 	design_top/logs/fpga_test.log.txt
-
 
 
