@@ -109,6 +109,7 @@ class TestMXOffloadIntegration(unittest.TestCase):
         self.assertTrue(np.isfinite(got).all())
         stats = offloader.get_stats()
         self.assertEqual(stats.get("precision_mode"), "MXFP8")
+        self.assertEqual(stats.get("group_size"), 8)
 
     def test_real_interface_pending_status_consistent_with_behavior(self):
         offloader = FPGAMatmulOffload(

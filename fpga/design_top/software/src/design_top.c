@@ -94,6 +94,51 @@ int ocl_rva_wr32(int bar_handle, const uint32_t rva_msg[LOOP_RVA_IN]) {
     return 0;
 }
 
+int parse_precision_mode(const char *arg, uint8_t *mode_out) {
+    if (arg == NULL || mode_out == NULL) {
+        return 1;
+    }
+    if (strcasecmp(arg, "INT8") == 0) {
+        *mode_out = PE_PRECISION_INT8;
+        return 0;
+    }
+    if (strcasecmp(arg, "MXFP8") == 0) {
+        *mode_out = PE_PRECISION_MXFP8;
+        return 0;
+    }
+    if (strcasecmp(arg, "MXFP4") == 0) {
+        *mode_out = PE_PRECISION_MXFP4;
+        return 0;
+    }
+    return 1;
+}
+
+const char *precision_mode_name(uint8_t precision_mode) {
+    switch (precision_mode) {
+        case PE_PRECISION_INT8:
+            return "INT8";
+        case PE_PRECISION_MXFP8:
+            return "MXFP8";
+        case PE_PRECISION_MXFP4:
+            return "MXFP4";
+        default:
+            return "UNKNOWN";
+    }
+}
+
+uint64_t build_pe_config_word(uint8_t precision_mode, int group_size) {
+    uint64_t word = 0;
+    word |= ((uint64_t)1 << PE_CONFIG_IS_VALID_BIT);
+    word |= ((uint64_t)1 << PE_CONFIG_IS_BIAS_BIT);
+    word |= ((uint64_t)1 << PE_CONFIG_NUM_MANAGER_BIT);
+    word |= ((uint64_t)1 << PE_CONFIG_NUM_OUTPUT_BIT);
+    word |= ((uint64_t)(precision_mode & 0x3u) << PE_CONFIG_PRECISION_MODE_BIT);
+    if (group_size == 16) {
+        word |= ((uint64_t)1 << PE_CONFIG_GROUP_SIZE_IS_16_BIT);
+    }
+    return word;
+}
+
 
 // --- Golden Reference Model (Used for Verification) ---
 
@@ -264,14 +309,29 @@ int get_compute_cycles(int bar_handle, uint32_t *cycles) {
 // MAIN EXECUTION LOGIC (Structured like cl_peek_simple.c)
 // ----------------------------------------------------------------------------
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        printf("Usage: %s <slot_id>\n", argv[0]);
+    uint8_t precision_mode = PE_PRECISION_INT8;
+    int group_size = 8;
+
+    if (argc != 2 && argc != 3 && argc != 4) {
+        printf("Usage: %s <slot_id> [INT8|MXFP8|MXFP4] [8|16]\n", argv[0]);
         return 1;
     }
 
     srand(time(NULL)); // Seed for randomization
 
     int slot_id = atoi(argv[1]);
+    if (argc >= 3 && parse_precision_mode(argv[2], &precision_mode) != 0) {
+        fprintf(stderr, "Invalid precision mode '%s'. Use INT8, MXFP8, or MXFP4.\n", argv[2]);
+        return 1;
+    }
+    if (argc >= 4) {
+        group_size = atoi(argv[3]);
+        if (group_size != 8 && group_size != 16) {
+            fprintf(stderr, "Invalid group size '%s'. Use 8 or 16.\n", argv[3]);
+            return 1;
+        }
+    }
+
     int bar_handle = -1;
     int total_errors = 0;
     uint32_t rva_in_words[LOOP_RVA_IN];
@@ -299,6 +359,12 @@ int main(int argc, char **argv) {
     }
     
     printf("---- System Initialization and Reset (bar_handle: %d) ----\n", bar_handle);
+    printf("Requested PEConfig: precision=%s group_size=%d\n",
+           precision_mode_name(precision_mode), group_size);
+    if (precision_mode != PE_PRECISION_INT8) {
+        printf("Note: current checked-in PECore compute remains baseline INT8 MAC; "
+               "MX control bits are staged through the Stanford lab flow for hardware integration.\n");
+    }
 
     start_data_transfer_counter(bar_handle);
 
@@ -310,7 +376,7 @@ int main(int argc, char **argv) {
     printf("\n---- STEP 1: WRITE PEConfig ----\n");    
     rva_in_addr = 0x400010;
     rva_in_rw = true;
-    rva_in_data[0] = 0x0000010100000001;
+    rva_in_data[0] = build_pe_config_word(precision_mode, group_size);
     rva_in_data[1] = 0x00000000; 
     rva_format(rva_in_rw, rva_in_addr, rva_in_data, rva_in_words);
     if (ocl_rva_wr32(bar_handle, rva_in_words)) goto error_detach;

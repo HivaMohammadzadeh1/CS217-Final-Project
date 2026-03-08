@@ -50,6 +50,12 @@ python3 fpga/run_lab_flow.py program-fpga
 python3 fpga/run_lab_flow.py run-fpga-test --slot-id 0
 ```
 
+To exercise the staged MX control path through the existing lab runtime:
+
+```bash
+python3 fpga/run_lab_flow.py run-fpga-test --slot-id 0 --fpga-test-args "MXFP8 16"
+```
+
 ## Important details
 
 - The top-level `fpga/Makefile` now points HLS at `/Users/dannyadkins/CS217-Final-Project/fpga/hls`, which matches the checked-in repo layout.
@@ -69,6 +75,11 @@ What is real today:
 What still requires FPGA-side implementation work:
 - wiring the MX arithmetic path into the PECore hardware that the AWS shell instantiates
 - deploying that MX-capable PECore as a new AFI
+
+What is already structured correctly for that next step:
+- PEConfig now carries precision mode and MX group size through the existing lab control register path
+- the C runtime test can program those fields from CLI args
+- the Python Lab1 interface tracks the same precision/group-size contract
 
 So the correct mental model is:
 - `systemc/` answers "what should MX do?"
