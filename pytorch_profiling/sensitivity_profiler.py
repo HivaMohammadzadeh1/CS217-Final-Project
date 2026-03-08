@@ -1,301 +1,369 @@
+from __future__ import annotations
+
 """
-Layer Sensitivity Profiler for MX Format Quantization
+Layer sensitivity profiling using the repo's MX reference quantization.
 
-Tests each layer with MXFP4 and MXFP8 to measure quality degradation.
-Outputs a sensitivity matrix showing which layers tolerate which formats.
+This script profiles selected linear layers by quantizing one layer at a time,
+measuring perplexity delta, and writing a policy-ready sensitivity matrix.
 
-Usage:
-    python pytorch_profiling/sensitivity_profiler.py --model Qwen/Qwen2.5-0.5B-Instruct
+It is explicit about what it does:
+- Uses the repo's MX quantize/dequantize reference model, not custom kernels.
+- Quantizes weights only, one layer at a time.
+- Supports smoke-mode runs on tiny models and local JSONL datasets.
 """
 
-import torch
 import argparse
-import pandas as pd
+from contextlib import contextmanager
+from dataclasses import dataclass
+import json
 from pathlib import Path
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from datasets import load_dataset
+import sys
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
+
 import numpy as np
+import pandas as pd
+import torch
+from datasets import load_dataset
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from integration.mx_precision_sim import (  # noqa: E402
+    MXFP4_SPEC,
+    MXFP8_SPEC,
+    MiniFloatSpec,
+    quantize_dequantize_vector,
+)
+
+
+FORMAT_SPECS: Dict[str, MiniFloatSpec] = {
+    "MXFP4": MXFP4_SPEC,
+    "MXFP8": MXFP8_SPEC,
+}
+VALID_GROUP_SIZES = (8, 16)
+DEFAULT_COMBINATIONS: Tuple[Tuple[str, int], ...] = (
+    ("MXFP4", 8),
+    ("MXFP4", 16),
+    ("MXFP8", 8),
+    ("MXFP8", 16),
+)
+
+
+@dataclass(frozen=True)
+class ProfileConfig:
+    model_name: str
+    dataset: str
+    dataset_split: str
+    dataset_config: Optional[str]
+    text_field: str
+    num_examples: int
+    max_seq_len: int
+    max_layers: Optional[int]
+    tolerance_pct: float
+    device: str
+
+
+def auto_device() -> str:
+    if torch.cuda.is_available():
+        return "cuda"
+    mps = getattr(torch.backends, "mps", None)
+    if mps is not None and torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+
+def torch_dtype_for_device(device: str) -> torch.dtype:
+    return torch.float16 if device == "cuda" else torch.float32
+
+
+def parse_combo(combo: str) -> Tuple[str, int]:
+    parts = combo.strip().upper().split(":")
+    if len(parts) != 2:
+        raise ValueError(f"Invalid combo '{combo}'. Expected PRECISION:GROUP_SIZE.")
+    precision, group_size_str = parts
+    if precision not in FORMAT_SPECS:
+        raise ValueError(f"Unsupported precision '{precision}'.")
+    group_size = int(group_size_str)
+    if group_size not in VALID_GROUP_SIZES:
+        raise ValueError("group_size must be 8 or 16.")
+    return precision, group_size
+
+
+def build_combinations(raw: Optional[Sequence[str]]) -> Tuple[Tuple[str, int], ...]:
+    if not raw:
+        return DEFAULT_COMBINATIONS
+    return tuple(parse_combo(item) for item in raw)
+
+
+def layer_type(layer_name: str) -> str:
+    name = layer_name.lower()
+    if "attn" in name or "attention" in name:
+        return "attention"
+    if "mlp" in name or "ffn" in name or "feed_forward" in name:
+        return "mlp"
+    if "lm_head" in name or name.endswith("output"):
+        return "lm_head"
+    return "other"
+
+
+def quantize_weight_tensor(weight: torch.Tensor, spec: MiniFloatSpec, group_size: int) -> torch.Tensor:
+    arr = weight.detach().to(torch.float32).cpu().numpy()
+    reshaped = arr.reshape(arr.shape[0], -1)
+    out = np.empty_like(reshaped, dtype=np.float32)
+
+    for row_idx, row in enumerate(reshaped):
+        out[row_idx] = quantize_dequantize_vector(row, spec, group_size)
+
+    out = out.reshape(arr.shape)
+    return torch.from_numpy(out).to(device=weight.device, dtype=weight.dtype)
+
+
+@contextmanager
+def patched_linear_weight(layer: torch.nn.Module,
+                          precision: str,
+                          group_size: int) -> Iterator[None]:
+    if not hasattr(layer, "weight"):
+        yield
+        return
+
+    original = layer.weight.data.detach().clone()
+    quantized = quantize_weight_tensor(original, FORMAT_SPECS[precision], group_size)
+    layer.weight.data.copy_(quantized)
+    try:
+        yield
+    finally:
+        layer.weight.data.copy_(original)
 
 
 class SensitivityProfiler:
-    """Profile layer-wise sensitivity to MX quantization."""
+    def __init__(self, config: ProfileConfig):
+        self.config = config
+        self.device = torch.device(config.device)
+        self.tokenizer = None
+        self.model = None
+        self.eval_texts: List[str] = []
 
-    def __init__(self, model_name, device="cuda"):
-        self.model_name = model_name
-        self.device = torch.device(device if torch.cuda.is_available() else "cpu")
-
-        print(f"\n{'='*60}")
-        print("MX Format Sensitivity Profiler")
-        print(f"{'='*60}")
-        print(f"Model: {model_name}")
+    def load(self) -> None:
+        print("=" * 60)
+        print("MX Sensitivity Profiler")
+        print("=" * 60)
+        print(f"Model:  {self.config.model_name}")
         print(f"Device: {self.device}")
-        print(f"{'='*60}\n")
+        print(f"Dataset: {self.config.dataset} [{self.config.dataset_split}]")
+        print("")
 
-        # Load model and tokenizer
-        print("📥 Loading model...")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_name)
+        if self.tokenizer.pad_token is None and self.tokenizer.eos_token is not None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            torch_dtype=torch.float16,
+            self.config.model_name,
+            torch_dtype=torch_dtype_for_device(self.config.device),
         ).to(self.device)
         self.model.eval()
-        print("✓ Model loaded\n")
 
-        # Load evaluation dataset
-        print("📊 Loading evaluation dataset...")
-        self.eval_dataset = self.load_eval_dataset()
-        print(f"✓ Loaded {len(self.eval_dataset)} examples\n")
+        self.eval_texts = self._load_eval_texts()
+        print(f"Loaded {len(self.eval_texts)} evaluation examples")
+        print("")
 
-    def load_eval_dataset(self):
-        """Load a small evaluation set for perplexity measurement."""
-        # Use HH-RLHF for consistency
-        dataset = load_dataset('Anthropic/hh-rlhf', split='train')
-        # Take 100 examples for quick eval
-        dataset = dataset.shuffle(seed=42).select(range(100))
-        return dataset
+    def _load_eval_texts(self) -> List[str]:
+        dataset_spec = self.config.dataset
+        path = Path(dataset_spec)
+        if path.exists():
+            dataset = load_dataset("json", data_files=str(path), split="train")
+        else:
+            kwargs = {}
+            if self.config.dataset_config:
+                kwargs["name"] = self.config.dataset_config
+            dataset = load_dataset(dataset_spec, split=self.config.dataset_split, **kwargs)
 
-    def compute_perplexity(self):
-        """
-        Compute perplexity on evaluation set.
+        dataset = dataset.shuffle(seed=42)
+        if self.config.num_examples:
+            dataset = dataset.select(range(min(self.config.num_examples, len(dataset))))
 
-        Returns:
-            float: Perplexity score
-        """
-        total_loss = 0
+        texts: List[str] = []
+        for example in dataset:
+            value = example.get(self.config.text_field)
+            if value is None:
+                available = ", ".join(sorted(example.keys()))
+                raise KeyError(
+                    f"Field '{self.config.text_field}' not found in dataset row. Available: {available}"
+                )
+            texts.append(str(value))
+        return texts
+
+    def get_layer_names(self) -> List[str]:
+        assert self.model is not None
+        names: List[str] = []
+        for name, module in self.model.named_modules():
+            if not isinstance(module, torch.nn.Linear):
+                continue
+            kind = layer_type(name)
+            if kind in ("attention", "mlp", "lm_head"):
+                names.append(name)
+
+        if self.config.max_layers is not None:
+            return names[: self.config.max_layers]
+        return names
+
+    def compute_perplexity(self) -> float:
+        assert self.model is not None and self.tokenizer is not None
+        total_loss = 0.0
         total_tokens = 0
 
         with torch.no_grad():
-            for example in self.eval_dataset:
-                # Use 'chosen' response
-                text = example['chosen'][:512]  # Limit length
-
-                # Tokenize
+            for text in self.eval_texts:
                 inputs = self.tokenizer(
                     text,
                     return_tensors="pt",
-                    max_length=512,
+                    max_length=self.config.max_seq_len,
                     truncation=True,
-                ).to(self.device)
+                    padding=False,
+                )
+                inputs = {k: v.to(self.device) for k, v in inputs.items()}
+                outputs = self.model(**inputs, labels=inputs["input_ids"])
+                token_count = int(inputs["input_ids"].numel())
+                total_loss += float(outputs.loss.item()) * token_count
+                total_tokens += token_count
 
-                # Forward pass
-                outputs = self.model(**inputs, labels=inputs.input_ids)
+        avg_loss = total_loss / max(total_tokens, 1)
+        return float(torch.exp(torch.tensor(avg_loss)).item())
 
-                # Accumulate loss
-                total_loss += outputs.loss.item() * inputs.input_ids.size(1)
-                total_tokens += inputs.input_ids.size(1)
-
-        # Calculate perplexity
-        avg_loss = total_loss / total_tokens
-        perplexity = torch.exp(torch.tensor(avg_loss)).item()
-
-        return perplexity
-
-    def get_layer_names(self):
-        """Extract names of quantizable layers."""
-        layer_names = []
-
-        for name, module in self.model.named_modules():
-            # Focus on transformer layers
-            if 'mlp' in name.lower() or 'attn' in name.lower():
-                # Only include Linear layers
-                if isinstance(module, torch.nn.Linear):
-                    layer_names.append(name)
-
-        return layer_names
-
-    def quantize_layer_mxfp4(self, layer_name, group_size=8):
-        """
-        Quantize a specific layer to MXFP4 format.
-
-        Note: This is a placeholder. Real implementation requires mx-pytorch library.
-        For now, we simulate quantization with simple rounding.
-
-        Args:
-            layer_name: Name of layer to quantize
-            group_size: MX group size (8 or 16)
-        """
-        # Placeholder: In real implementation, use mx.quantize()
-        # For now, we'll just reduce precision by rounding
-        print(f"  [Placeholder] Quantizing {layer_name} to MXFP4 (group_size={group_size})")
-
-        # Get the layer
+    def profile_layer(self,
+                      layer_name: str,
+                      baseline_perplexity: float,
+                      combinations: Sequence[Tuple[str, int]]) -> Dict[str, object]:
+        assert self.model is not None
         layer = dict(self.model.named_modules())[layer_name]
-
-        if hasattr(layer, 'weight'):
-            # Simulate aggressive quantization by reducing dynamic range
-            original_weight = layer.weight.data.clone()
-            # Simple quantization: reduce to 4-bit equivalent dynamic range
-            max_val = original_weight.abs().max()
-            # MXFP4 has ~2 bits mantissa, so ~4 levels per exponent
-            quantized = torch.round(original_weight / max_val * 8) / 8 * max_val
-            layer.weight.data = quantized
-
-            return original_weight
-
-        return None
-
-    def quantize_layer_mxfp8(self, layer_name, group_size=8):
-        """
-        Quantize a specific layer to MXFP8 format.
-
-        Placeholder implementation.
-        """
-        print(f"  [Placeholder] Quantizing {layer_name} to MXFP8 (group_size={group_size})")
-
-        layer = dict(self.model.named_modules())[layer_name]
-
-        if hasattr(layer, 'weight'):
-            original_weight = layer.weight.data.clone()
-            # MXFP8 has ~3 bits mantissa, so ~8 levels per exponent
-            max_val = original_weight.abs().max()
-            quantized = torch.round(original_weight / max_val * 16) / 16 * max_val
-            layer.weight.data = quantized
-
-            return original_weight
-
-        return None
-
-    def restore_layer(self, layer_name, original_weight):
-        """Restore original weights to a layer."""
-        if original_weight is None:
-            return
-
-        layer = dict(self.model.named_modules())[layer_name]
-        if hasattr(layer, 'weight'):
-            layer.weight.data = original_weight
-
-    def profile_layer(self, layer_name, baseline_perplexity):
-        """
-        Profile sensitivity of a single layer to quantization.
-
-        Args:
-            layer_name: Name of layer to test
-            baseline_perplexity: FP16 baseline perplexity
-
-        Returns:
-            Dictionary with results for this layer
-        """
-        results = {
-            'layer': layer_name,
+        row: Dict[str, object] = {
+            "layer": layer_name,
+            "layer_type": layer_type(layer_name),
         }
+        best_combo: Optional[Tuple[str, int, float]] = None
 
-        # Test MXFP4 with group_size=8
-        original_weight = self.quantize_layer_mxfp4(layer_name, group_size=8)
-        ppl_mxfp4_g8 = self.compute_perplexity()
-        delta_mxfp4_g8 = ((ppl_mxfp4_g8 - baseline_perplexity) / baseline_perplexity) * 100
-        results['mxfp4_g8_ppl'] = ppl_mxfp4_g8
-        results['mxfp4_g8_delta_pct'] = delta_mxfp4_g8
-        self.restore_layer(layer_name, original_weight)
+        for precision, group_size in combinations:
+            with patched_linear_weight(layer, precision, group_size):
+                ppl = self.compute_perplexity()
+            delta_pct = ((ppl - baseline_perplexity) / baseline_perplexity) * 100.0
+            tolerant = delta_pct < self.config.tolerance_pct
+            prefix = f"{precision.lower()}_g{group_size}"
+            row[f"{prefix}_ppl"] = ppl
+            row[f"{prefix}_delta_pct"] = delta_pct
+            row[f"{prefix}_tolerant"] = tolerant
 
-        # Test MXFP8 with group_size=8
-        original_weight = self.quantize_layer_mxfp8(layer_name, group_size=8)
-        ppl_mxfp8_g8 = self.compute_perplexity()
-        delta_mxfp8_g8 = ((ppl_mxfp8_g8 - baseline_perplexity) / baseline_perplexity) * 100
-        results['mxfp8_g8_ppl'] = ppl_mxfp8_g8
-        results['mxfp8_g8_delta_pct'] = delta_mxfp8_g8
-        self.restore_layer(layer_name, original_weight)
+            if best_combo is None or delta_pct < best_combo[2]:
+                best_combo = (precision, group_size, delta_pct)
 
-        # Determine if layer is "tolerant"
-        # Threshold: < 2% perplexity increase
-        results['mxfp4_tolerant'] = delta_mxfp4_g8 < 2.0
-        results['mxfp8_tolerant'] = delta_mxfp8_g8 < 2.0
+        # Backward-compatible columns expected by the policy tooling.
+        row["mxfp4_tolerant"] = bool(row.get("mxfp4_g8_tolerant", False))
+        row["mxfp8_tolerant"] = bool(row.get("mxfp8_g8_tolerant", False))
 
-        return results
+        if best_combo is not None:
+            row["best_precision"] = best_combo[0]
+            row["best_group_size"] = best_combo[1]
+            row["best_delta_pct"] = best_combo[2]
 
-    def run_profiling(self, output_path="results/sensitivity_matrix.csv"):
-        """
-        Run full sensitivity profiling on all layers.
+        return row
 
-        Args:
-            output_path: Where to save results CSV
-        """
-        print("🔍 Starting sensitivity profiling...")
-
-        # Compute baseline perplexity (FP16)
-        print("\n1️⃣  Computing FP16 baseline perplexity...")
+    def run(self,
+            output_csv: Path,
+            combinations: Sequence[Tuple[str, int]]) -> pd.DataFrame:
+        self.load()
+        print("Computing FP baseline perplexity...")
         baseline_perplexity = self.compute_perplexity()
-        print(f"   Baseline perplexity (FP16): {baseline_perplexity:.2f}\n")
+        print(f"Baseline perplexity: {baseline_perplexity:.4f}\n")
 
-        # Get all quantizable layers
         layer_names = self.get_layer_names()
-        print(f"2️⃣  Found {len(layer_names)} quantizable layers\n")
+        print(f"Profiling {len(layer_names)} layers")
+        rows: List[Dict[str, object]] = []
+        for idx, name in enumerate(layer_names, start=1):
+            print(f"[{idx}/{len(layer_names)}] {name}")
+            row = self.profile_layer(name, baseline_perplexity, combinations)
+            rows.append(row)
+            for precision, group_size in combinations:
+                prefix = f"{precision.lower()}_g{group_size}"
+                print(
+                    f"  {precision} g{group_size}: "
+                    f"delta={row[f'{prefix}_delta_pct']:+.2f}% "
+                    f"tolerant={'yes' if row[f'{prefix}_tolerant'] else 'no'}"
+                )
+            print("")
 
-        # Profile each layer
-        print("3️⃣  Profiling layers...\n")
-        all_results = []
+        df = pd.DataFrame(rows)
+        output_csv.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(output_csv, index=False)
 
-        for i, layer_name in enumerate(layer_names[:10]):  # Limit to first 10 for demo
-            print(f"  [{i+1}/{min(10, len(layer_names))}] {layer_name}")
-            results = self.profile_layer(layer_name, baseline_perplexity)
-            all_results.append(results)
+        metadata = {
+            "baseline_perplexity": baseline_perplexity,
+            "combinations": [{"precision": p, "group_size": g} for p, g in combinations],
+            "config": self.config.__dict__,
+            "num_layers_profiled": len(layer_names),
+        }
+        output_csv.with_suffix(".meta.json").write_text(json.dumps(metadata, indent=2))
+        self.print_summary(df, baseline_perplexity, combinations)
+        print(f"Saved sensitivity matrix to {output_csv}")
+        return df
 
-            print(f"    MXFP4: Δ{results['mxfp4_g8_delta_pct']:+.2f}% "
-                  f"({'✓ tolerant' if results['mxfp4_tolerant'] else '✗ sensitive'})")
-            print(f"    MXFP8: Δ{results['mxfp8_g8_delta_pct']:+.2f}% "
-                  f"({'✓ tolerant' if results['mxfp8_tolerant'] else '✗ sensitive'})")
-            print()
-
-        # Save results
-        print(f"💾 Saving results to {output_path}...")
-        df = pd.DataFrame(all_results)
-
-        # Create output directory if needed
-        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(output_path, index=False)
-
-        print(f"✓ Sensitivity matrix saved!\n")
-
-        # Print summary
-        self.print_summary(df, baseline_perplexity)
-
-    def print_summary(self, df, baseline_perplexity):
-        """Print summary of profiling results."""
-        print(f"{'='*60}")
-        print("Sensitivity Profiling Summary")
-        print(f"{'='*60}")
-        print(f"Baseline Perplexity (FP16): {baseline_perplexity:.2f}")
-        print(f"Layers profiled: {len(df)}")
-        print()
-
-        mxfp4_tolerant = df['mxfp4_tolerant'].sum()
-        mxfp8_tolerant = df['mxfp8_tolerant'].sum()
-
-        print(f"MXFP4 tolerant layers: {mxfp4_tolerant}/{len(df)} "
-              f"({mxfp4_tolerant/len(df)*100:.1f}%)")
-        print(f"MXFP8 tolerant layers: {mxfp8_tolerant}/{len(df)} "
-              f"({mxfp8_tolerant/len(df)*100:.1f}%)")
-        print()
-
-        print("Average perplexity increase:")
-        print(f"  MXFP4: {df['mxfp4_g8_delta_pct'].mean():+.2f}%")
-        print(f"  MXFP8: {df['mxfp8_g8_delta_pct'].mean():+.2f}%")
-        print(f"{'='*60}\n")
+    def print_summary(self,
+                      df: pd.DataFrame,
+                      baseline_perplexity: float,
+                      combinations: Sequence[Tuple[str, int]]) -> None:
+        print("=" * 60)
+        print("Profiling Summary")
+        print("=" * 60)
+        print(f"Baseline perplexity: {baseline_perplexity:.4f}")
+        print(f"Layers profiled:     {len(df)}")
+        for precision, group_size in combinations:
+            prefix = f"{precision.lower()}_g{group_size}"
+            tolerant = int(df[f"{prefix}_tolerant"].sum())
+            avg_delta = float(df[f"{prefix}_delta_pct"].mean())
+            print(
+                f"{precision} g{group_size}: tolerant={tolerant}/{len(df)} "
+                f"avg_delta={avg_delta:+.2f}%"
+            )
+        print("=" * 60)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="MX Format Sensitivity Profiler")
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Profile layer-wise MX sensitivity.")
+    parser.add_argument("--model", default="Qwen/Qwen2.5-0.5B-Instruct")
+    parser.add_argument("--dataset", default="Anthropic/hh-rlhf")
+    parser.add_argument("--dataset-split", default="train")
+    parser.add_argument("--dataset-config", default=None)
+    parser.add_argument("--text-field", default="chosen")
+    parser.add_argument("--num-examples", type=int, default=16)
+    parser.add_argument("--max-seq-len", type=int, default=256)
+    parser.add_argument("--max-layers", type=int, default=8)
+    parser.add_argument("--tolerance-pct", type=float, default=2.0)
+    parser.add_argument("--device", default=auto_device())
     parser.add_argument(
-        "--model",
-        type=str,
-        default="Qwen/Qwen2.5-0.5B-Instruct",
-        help="Model to profile",
+        "--combo",
+        action="append",
+        default=None,
+        help="Quantization combo in PRECISION:GROUP form. Repeatable. Default profiles MXFP4/8 at g8/g16.",
     )
-    parser.add_argument(
-        "--output",
-        type=str,
-        default="results/sensitivity_matrix.csv",
-        help="Output CSV path",
+    parser.add_argument("--output", default="results/sensitivity_matrix.csv")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    config = ProfileConfig(
+        model_name=args.model,
+        dataset=args.dataset,
+        dataset_split=args.dataset_split,
+        dataset_config=args.dataset_config,
+        text_field=args.text_field,
+        num_examples=args.num_examples,
+        max_seq_len=args.max_seq_len,
+        max_layers=args.max_layers,
+        tolerance_pct=args.tolerance_pct,
+        device=args.device,
     )
-    args = parser.parse_args()
-
-    # Run profiling
-    profiler = SensitivityProfiler(args.model)
-    profiler.run_profiling(args.output)
-
-    print("✅ Sensitivity profiling complete!")
-    print("\n⚠️  Note: This uses placeholder quantization.")
-    print("   Install mx-pytorch for real MX format support:")
-    print("   pip install git+https://github.com/microsoft/microxcaling.git")
+    profiler = SensitivityProfiler(config)
+    profiler.run(Path(args.output), build_combinations(args.combo))
 
 
 if __name__ == "__main__":

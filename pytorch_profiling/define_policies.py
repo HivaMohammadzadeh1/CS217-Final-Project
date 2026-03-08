@@ -1,235 +1,157 @@
-"""
-Define MX Format Policies based on sensitivity profiling results.
+from __future__ import annotations
 
-Reads sensitivity matrix and defines 4 policies (A/B/C/D) that specify
-which format to use for each layer in each RLHF phase.
+"""Generate A/B/C/D precision policies from a sensitivity matrix."""
 
-Usage:
-    python pytorch_profiling/define_policies.py --sensitivity results/sensitivity_matrix.csv
-"""
+import argparse
+import json
+from pathlib import Path
+from typing import Dict, Tuple
 
 import pandas as pd
-import json
-import argparse
-from pathlib import Path
 
 
-def load_sensitivity_matrix(csv_path):
-    """Load sensitivity profiling results."""
+VALID_GROUP_SIZES = (8, 16)
+
+
+def load_sensitivity_matrix(csv_path: str) -> pd.DataFrame:
     df = pd.read_csv(csv_path)
-    print(f"✓ Loaded sensitivity data for {len(df)} layers\n")
+    print(f"Loaded sensitivity data for {len(df)} layers")
     return df
 
 
-def define_policy_a_conservative(df):
-    """
-    Policy A: Conservative
-    - MXFP8 for rollout and reward
-    - FP16 for gradient updates
-    - Minimal risk, modest energy savings
-    """
+def tolerant_column(precision: str, group_size: int) -> str:
+    return f"{precision.lower()}_g{group_size}_tolerant"
+
+
+def require_columns(df: pd.DataFrame, group_size: int) -> None:
+    required = [tolerant_column("MXFP4", group_size), tolerant_column("MXFP8", group_size), "layer"]
+    missing = [col for col in required if col not in df.columns]
+    if missing:
+        raise ValueError(
+            f"Sensitivity matrix is missing required columns for group_size={group_size}: {missing}"
+        )
+
+
+def layer_policy(rollout: str, reward: str, gradient: str) -> Dict[str, str]:
+    return {
+        "rollout": rollout,
+        "reward": reward,
+        "gradient": gradient,
+    }
+
+
+def define_policy_a_conservative(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
     policy = {
         "name": "A - Conservative",
         "description": "MXFP8 all layers for rollout/reward, FP16 for gradients",
-        "layers": {}
+        "group_size": group_size,
+        "layers": {},
     }
-
     for _, row in df.iterrows():
-        layer_name = row['layer']
-        policy["layers"][layer_name] = {
-            "rollout": "MXFP8",
-            "reward": "MXFP8",
-            "gradient": "FP16"
-        }
-
+        policy["layers"][row["layer"]] = layer_policy("MXFP8", "MXFP8", "FP16")
     return policy
 
 
-def define_policy_b_balanced(df):
-    """
-    Policy B: Balanced
-    - MXFP4 for tolerant layers, MXFP8 for sensitive
-    - Applies to rollout and reward phases
-    - FP16 for gradient updates
-    """
+def define_policy_b_balanced(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
+    fp4_col = tolerant_column("MXFP4", group_size)
     policy = {
         "name": "B - Balanced",
-        "description": "Layer-adaptive based on sensitivity, FP16 for gradients",
-        "layers": {}
+        "description": "MXFP4 for tolerant layers, MXFP8 otherwise, FP16 for gradients",
+        "group_size": group_size,
+        "layers": {},
     }
-
     for _, row in df.iterrows():
-        layer_name = row['layer']
-        # Use MXFP4 if tolerant, else MXFP8
-        rollout_format = "MXFP4" if row['mxfp4_tolerant'] else "MXFP8"
-        reward_format = "MXFP4" if row['mxfp4_tolerant'] else "MXFP8"
-
-        policy["layers"][layer_name] = {
-            "rollout": rollout_format,
-            "reward": reward_format,
-            "gradient": "FP16"
-        }
-
+        preferred = "MXFP4" if bool(row[fp4_col]) else "MXFP8"
+        policy["layers"][row["layer"]] = layer_policy(preferred, preferred, "FP16")
     return policy
 
 
-def define_policy_c_aggressive(df):
-    """
-    Policy C: Aggressive
-    - MXFP4 for all layers in rollout and reward
-    - MXFP8 for sensitive layers in gradients, MXFP4 for tolerant
-    - Maximum energy savings, possible quality degradation
-    """
+def define_policy_c_aggressive(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
+    fp4_col = tolerant_column("MXFP4", group_size)
     policy = {
         "name": "C - Aggressive",
-        "description": "MXFP4 everywhere, MXFP8 for sensitive gradient layers",
-        "layers": {}
+        "description": "MXFP4 everywhere possible, MXFP8 fallback for sensitive gradients",
+        "group_size": group_size,
+        "layers": {},
     }
-
     for _, row in df.iterrows():
-        layer_name = row['layer']
-        # MXFP4 for rollout/reward everywhere
-        # Gradients: MXFP8 if sensitive to MXFP4, else MXFP4
-        gradient_format = "MXFP8" if not row['mxfp4_tolerant'] else "MXFP4"
-
-        policy["layers"][layer_name] = {
-            "rollout": "MXFP4",
-            "reward": "MXFP4",
-            "gradient": gradient_format
-        }
-
+        gradient = "MXFP4" if bool(row[fp4_col]) else "MXFP8"
+        policy["layers"][row["layer"]] = layer_policy("MXFP4", "MXFP4", gradient)
     return policy
 
 
-def define_policy_d_phase_adaptive(df):
-    """
-    Policy D: Phase-Adaptive (Research Target)
-    - MXFP4 for most layers in rollout (high tolerance)
-    - MXFP8 for most layers in reward (moderate tolerance)
-    - FP16 for most layers in gradient (low tolerance)
-    - Adaptive within each phase based on sensitivity
-    """
+def define_policy_d_phase_adaptive(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
+    fp4_col = tolerant_column("MXFP4", group_size)
+    fp8_col = tolerant_column("MXFP8", group_size)
     policy = {
         "name": "D - Phase-Adaptive",
-        "description": "Phase-aware precision selection based on sensitivity",
-        "layers": {}
+        "description": "MXFP4-biased rollout, MXFP8-biased reward, FP16-safe gradients",
+        "group_size": group_size,
+        "layers": {},
     }
-
     for _, row in df.iterrows():
-        layer_name = row['layer']
-
-        # Rollout: prefer MXFP4 (stochastic, high tolerance)
-        rollout_format = "MXFP4" if row['mxfp4_tolerant'] else "MXFP8"
-
-        # Reward: prefer MXFP8 (scoring, moderate tolerance)
-        reward_format = "MXFP8"
-
-        # Gradient: prefer FP16 (precision matters for convergence)
-        # Only use MXFP8 for very tolerant layers
-        gradient_format = "MXFP8" if row['mxfp8_tolerant'] and row['mxfp4_tolerant'] else "FP16"
-
-        policy["layers"][layer_name] = {
-            "rollout": rollout_format,
-            "reward": reward_format,
-            "gradient": gradient_format
-        }
-
+        rollout = "MXFP4" if bool(row[fp4_col]) else "MXFP8"
+        reward = "MXFP8"
+        gradient = "MXFP8" if bool(row[fp8_col]) and bool(row[fp4_col]) else "FP16"
+        policy["layers"][row["layer"]] = layer_policy(rollout, reward, gradient)
     return policy
 
 
-def analyze_policy(policy, df):
-    """Analyze a policy's format distribution."""
-    analysis = {
-        "name": policy["name"],
+def analyze_policy(policy: Dict[str, object]) -> Dict[str, Dict[str, int]]:
+    counts = {
         "rollout": {"MXFP4": 0, "MXFP8": 0, "FP16": 0},
         "reward": {"MXFP4": 0, "MXFP8": 0, "FP16": 0},
         "gradient": {"MXFP4": 0, "MXFP8": 0, "FP16": 0},
     }
-
-    for layer_name, formats in policy["layers"].items():
-        for phase in ["rollout", "reward", "gradient"]:
-            fmt = formats[phase]
-            analysis[phase][fmt] += 1
-
-    return analysis
+    for _, phases in policy["layers"].items():
+        for phase, precision in phases.items():
+            counts[phase][precision] += 1
+    return counts
 
 
-def print_policy_analysis(analysis):
-    """Print policy analysis."""
-    print(f"\n{analysis['name']}:")
+def print_policy_analysis(policy_id: str, policy: Dict[str, object]) -> None:
+    counts = analyze_policy(policy)
+    print(f"\n{policy_id}: {policy['name']} (group_size={policy['group_size']})")
     print("-" * 60)
-
-    for phase in ["rollout", "reward", "gradient"]:
-        total = sum(analysis[phase].values())
-        print(f"  {phase.capitalize():15s}: ", end="")
-
-        for fmt in ["MXFP4", "MXFP8", "FP16"]:
-            count = analysis[phase][fmt]
-            pct = (count / total * 100) if total > 0 else 0
-            print(f"{fmt}: {count:2d} ({pct:4.1f}%)  ", end="")
-        print()
+    for phase in ("rollout", "reward", "gradient"):
+        total = sum(counts[phase].values())
+        summary = "  ".join(
+            f"{fmt}:{counts[phase][fmt]:2d} ({(counts[phase][fmt] / total * 100) if total else 0:4.1f}%)"
+            for fmt in ("MXFP4", "MXFP8", "FP16")
+        )
+        print(f"{phase:>8}: {summary}")
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Define MX format policies")
-    parser.add_argument(
-        "--sensitivity",
-        type=str,
-        default="results/sensitivity_matrix.csv",
-        help="Path to sensitivity matrix CSV",
-    )
-    parser.add_argument(
-        "--output",
-        type=str,
-        default="results/policies.json",
-        help="Output JSON path for policies",
-    )
-    args = parser.parse_args()
-
-    # Load sensitivity data
-    print(f"📊 Loading sensitivity data from {args.sensitivity}...")
-    df = load_sensitivity_matrix(args.sensitivity)
-
-    # Define all policies
-    print("🎯 Defining policies...\n")
-    policies = {
-        "A": define_policy_a_conservative(df),
-        "B": define_policy_b_balanced(df),
-        "C": define_policy_c_aggressive(df),
-        "D": define_policy_d_phase_adaptive(df),
+def build_policies(df: pd.DataFrame, group_size: int) -> Dict[str, Dict[str, object]]:
+    require_columns(df, group_size)
+    return {
+        "A": define_policy_a_conservative(df, group_size),
+        "B": define_policy_b_balanced(df, group_size),
+        "C": define_policy_c_aggressive(df, group_size),
+        "D": define_policy_d_phase_adaptive(df, group_size),
     }
 
-    # Analyze policies
-    print(f"{'='*60}")
-    print("Policy Analysis")
-    print(f"{'='*60}")
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate A/B/C/D policies from sensitivity results.")
+    parser.add_argument("--sensitivity", default="results/sensitivity_matrix.csv")
+    parser.add_argument("--output", default="results/policies.json")
+    parser.add_argument("--group-size", type=int, default=8, choices=VALID_GROUP_SIZES)
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    df = load_sensitivity_matrix(args.sensitivity)
+    policies = build_policies(df, args.group_size)
 
     for policy_id, policy in policies.items():
-        analysis = analyze_policy(policy, df)
-        print_policy_analysis(analysis)
+        print_policy_analysis(policy_id, policy)
 
-    print(f"{'='*60}\n")
-
-    # Save policies
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(output_path, 'w') as f:
-        json.dump(policies, f, indent=2)
-
-    print(f"✓ Policies saved to {output_path}")
-
-    # Print recommendations
-    print(f"\n{'='*60}")
-    print("Recommendations")
-    print(f"{'='*60}")
-    print("Policy A: Use if quality is critical (minimal risk)")
-    print("Policy B: Balanced approach (recommended starting point)")
-    print("Policy C: Use if energy is critical (accepts some quality loss)")
-    print("Policy D: Research target (best energy/quality tradeoff)")
-    print(f"{'='*60}\n")
-
-    print("✅ Policy definitions complete!")
+    output_path.write_text(json.dumps(policies, indent=2))
+    print(f"\nSaved policies to {output_path}")
 
 
 if __name__ == "__main__":
