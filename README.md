@@ -4,6 +4,17 @@ This repo is trying to answer one question:
 
 Can RLHF training spend less FPGA energy if matrix multiplies use adaptive MX precision (`MXFP4` / `MXFP8`) instead of a fixed baseline precision, without hurting quality too much?
 
+## Milestone status
+
+| Milestone | Status | Short version |
+|---|---|---|
+| 1. Setup | Complete | Repo structure and basic tooling exist. |
+| 2. Baseline + software plumbing | Mostly complete | RLHF/offload path exists and baseline plumbing is in place. |
+| 3. MX simulation + control | Complete | MX simulation, precision switching, and policy control are implemented and tested. |
+| 4. Hardware integration | In progress | Hardware build path is cleaned up and MX control bits are wired in, but compute is still baseline arithmetic. |
+| 5. Final experiments | Not complete | Smoke runs exist; final real hardware comparisons are still missing. |
+| 6. Final analysis/report | Not complete | Depends on the final experiments. |
+
 ## What the repo actually contains
 
 - [`/Users/dannyadkins/CS217-Final-Project/systemc`](/Users/dannyadkins/CS217-Final-Project/systemc)
@@ -33,8 +44,9 @@ Today, that breaks down like this:
 
 - `systemc/` already models real MX behavior and passes local tests.
 - `integration/` already supports precision-aware offload and policy control.
+- `pytorch_profiling/` now produces a real sensitivity matrix and policy JSON in smoke mode.
 - `fpga/` now has a cleaned hardware build/deploy path and carries MX control bits through PEConfig.
-- The checked-in PECore compute path is still baseline integer MAC arithmetic.
+- The checked-in PECore compute path is still the baseline integer MAC arithmetic.
 
 So the repo now has the right control path, but not yet the final MX compute datapath in deployed hardware.
 
@@ -77,7 +89,7 @@ What is in good shape:
 
 - MX reference simulation
 - precision-aware Python offload layer
-- policy sweep scaffolding
+- profiling-to-policy workflow
 - hardware build/deploy entry points
 - MX precision/group-size control carried into the hardware register path
 
@@ -86,7 +98,12 @@ What is still missing for final results:
 1. Replace the baseline integer PECore arithmetic with real MX arithmetic.
 2. Build and deploy an MX-capable AFI from the Stanford environment.
 3. Run the real baseline vs MX policy experiments on hardware.
-4. Finish layer sensitivity profiling and use those results to generate the final policies.
+4. Run the new profiler on the real target model and use those results to generate the final policies.
+
+## Live status docs
+
+- Current state: [docs/CURRENT_STATE_AND_SWEEP_PLAN.md](/Users/dannyadkins/CS217-Final-Project/docs/CURRENT_STATE_AND_SWEEP_PLAN.md)
+- Testing status: [TESTING_COMPLETE.md](/Users/dannyadkins/CS217-Final-Project/TESTING_COMPLETE.md)
 
 ## Practical next commands
 
