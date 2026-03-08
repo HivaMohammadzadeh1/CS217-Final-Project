@@ -256,7 +256,13 @@ SC_MODULE(testbench)
     // 1) WRITE PEConfig (region 0x4, local_index = 0x0001)
     // ---------------------------
     rva_write_tmp.rw = 1;
-    rva_write_tmp.data = set_bytes<8>("00_00_01_01_00_00_00_01");
+    rva_write_tmp.data = 0;
+    rva_write_tmp.data.set_slc<1>(0, 1);
+    rva_write_tmp.data.set_slc<1>(24, 1);
+    rva_write_tmp.data.set_slc<4>(32, 1);
+    rva_write_tmp.data.set_slc<8>(40, 1);
+    rva_write_tmp.data.set_slc<2>(48, spec::kPrecisionMXFP8);
+    rva_write_tmp.data.set_slc<1>(56, spec::kMXGroupSize16);
     rva_write_tmp.addr = set_bytes<3>("40_00_10"); // correct local_index
     peconfig_written = rva_write_tmp.data;
     source.src_vec.push_back(rva_write_tmp);

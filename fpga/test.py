@@ -9,7 +9,8 @@ UNIT_NAME = "PECore"
 SPEC_PATH = "src/include/Spec.h"
 SRC_PATH = "src/PECore/"
 HLS_PATH = "hls/PECore/"
-AWS_PATH = os.getenv("AWS_HOME")
+REPO_TOP = os.path.dirname(os.path.abspath(__file__))
+AWS_PATH = os.getenv("AWS_HOME", os.path.join(REPO_TOP, "design_top"))
 
 RTL_SIM_LOG = "logs/rtl_sim.log.txt"
 SYSTEMC_SIM_LOG = "logs/systemc_sim.log.txt"

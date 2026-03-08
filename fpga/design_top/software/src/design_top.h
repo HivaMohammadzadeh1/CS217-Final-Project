@@ -52,6 +52,20 @@
 #define ADDR_ACT_PORT_START 0x0440
 #define LOOP_ACT_PORT (WIDTH_ACT_PORT / WIDTH_DATA_AXI) // 16
 
+// PEConfig control payload
+#define PE_CONFIG_IS_VALID_BIT 0
+#define PE_CONFIG_ZERO_FIRST_BIT 8
+#define PE_CONFIG_IS_CLUSTER_BIT 16
+#define PE_CONFIG_IS_BIAS_BIT 24
+#define PE_CONFIG_NUM_MANAGER_BIT 32
+#define PE_CONFIG_NUM_OUTPUT_BIT 40
+#define PE_CONFIG_PRECISION_MODE_BIT 48
+#define PE_CONFIG_GROUP_SIZE_IS_16_BIT 56
+
+#define PE_PRECISION_INT8 0
+#define PE_PRECISION_MXFP8 1
+#define PE_PRECISION_MXFP4 2
+
 #endif // DESIGN_TOP_DEFINES_H
 
 // Function Prototypes (Aligned with SystemVerilog testbench)
@@ -64,6 +78,9 @@ int ocl_rd32(int bar_handle, uint16_t addr, uint32_t *data);
 void rva_format(bool rw, uint32_t addr, const uint64_t data[2], uint32_t rva_msg[LOOP_RVA_IN]);
 int ocl_rva_wr32(int bar_handle, const uint32_t rva_msg[LOOP_RVA_IN]);
 int ocl_rva_r32(int bar_handle, uint64_t data_cmp[2], const uint32_t rva_in[LOOP_RVA_IN]);
+int parse_precision_mode(const char *arg, uint8_t *mode_out);
+const char *precision_mode_name(uint8_t precision_mode);
+uint64_t build_pe_config_word(uint8_t precision_mode, int group_size);
 
 // Golden model and verification
 void randomize_data(uint64_t data[2]);

@@ -178,9 +178,11 @@ class PEConfig {
   NVUINT1   is_bias;
   NVUINT4   num_manager;      // number of matrix-vector mul (1 or 2)
   NVUINT8   num_output;       // number of output vector per matrix vector mul (For LSTM it should be 4*num_output in act unit) 
-  
+  NVUINT2   precision_mode;   // 0=INT8, 1=MXFP8, 2=MXFP4
+  NVUINT1   mx_group_size_is_16; // 0=8, 1=16
+ 
   // Counters 
- protected:
+protected:
   NVUINT4   manager_counter;
   NVUINT8   input_counter;
   NVUINT8   output_counter;
@@ -208,8 +210,10 @@ class PEConfig {
     is_zero_first = 0;
     is_cluster    = 0;
     is_bias       = 0;
-    num_manager    = 1;   // should be initialize to 1 to avoid error
-    num_output    = 1;    // should be initialize to 1 to avoid error
+    num_manager   = 1;   // should be initialize to 1 to avoid error
+    num_output    = 1;   // should be initialize to 1 to avoid error
+    precision_mode = spec::kPrecisionINT8;
+    mx_group_size_is_16 = spec::kMXGroupSize8;
     
     ResetCounter();
   }
@@ -271,6 +275,8 @@ class PEConfig {
     is_bias               = nvhls::get_slc<1>(write_data, 24);
     num_manager           = nvhls::get_slc<4>(write_data, 32);
     num_output            = nvhls::get_slc<8>(write_data, 40);
+    precision_mode        = nvhls::get_slc<2>(write_data, 48);
+    mx_group_size_is_16   = nvhls::get_slc<1>(write_data, 56);
   }
 
   void PEConfigRead(NVUINTW(write_width)& read_data) const {
@@ -281,7 +287,9 @@ class PEConfig {
     read_data.set_slc<1>(16, is_cluster);
     read_data.set_slc<1>(24, is_bias);
     read_data.set_slc<4>(32, num_manager);
-    read_data.set_slc<8>(40, num_output); 
+    read_data.set_slc<8>(40, num_output);
+    read_data.set_slc<2>(48, precision_mode);
+    read_data.set_slc<1>(56, mx_group_size_is_16);
   }
 };
 

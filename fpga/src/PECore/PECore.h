@@ -487,7 +487,7 @@ for (int i = 0; i < spec::kNumVectorLanes; i++) {
 dp_in1 = input_port_read_out[0];
 
 // Call Datapath to compute product sum
-Datapath(dp_in0, dp_in1, dp_out);
+Datapath(dp_in0, dp_in1, pe_config.precision_mode, pe_config.mx_group_size_is_16, dp_out);
 
 // Store result in accumulator
 accum_vector = dp_out;

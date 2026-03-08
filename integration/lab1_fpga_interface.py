@@ -41,6 +41,7 @@ class Lab1FPGAInterface:
         self.precision_mode = "INT8"
         self.pending_precision_mode = "INT8"
         self.precision_switch_pending = False
+        self.group_size = 8
         self.pipeline_flush_count = 0
 
         # Performance tracking
@@ -120,7 +121,7 @@ class Lab1FPGAInterface:
                 print("    Using software fallback")
             self.use_hardware = False
 
-    def configure_precision(self, precision_mode, flush=True):
+    def configure_precision(self, precision_mode, group_size=None, flush=True):
         """
         Configure compute precision mode.
 
@@ -129,12 +130,16 @@ class Lab1FPGAInterface:
           - MXFP8 (accepted for API compatibility; hardware fallback path)
           - MXFP4 (accepted for API compatibility; hardware fallback path)
 
-        If/when a dedicated MX bitstream is deployed, this method is where an
-        AXI-lite mode register write should be issued.
+        If/when a dedicated MX bitstream is deployed, this method is where the
+        PEConfig precision/group-size fields should be programmed before start.
         """
         mode = str(precision_mode).upper()
         if mode not in ("INT8", "MXFP8", "MXFP4"):
             raise ValueError(f"Unsupported precision mode: {precision_mode}")
+        if group_size is not None:
+            if group_size not in (8, 16):
+                raise ValueError("group_size must be 8 or 16.")
+            self.group_size = group_size
 
         self.pending_precision_mode = mode
         self.precision_switch_pending = (self.pending_precision_mode != self.precision_mode)
@@ -209,6 +214,7 @@ class Lab1FPGAInterface:
             'compute_cycles': self.total_compute_cycles,
             'using_hardware': self.use_hardware,
             'precision_mode': self.precision_mode,
+            'group_size': self.group_size,
             'switch_pending': self.precision_switch_pending,
             'pipeline_flush_count': self.pipeline_flush_count,
         }

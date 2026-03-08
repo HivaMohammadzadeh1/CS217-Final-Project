@@ -33,6 +33,11 @@ namespace spec {
   const int kIntWordWidth = 8; 
   const int kVectorSize = 16;
   const int kNumVectorLanes = 16;
+  const unsigned int kPrecisionINT8 = 0;
+  const unsigned int kPrecisionMXFP8 = 1;
+  const unsigned int kPrecisionMXFP4 = 2;
+  const unsigned int kMXGroupSize8 = 0;
+  const unsigned int kMXGroupSize16 = 1;
 
   // TODO 6:
   //  1. Define the accumulation scale and shift values used in the accumulation unit

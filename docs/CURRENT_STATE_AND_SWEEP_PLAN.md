@@ -1,72 +1,66 @@
-# CS217 Project: Current State and Sweep Plan
+# Current State And Sweep Plan
 
-## 1) What this project is
+## Project goal
 
-You are building a **research prototype** that asks:
+This project is trying to answer one question:
 
-> Can we reduce RLHF training energy on FPGA by using MX precision formats (MXFP4/MXFP8) layer-adaptively, compared to an INT8 baseline?
+Can RLHF matmuls use less FPGA energy if we switch from a fixed baseline precision to adaptive MX precision (`MXFP4` / `MXFP8`), without hurting quality too much?
 
-System split:
-- Host CPU runs RLHF loop logic.
-- FPGA/offload path handles GEMMs (matmuls).
-- Comparison target is energy/quality tradeoff across precision policies.
+## Milestone status
 
-## 2) What is done now
+| Milestone | Status | Reality |
+|---|---|---|
+| 1. Setup | Complete | Repo, dependencies, and basic project structure exist. |
+| 2. Baseline + profiling setup | Mostly complete | RLHF/offload plumbing exists, and profiling/policy tooling now works in smoke mode. |
+| 3. MX simulation + precision control | Complete | MX reference simulation, precision switching, and controller logic are implemented and tested. |
+| 4. Hardware integration | In progress | Hardware build/deploy path is cleaned up and MX control bits reach PEConfig, but deployed compute is still baseline arithmetic. |
+| 5. Final experiments | Not complete | Smoke runs exist, but final baseline-vs-MX hardware experiments are still missing. |
+| 6. Final analysis/report | Not complete | Report directory exists, but final figures and conclusions depend on Milestone 5. |
 
-### Milestone 2 (mostly done)
-- Baseline RLHF + FPGA plumbing exists.
-- INT8/Lab1 integration path exists (with software fallback).
-- Policy definition tooling exists in `pytorch_profiling/define_policies.py`.
+## What is solid now
 
-### Milestone 3 (now mergeable)
-- SystemC dual-precision MX simulation exists and passes its testbench.
-- Integration precision-control APIs exist:
-  - `configure_precision(mode, group_size, flush=...)`
-  - `flush_pipeline()`
-- Adaptive precision controller now exists and can load named policies from JSON.
-- Precision state-machine bugs were fixed:
-  - flush contract enforced across INT8↔MX transitions,
-  - group-size reconfigure now preserves requested mode,
-  - pending-state reporting is behavior-consistent.
-- Regression tests for these edge cases were added.
+- `systemc/` models MX behavior and passes its testbench.
+- `integration/` supports precision-aware offload and phase/layer policy control.
+- `pytorch_profiling/` now produces a real sensitivity matrix using the repo's MX reference quantization and can generate policy JSON.
+- `fpga/` has a clear hardware build/deploy path for the Stanford environment targeting F2.
+- Precision mode and MX group size now travel through the hardware control path.
 
-## 3) What is *not* done yet
+## What is still not true
 
-- No deployed MX FPGA bitstream connected to real AXI precision register writes yet.
-- No full end-to-end policy comparison table (A/B/C/D) with quality metrics and Pareto curve yet.
-- PyTorch sensitivity profiler still uses placeholder quantization logic in `sensitivity_profiler.py`.
-- Gradient-phase MX offload is still not autograd-safe, so controller defaults
-  to native PyTorch (`FP16`) there unless explicitly overridden.
+- The deployed PECore arithmetic is still the baseline integer path.
+- There is no MX-capable AFI deployed on F2 yet.
+- There is no final experiment table comparing baseline vs policies `A/B/C/D` on real hardware.
+- Gradient-phase MX offload is still treated conservatively in software because the current path is not autograd-safe.
 
-## 4) What teammates mean by “architecture search/sweep”
+## What the sweep actually means
 
-In this project, that likely means **policy/precision sweep**, not neural-architecture search.
+In this repo, the “sweep” is not neural architecture search.
 
-Sweep dimensions:
-- Precision policy: A/B/C/D (and variants).
-- Phase mapping: rollout/reward/gradient precision choices.
-- Group size: 8 vs 16.
-- (Optional later) hardware knobs: tileing/batching strategy and transfer amortization.
+It means:
+- profile layers for tolerance to `MXFP4` / `MXFP8`
+- generate policies
+- run baseline and policy variants
+- compare energy, runtime, and quality
 
-Outputs per run:
-- `energy_J`, `runtime_s`
-- quality metrics (win-rate proxy / KL / reward correlation)
-- aggregate tradeoff points for Pareto plot.
+Main sweep dimensions:
+- policy `A/B/C/D`
+- group size `8` vs `16`
+- phase mapping: rollout / reward / gradient
 
-## 5) Immediate next steps (recommended order)
+## Recommended next steps
 
-1. Replace placeholder quantization in `pytorch_profiling/sensitivity_profiler.py` with real MX library path (or clearly mark proxy mode in outputs).
-2. Generate sensitivity matrix CSV from real runs.
-3. Generate policy JSON via `define_policies.py`.
-4. Run fixed benchmark across INT8 + policies A/B/C/D and write one canonical results CSV.
-5. Produce Pareto curve and phase breakdown for report.
-6. Decide whether gradient-phase MX usage is in-scope for the final project or
-   whether rollout/reward MX is the defensible evaluation boundary.
+1. Run the new profiler on the real target model in the Stanford environment.
+2. Generate the final policy JSON from that sensitivity matrix.
+3. Replace baseline PECore arithmetic with real MX arithmetic while keeping the same outer hardware path.
+4. Build and deploy an MX-capable AFI from the Stanford environment.
+5. Run the final baseline-vs-policy experiments and collect one canonical results CSV plus Pareto plots.
 
-## 6) Definition of done for “next checkpoint”
+## Definition of done
 
-Checkpoint is strong when you can show:
-- One command/script that runs policy sweep reproducibly.
-- A single CSV with all policy points.
-- A plot showing energy vs quality tradeoff.
-- A clear recommendation: conservative/balanced/aggressive/phase-adaptive winner.
+The project is in strong shape when you can show:
+
+- one reproducible profiling run that generates final policy JSON
+- one reproducible hardware run path from Stanford to F2
+- one results table for baseline vs `A/B/C/D`
+- one energy-vs-quality plot
+- one clear final recommendation

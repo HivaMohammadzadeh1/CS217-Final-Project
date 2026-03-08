@@ -1,74 +1,72 @@
-# FPGA Synthesis and Deployment
+# FPGA Build Path
 
-This directory contains FPGA synthesis scripts and bitstream deployment files for AWS F2.
+This directory is the project's hardware build and deployment path.
 
-## Purpose
+Use it for:
+- PECore SystemC simulation on the Stanford build machines
+- Catapult HLS / RTL generation
+- AWS F2 hardware simulation
+- AFI generation, programming, and runtime testing
 
-Synthesize the MX datapath design and deploy to AWS F2 FPGA (Xilinx VU9P).
+Use `/Users/dannyadkins/CS217-Final-Project/systemc` as the portable MX reference model. That directory defines the intended MX behavior. This `fpga/` directory is how that behavior gets carried into the hardware build flow that targets F2.
 
-## Target Platform
-
-- **Device**: Xilinx VU9P (AWS F2 instance)
-- **Toolchain**: Vivado HLS 2021.1+
-- **Interface**: AXI4-Lite for control, AXI4 for data
-
-## Files (to be added)
-
-- `synthesis_script.tcl`: Vivado synthesis script
-- `constraints.xdc`: Timing and pin constraints
-- `deploy_to_f2.sh`: AWS F2 deployment script
-- `fpga_driver.py`: Host-side Python driver for FPGA
-- `power_measurement.py`: XPE-based power estimation
-
-## Build Flow
+## One entry point
 
 ```bash
-# 1. Synthesize design
-vivado -mode batch -source synthesis_script.tcl
-
-# 2. Check timing
-grep "WNS" vivado.log  # Should be positive (no violations)
-
-# 3. Generate bitstream
-# (Included in synthesis_script.tcl)
-
-# 4. Deploy to AWS F2
-./deploy_to_f2.sh
+python3 fpga/run_fpga_flow.py doctor
 ```
 
-## Power Measurement
+That command reports:
+- resolved repo paths
+- required environment variables
+- installed tools
+- which stages belong on the local machine, Stanford build machine, and F2 runtime host
+
+## Core commands
+
+Local reference validation:
 
 ```bash
-# Run Xilinx Power Estimator
-vivado -mode batch -source run_xpe.tcl
-
-# Extract power estimate
-python power_measurement.py --report xpe_report.xml --output ../results/fpga_power.csv
+python3 fpga/run_fpga_flow.py reference-sim
 ```
 
-## Host-FPGA Interface
+Stanford build machine:
 
-```python
-from fpga_driver import FPGAController
-
-# Initialize FPGA
-fpga = FPGAController(device_id=0)
-
-# Set precision mode
-fpga.set_mode('MXFP4')  # or 'MXFP8'
-
-# Load quantized weights
-fpga.load_weights(weights_fp4)
-
-# Run inference
-outputs = fpga.matmul(inputs)
+```bash
+python3 fpga/run_fpga_flow.py systemc-sim
+python3 fpga/run_fpga_flow.py hls-sim
+python3 fpga/run_fpga_flow.py hw-sim
+python3 fpga/run_fpga_flow.py fpga-build
+python3 fpga/run_fpga_flow.py generate-afi
+python3 fpga/run_fpga_flow.py check-afi
 ```
 
-## Expected Performance
+F2 runtime host:
 
-| Metric | Target |
-|--------|--------|
-| Frequency | 200-250 MHz |
-| Throughput | ~50 GOPS (MXFP8) / ~80 GOPS (MXFP4) |
-| Power | <20W total on-chip |
-| Latency | <10ms per layer (batch=1) |
+```bash
+python3 fpga/run_fpga_flow.py program-fpga
+python3 fpga/run_fpga_flow.py run-fpga-test --slot-id 0
+```
+
+To push staged MX control bits through the runtime path:
+
+```bash
+python3 fpga/run_fpga_flow.py run-fpga-test --slot-id 0 --fpga-test-args "MXFP8 16"
+```
+
+## What is already true
+
+- `fpga/Makefile` now points at the checked-in `fpga/hls` directory.
+- The runner sets `REPO_TOP`, `AWS_HOME`, `CL_DIR`, and `CL_DESIGN_NAME` automatically.
+- `fpga/design_top/Makefile` accepts:
+  - `RTL_VARIANT=...`
+  - `SLOT_ID=...`
+  - `FPGA_TEST_ARGS="..."`
+- PEConfig now carries precision mode and MX group size through the existing hardware control path.
+- The runtime test binary can program those fields from CLI args.
+
+## What still needs to happen
+
+- Replace the baseline integer compute path in `PECore` with real MX arithmetic.
+- Build and deploy an MX-capable AFI.
+- Run the real policy experiments against that deployed hardware.

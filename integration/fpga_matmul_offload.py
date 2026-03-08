@@ -278,7 +278,7 @@ class RealFPGAInterface:
         self.precision_switch_pending = (self.pending_precision_mode != self.precision_mode)
 
         if self.use_lab1 and hasattr(self.fpga, "configure_precision"):
-            self.fpga.configure_precision(mode, flush=False)
+            self.fpga.configure_precision(mode, group_size=group_size, flush=False)
 
         if self.pending_precision_mode in ("MXFP8", "MXFP4"):
             self._mx_fallback.request_mode(self._mode_to_sim(self.pending_precision_mode))

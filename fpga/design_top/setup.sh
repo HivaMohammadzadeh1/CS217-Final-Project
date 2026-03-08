@@ -1,12 +1,12 @@
 export CL_DESIGN_NAME=design_top
-export CL_DESIGN_DESCRIPTION='lab1 PECore Design'
+export CL_DESIGN_DESCRIPTION='CS217 RLHF MX PECore Design'
 export CL_DIR=$(pwd)
 
 export DONT_GENERATE_FILE_LIST=1
 
 generate_afi () {
-    export CL_DESIGN_NAME=counter
-    export CL_DESIGN_DESCRIPTION='lab1 PECore Design'
+    export CL_DESIGN_NAME=design_top
+    export CL_DESIGN_DESCRIPTION='CS217 RLHF MX PECore Design'
     export CL_DIR=$(pwd)
     FILENAME=$(ls -lrt build/checkpoints/*.tar | tail -n 1 | awk '{print $NF}')
     export DCP_TARBALL_TO_INGEST=$(realpath "$FILENAME")

@@ -1,37 +1,48 @@
-# PyTorch Profiling
+# Profiling And Policy Generation
 
-This directory contains PyTorch-based quantization sensitivity experiments.
+This directory converts model sensitivity measurements into policy inputs for the FPGA experiments.
 
-## Purpose
+## What it does
 
-Determine which layers and RLHF phases can tolerate MXFP4 vs MXFP8 quantization without significant quality degradation.
+1. Quantize one layer at a time with the repo's MX reference model.
+2. Measure perplexity delta versus the floating-point baseline.
+3. Save a sensitivity matrix with MXFP4/MXFP8 results for group sizes 8 and 16.
+4. Generate policy files (`A/B/C/D`) from that matrix.
 
-## Key Deliverables
+## Main scripts
 
-1. **Layer Sensitivity Matrix**: Per-layer perplexity delta for MXFP4/MXFP8
-2. **Group Size Analysis**: Compare group_size=8 vs group_size=16
-3. **Phase Sensitivity**: Quantization impact on rollout/reward/gradient phases
-4. **Policy Definitions**: Define policies A/B/C/D based on sensitivity results
+- `sensitivity_profiler.py`
+  Profiles selected linear layers and writes `sensitivity_matrix.csv` plus metadata JSON.
+- `define_policies.py`
+  Converts a sensitivity matrix into `A/B/C/D` policy JSON.
 
-## Scripts (to be added)
+## Typical commands
 
-- `sensitivity_profiler.py`: Per-layer quantization testing
-- `phase_analysis.py`: Phase-level quantization impact
-- `policy_definitions.py`: Define MX format policies
-- `utils.py`: Helper functions for MX format conversion
-
-## Dependencies
+Smoke run on a small local dataset:
 
 ```bash
-pip install torch transformers datasets mx-pytorch
+.venv/bin/python pytorch_profiling/sensitivity_profiler.py \
+  --model sshleifer/tiny-gpt2 \
+  --dataset baseline_energy/data/smoke_rlhf.jsonl \
+  --text-field chosen \
+  --num-examples 4 \
+  --max-seq-len 96 \
+  --max-layers 4 \
+  --device cpu \
+  --output results/profiling_smoke/sensitivity_matrix.csv
 ```
 
-## Usage
+Generate policies from the resulting matrix:
 
 ```bash
-# Run layer sensitivity profiling
-python sensitivity_profiler.py --model Qwen/Qwen2.5-0.5B-Instruct --output results/sensitivity_matrix.csv
-
-# Analyze phase-level impact
-python phase_analysis.py --policy balanced --output results/phase_analysis.csv
+.venv/bin/python pytorch_profiling/define_policies.py \
+  --sensitivity results/profiling_smoke/sensitivity_matrix.csv \
+  --group-size 8 \
+  --output results/profiling_smoke/policies_g8.json
 ```
+
+## Notes
+
+- This uses the repo's `integration/mx_precision_sim.py` quantization logic.
+- It quantizes weights only; it does not emulate the full deployed hardware datapath.
+- It is still useful because it gives a consistent, reproducible basis for policy selection before the final hardware experiments.

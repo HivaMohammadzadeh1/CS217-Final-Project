@@ -17,6 +17,7 @@
 
 LOGFILE = build.log
 CFLAGS = -DHLS_ALGORITHMICC
+REPO_TOP ?= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
 HLS_SCRIPTS ?= $(REPO_TOP)/scripts/hls/
 
 include $(HLS_SCRIPTS)/Makefile_src

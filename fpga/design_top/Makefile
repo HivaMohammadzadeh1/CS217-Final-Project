@@ -1,12 +1,15 @@
-CL_DIR 			?= $(CL_DIR)
-CL_DESIGN_NAME 	?= $(CL_DESIGN_NAME)
+CL_DIR 			?= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/)
+CL_DESIGN_NAME 	?= design_top
 LOGS_DIR 		?= $(CL_DIR)/logs
+RTL_VARIANT     ?= kIntWordWidth_8_kVectorSize_16_kNumVectorLanes_16
+SLOT_ID         ?= 0
+FPGA_TEST_ARGS  ?=
 
 hw_sim:
 	cd $(CL_DIR)/verif/scripts && make ${CL_DESIGN_NAME}_base_test
 
 fpga_build:
-	cp $(CL_DIR)/design/concat_PECore/kIntWordWidth_8_kVectorSize_16_kNumVectorLanes_16/concat_PECore.v $(CL_DIR)/design/concat_PECore.v 
+	cp $(CL_DIR)/design/concat_PECore/$(RTL_VARIANT)/concat_PECore.v $(CL_DIR)/design/concat_PECore.v 
 	cd $(CL_DIR)/design/ && sed -i '\|// synopsys translate|d' concat_PECore.v 
 	cd $(CL_DIR)/build/scripts && ./aws_build_dcp_from_cl.py -c $(CL_DESIGN_NAME)
 
@@ -24,7 +27,7 @@ program_fpga:
     sudo fpga-load-local-image -S 0 -I $$AGFI
 
 run_fpga_test:
-	cd $(CL_DIR)/software/runtime && make clean && make $(CL_DESIGN_NAME) && sudo ./$(CL_DESIGN_NAME) 0 | tee $(LOGS_DIR)/fpga_test.log.txt 
+	cd $(CL_DIR)/software/runtime && make clean && make $(CL_DESIGN_NAME) && sudo ./$(CL_DESIGN_NAME) $(SLOT_ID) $(FPGA_TEST_ARGS) | tee $(LOGS_DIR)/fpga_test.log.txt 
 
 clean:
 	cd $(CL_DIR)/verif/scripts && make clean

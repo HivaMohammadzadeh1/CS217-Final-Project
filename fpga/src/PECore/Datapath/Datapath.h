@@ -48,15 +48,22 @@ out = out_tmp;
 
 inline void Datapath(spec::VectorType weight_in[spec::kNumVectorLanes], 
               spec::VectorType input_in,
+              const NVUINT2 precision_mode,
+              const NVUINT1 mx_group_size_is_16,
               spec::AccumVectorType& accum_out)
 {
   spec::AccumVectorType accum_out_tmp; 
+  (void)precision_mode;
+  (void)mx_group_size_is_16;
   
   // TODO 2:
   //  1. Implement the datapath that computes the product sum between each weight vector lane and the input vector
   //  2. Store the result in accum_out
   //  3. You can use pragmas to optimize the loop for HLS synthesis 
   //  4. It is important to remember that input is broadcasted to all lanes
+  //  5. The control path now carries MX mode + group size so the hardware
+  //     build/deploy path can configure them. The arithmetic here remains the baseline
+  //     integer MAC until the MX datapath replaces it in PECore.
 
   //////// YOUR CODE STARTS HERE ////////
 #pragma hls_unroll yes

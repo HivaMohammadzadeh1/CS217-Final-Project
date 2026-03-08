@@ -67,6 +67,8 @@ def test_lab1_basic():
     print(f"  Num calls: {stats['num_calls']}")
     print(f"  Total tiles: {stats['total_tiles']}")
     print(f"  Using hardware: {stats['using_hardware']}")
+    print(f"  Precision mode: {stats['precision_mode']}")
+    print(f"  Group size: {stats['group_size']}")
 
     # Check if test passed
     tolerance = 1e-3  # Allow some error for FPGA quantization
