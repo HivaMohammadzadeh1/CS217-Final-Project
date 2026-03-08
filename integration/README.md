@@ -23,6 +23,7 @@ This gives a clean control path for later adaptive policy integration.
 `adaptive_controller.py` now provides:
 
 - policy loading from JSON (`A/B/C/D` style policies)
+- policy `group_size` resolution, so generated policy files carry their MX grouping into runtime by default
 - per-layer, per-phase precision selection
 - phase scoping (`rollout`, `reward`, `gradient`)
 - safe fallback of gradient phase to `FP16` by default, since the current
@@ -93,6 +94,20 @@ Optional policy config:
 - `FPGA_ALLOW_GRADIENT_OFFLOAD`
 
 This gives one consistent knob for experiments while keeping code simple.
+
+## Milestone 4 smoke test
+
+For a fast integration sanity check:
+
+```bash
+.venv/bin/python3 baseline_energy/test_fpga_integration.py
+```
+
+To exercise the host RLHF path as well:
+
+```bash
+.venv/bin/python3 baseline_energy/test_fpga_integration.py --run-end-to-end --steps 2
+```
 
 ## What remains for full hardware integration
 

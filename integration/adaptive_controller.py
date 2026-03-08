@@ -18,6 +18,12 @@ VALID_PHASES = ("rollout", "reward", "gradient")
 VALID_PRECISIONS = ("INT8", "MXFP8", "MXFP4", "FP16")
 
 
+def validate_group_size(group_size: int, field_name: str = "group_size") -> int:
+    if group_size not in (8, 16):
+        raise ValueError(f"{field_name} must be 8 or 16.")
+    return group_size
+
+
 def normalize_phase(phase: str) -> str:
     phase_key = str(phase).strip().lower()
     if phase_key not in VALID_PHASES:
@@ -63,6 +69,40 @@ def layer_key_candidates(layer_name: str) -> Iterable[str]:
                     yield candidate
 
 
+def load_policy_definition(policy_name: Optional[str], policy_path: Optional[str]):
+    if not policy_path:
+        return None
+
+    payload = json.loads(Path(policy_path).read_text())
+    if "layers" in payload:
+        return payload
+
+    if policy_name is None:
+        raise ValueError(
+            "policy_path points to a policy collection. Set policy_name to select one."
+        )
+
+    if policy_name not in payload:
+        raise ValueError(
+            f"Policy '{policy_name}' not found in {policy_path}. "
+            f"Available: {sorted(payload.keys())}"
+        )
+
+    return payload[policy_name]
+
+
+def resolve_policy_group_size(default_group_size: int,
+                              policy_name: Optional[str] = None,
+                              policy_path: Optional[str] = None) -> int:
+    policy = load_policy_definition(policy_name, policy_path)
+    if policy and policy.get("group_size") is not None:
+        return validate_group_size(
+            int(policy["group_size"]),
+            field_name="policy group_size",
+        )
+    return validate_group_size(default_group_size, field_name="default_group_size")
+
+
 @dataclass(frozen=True)
 class PrecisionDecision:
     precision: str
@@ -86,9 +126,10 @@ class AdaptivePrecisionController:
                  policy_name: Optional[str] = None,
                  policy_path: Optional[str] = None):
         self.default_precision = normalize_precision(default_precision)
-        if default_group_size not in (8, 16):
-            raise ValueError("default_group_size must be 8 or 16.")
-        self.default_group_size = default_group_size
+        self.default_group_size = validate_group_size(
+            default_group_size,
+            field_name="default_group_size",
+        )
         self.allow_gradient_offload = allow_gradient_offload
         self.current_phase = "rollout"
         self.policy_name = policy_name
@@ -101,25 +142,7 @@ class AdaptivePrecisionController:
 
     @staticmethod
     def _load_policy(policy_name: Optional[str], policy_path: Optional[str]):
-        if not policy_path:
-            return None
-
-        payload = json.loads(Path(policy_path).read_text())
-        if "layers" in payload:
-            return payload
-
-        if policy_name is None:
-            raise ValueError(
-                "policy_path points to a policy collection. Set policy_name to select one."
-            )
-
-        if policy_name not in payload:
-            raise ValueError(
-                f"Policy '{policy_name}' not found in {policy_path}. "
-                f"Available: {sorted(payload.keys())}"
-            )
-
-        return payload[policy_name]
+        return load_policy_definition(policy_name, policy_path)
 
     def set_phase(self, phase: str) -> None:
         self.current_phase = normalize_phase(phase)
