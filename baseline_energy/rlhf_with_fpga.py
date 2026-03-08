@@ -36,10 +36,19 @@ from transformers import (
 )
 from trl import PPOTrainer, PPOConfig, AutoModelForCausalLMWithValueHead
 from trl.core import LengthSampler
-import config
-from gpu_power_monitor import GPUPowerMonitor
-from adaptive_controller import AdaptivePrecisionController
+
+try:
+    from . import config
+    from .gpu_power_monitor import GPUPowerMonitor
+except ImportError:
+    import config
+    from gpu_power_monitor import GPUPowerMonitor
+
+from adaptive_controller import AdaptivePrecisionController, resolve_policy_group_size
 from fpga_matmul_offload import FPGAMatmulOffload
+
+
+FPGA_STAT_KEYS = ("num_calls", "total_tiles", "mode_switches", "flush_count")
 
 
 def parse_int_list(raw_value):
@@ -67,6 +76,7 @@ def apply_runtime_overrides(args):
         "EVAL_SIZE": args.eval_size,
         "BATCH_SIZE": args.batch_size,
         "MINI_BATCH_SIZE": args.mini_batch_size,
+        "GRADIENT_ACCUMULATION_STEPS": args.gradient_accumulation_steps,
         "MAX_SEQ_LENGTH": args.max_seq_length,
         "MAX_PROMPT_LENGTH": args.max_prompt_length,
         "MAX_RESPONSE_LENGTH": args.max_response_length,
@@ -163,24 +173,18 @@ class FPGALinearLayer(nn.Module):
                 flush=True,
             )
 
-        # x: (batch, seq_len, in_features) or (batch, in_features)
-        # W: (out_features, in_features)
-        # Result: (batch, seq_len, out_features) or (batch, out_features)
-
-        original_shape = x.shape
-        if x.dim() == 3:
-            # Flatten batch and sequence dimensions
-            batch_size, seq_len, in_features = x.shape
-            x_flat = x.reshape(-1, in_features)
-        else:
-            x_flat = x
+        # Preserve the last dimension as the linear input width and flatten any
+        # leading dimensions so the FPGA/offload path handles the same shapes as
+        # nn.Linear.
+        original_shape = tuple(x.shape)
+        out_features = self.weight.shape[0]
+        x_flat = x.reshape(-1, original_shape[-1])
 
         # Perform matmul with FPGA offload: x @ W.T
         result = self.fpga.matmul(x_flat, self.weight.T)
 
-        # Reshape back if needed
-        if len(original_shape) == 3:
-            result = result.reshape(batch_size, seq_len, -1)
+        # Restore the original leading dimensions with the new feature width.
+        result = result.reshape(*original_shape[:-1], out_features)
 
         # Add bias
         if self.bias is not None:
@@ -299,15 +303,28 @@ class RLHFWithFPGATrainer:
         self.reward_blocks = None if reward_blocks is None else list(reward_blocks)
         self.fpga_response_length = getattr(config, "FPGA_RESPONSE_LENGTH", config.MAX_RESPONSE_LENGTH)
         self.device = torch.device("cuda" if torch.cuda.is_available() and config.USE_GPU else "cpu")
+        self.policy_name = args.policy_name or getattr(config, "FPGA_POLICY_NAME", None)
+        self.policy_path = args.policy_json or getattr(config, "FPGA_POLICY_JSON", None)
+        self.default_precision = args.precision_mode or getattr(config, "FPGA_PRECISION_MODE", "INT8")
+        self.default_group_size = (
+            args.group_size
+            if args.group_size is not None
+            else resolve_policy_group_size(
+                getattr(config, "FPGA_GROUP_SIZE", 8),
+                policy_name=self.policy_name,
+                policy_path=self.policy_path,
+            )
+        )
+        config.FPGA_GROUP_SIZE = self.default_group_size
         self.precision_controller = AdaptivePrecisionController(
-            default_precision=args.precision_mode or getattr(config, "FPGA_PRECISION_MODE", "INT8"),
-            default_group_size=args.group_size or getattr(config, "FPGA_GROUP_SIZE", 8),
+            default_precision=self.default_precision,
+            default_group_size=self.default_group_size,
             allow_gradient_offload=(
                 args.allow_gradient_offload
                 or getattr(config, "FPGA_ALLOW_GRADIENT_OFFLOAD", False)
             ),
-            policy_name=args.policy_name or getattr(config, "FPGA_POLICY_NAME", None),
-            policy_path=args.policy_json or getattr(config, "FPGA_POLICY_JSON", None),
+            policy_name=self.policy_name,
+            policy_path=self.policy_path,
         )
         print(f"\n{'='*60}")
         print("RLHF Training with FPGA Offload")
@@ -319,6 +336,7 @@ class RLHFWithFPGATrainer:
         print(f"FPGA Policy Blocks: {self.policy_blocks}")
         print(f"FPGA Reward Blocks: {'ALL' if self.reward_blocks is None else self.reward_blocks}")
         print(f"FPGA Response Length: {self.fpga_response_length}")
+        print(f"FPGA Group Size: {self.default_group_size}")
         if self.precision_controller.policy is not None:
             print(f"Precision Policy: {self.precision_controller.policy_name} from {self.precision_controller.policy_path}")
         else:
@@ -346,6 +364,16 @@ class RLHFWithFPGATrainer:
             "reward": [],
             "gradient": [],
         }
+        self.phase_fpga_stats = {
+            phase: {
+                "phase_invocations": 0,
+                "matmul_calls": 0,
+                "tile_ops": 0,
+                "mode_switches": 0,
+                "flush_count": 0,
+            }
+            for phase in self.phase_times
+        }
         self.dataset_source = None
 
         # FPGA stats
@@ -356,6 +384,32 @@ class RLHFWithFPGATrainer:
         self.policy_device = self.device
         self.reward_device = self.device
         self.ref_device = self.device
+
+    @staticmethod
+    def _extract_fpga_counters(stats):
+        return {key: int(stats.get(key, 0) or 0) for key in FPGA_STAT_KEYS}
+
+    def _snapshot_fpga_stats(self):
+        return self._extract_fpga_counters(self.fpga_offloader.get_stats())
+
+    def _record_phase_fpga_stats(self, phase, before_stats, after_stats):
+        phase_stats = self.phase_fpga_stats[phase]
+        phase_stats["phase_invocations"] += 1
+
+        delta = {}
+        for key in FPGA_STAT_KEYS:
+            delta_value = max(0, int(after_stats.get(key, 0)) - int(before_stats.get(key, 0)))
+            delta[key] = delta_value
+
+        phase_stats["matmul_calls"] += delta["num_calls"]
+        phase_stats["tile_ops"] += delta["total_tiles"]
+        phase_stats["mode_switches"] += delta["mode_switches"]
+        phase_stats["flush_count"] += delta["flush_count"]
+
+        self.fpga_stats["total_matmuls"] += delta["num_calls"]
+        self.fpga_stats["total_tiles"] += delta["total_tiles"]
+
+        return delta
 
     def _phase_scope(self, phase):
         if not config.USE_FPGA_OFFLOAD:
@@ -591,6 +645,7 @@ class RLHFWithFPGATrainer:
     def compute_reward(self, responses):
         """Compute rewards for generated responses using reward model."""
         start_time = time.time()
+        before_stats = self._snapshot_fpga_stats()
 
         rewards = []
         with self._phase_scope("reward"):
@@ -609,6 +664,8 @@ class RLHFWithFPGATrainer:
 
         elapsed = time.time() - start_time
         self.phase_times["reward"].append(elapsed)
+        after_stats = self._snapshot_fpga_stats()
+        self._record_phase_fpga_stats("reward", before_stats, after_stats)
 
         return torch.tensor(rewards)
 
@@ -668,6 +725,7 @@ class RLHFWithFPGATrainer:
 
                 # Phase 1: Rollout - generate responses for entire batch
                 rollout_start = time.time()
+                rollout_before = self._snapshot_fpga_stats()
                 query_tensors = []
                 response_tensors = []
 
@@ -698,6 +756,8 @@ class RLHFWithFPGATrainer:
 
                 rollout_time = time.time() - rollout_start
                 self.phase_times["rollout"].append(rollout_time)
+                rollout_after = self._snapshot_fpga_stats()
+                self._record_phase_fpga_stats("rollout", rollout_before, rollout_after)
 
                 # Phase 2: Reward computation for batch
                 responses = [
@@ -710,15 +770,16 @@ class RLHFWithFPGATrainer:
                 # Phase 3: Gradient update with full batch
                 print(f"  Running PPO gradient update...", flush=True)
                 gradient_start = time.time()
+                gradient_before = self._snapshot_fpga_stats()
                 with self._phase_scope("gradient"):
                     stats = ppo_trainer.step(query_tensors, response_tensors, rewards_list)
                 gradient_time = time.time() - gradient_start
                 self.phase_times["gradient"].append(gradient_time)
+                gradient_after = self._snapshot_fpga_stats()
+                self._record_phase_fpga_stats("gradient", gradient_before, gradient_after)
 
                 # Get FPGA stats for this batch
                 fpga_stats = self.fpga_offloader.get_stats()
-                self.fpga_stats["total_matmuls"] += fpga_stats["num_calls"]
-                self.fpga_stats["total_tiles"] += fpga_stats["total_tiles"]
 
                 # Log stats
                 training_stats["steps"].append(batch_num)
@@ -1093,6 +1154,7 @@ class RLHFWithFPGATrainer:
                 "total_time_s": sum(times),
                 "avg_time_s": sum(times) / len(times) if times else 0,
                 "num_calls": len(times),
+                "fpga": dict(self.phase_fpga_stats[phase]),
             }
 
         # Save training stats
@@ -1105,6 +1167,8 @@ class RLHFWithFPGATrainer:
 
         # Save FPGA stats
         fpga_stats_payload = dict(self.fpga_stats)
+        fpga_stats_payload["phase_breakdown"] = self.phase_fpga_stats
+        fpga_stats_payload["backend_stats"] = self.fpga_offloader.get_stats()
         fpga_stats_payload["precision_controller"] = self.precision_controller.get_stats()
         with open(self.output_dir / "fpga_stats.json", "w") as f:
             json.dump(fpga_stats_payload, f, indent=2)
@@ -1118,7 +1182,8 @@ class RLHFWithFPGATrainer:
         for phase in ["rollout", "reward", "gradient"]:
             stats = phase_stats[phase]
             print(f"{phase:15s}: {stats['total_time_s']:7.1f}s total, "
-                  f"{stats['avg_time_s']:6.2f}s avg")
+                  f"{stats['avg_time_s']:6.2f}s avg, "
+                  f"{stats['fpga']['tile_ops']:6d} FPGA tiles")
         print(f"\nFPGA Statistics:")
         print(f"  Total matmuls offloaded: {self.fpga_stats['total_matmuls']}")
         print(f"  Total tiles processed:   {self.fpga_stats['total_tiles']}")
@@ -1249,6 +1314,12 @@ def main():
         type=int,
         default=None,
         help="Override PPO mini-batch size.",
+    )
+    parser.add_argument(
+        "--gradient-accumulation-steps",
+        type=int,
+        default=None,
+        help="Override PPO gradient accumulation steps.",
     )
     parser.add_argument(
         "--max-seq-length",

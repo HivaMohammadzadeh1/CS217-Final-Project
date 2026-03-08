@@ -10,6 +10,8 @@ This directory contains the host-side experiment code for the project.
   RLHF path with selective FPGA matmul offload, evaluation, and saved run metadata.
 - `run_policy_sweep.py`
   Runs one experiment per precision policy and records a sweep manifest.
+- `test_fpga_integration.py`
+  Milestone 4 smoke test for precision switching, tiled matmul, and optional end-to-end RLHF execution.
 - `calculate_energy.py` and `process_energy.py`
   Convert timing/power logs into energy summaries.
 - `config.py`
@@ -21,12 +23,14 @@ This directory contains the host-side experiment code for the project.
 - FPGA offload is selective rather than full-model.
 - GPU power monitoring is best-effort and skips cleanly when `nvidia-smi` is unavailable.
 - Gradient-phase FPGA offload stays disabled by default because the current path is not fully autograd-safe.
+- `fpga_stats.json` now includes a per-phase FPGA breakdown so rollout, reward, and gradient offload activity can be audited separately.
 
 ## Main commands
 
 ```bash
 python baseline_energy/rlhf_baseline.py --steps 10 --output results/gpu_baseline_smoke
 python baseline_energy/rlhf_with_fpga.py --steps 2 --output results/fpga_smoke --use-mock-fpga
+.venv/bin/python3 baseline_energy/test_fpga_integration.py --run-end-to-end --steps 2
 python baseline_energy/run_policy_sweep.py --policy-json baseline_energy/data/smoke_policies.json --policies A,D --steps 2 --dry-run
 ```
 

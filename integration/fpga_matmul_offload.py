@@ -420,6 +420,7 @@ class FPGAMatmulOffload:
             A_np = A.detach().cpu().numpy()
             B_np = B.detach().cpu().numpy()
             device = A.device
+            dtype = A.dtype
         else:
             A_np = A
             B_np = B
@@ -439,7 +440,7 @@ class FPGAMatmulOffload:
         # Convert back to torch if needed
         if is_torch:
             import torch
-            result = torch.from_numpy(result).to(device)
+            result = torch.from_numpy(result).to(device=device, dtype=dtype)
 
         return result
 
