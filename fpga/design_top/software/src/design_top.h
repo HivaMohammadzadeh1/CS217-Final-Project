@@ -66,6 +66,15 @@
 #define PE_PRECISION_MXFP8 1
 #define PE_PRECISION_MXFP4 2
 
+// MX minifloat format parameters
+#define MXFP8_EXP_BITS 4
+#define MXFP8_MANT_BITS 3
+#define MXFP8_EXP_BIAS 7
+
+#define MXFP4_EXP_BITS 2
+#define MXFP4_MANT_BITS 1
+#define MXFP4_EXP_BIAS 1
+
 #endif // DESIGN_TOP_DEFINES_H
 
 // Function Prototypes (Aligned with SystemVerilog testbench)
@@ -82,11 +91,16 @@ int parse_precision_mode(const char *arg, uint8_t *mode_out);
 const char *precision_mode_name(uint8_t precision_mode);
 uint64_t build_pe_config_word(uint8_t precision_mode, int group_size);
 
-// Golden model and verification
+// MX minifloat encode/decode
+uint8_t encode_minifloat(float value, int exp_bits, int mant_bits, int exp_bias);
+float decode_minifloat(uint8_t code, int exp_bits, int mant_bits, int exp_bias);
+
+// Golden model and verification (precision-aware)
 void randomize_data(uint64_t data[2]);
 double round(double x);
 void calculate_golden_activations(const uint64_t weights[kNumVectorLanes][2], const uint64_t input_written[2], int32_t golden_activations[kNumVectorLanes]);
-void compare_act_vectors(const int32_t dut_vec[kNumVectorLanes], const int32_t golden_vec[kNumVectorLanes]);
+void calculate_golden_activations_mx(const uint64_t weights[kNumVectorLanes][2], const uint64_t input_written[2], int32_t golden_activations[kNumVectorLanes], uint8_t precision_mode, int group_size);
+void compare_act_vectors(const int32_t dut_vec[kNumVectorLanes], const int32_t golden_vec[kNumVectorLanes], double tolerance_pct);
 
 // Performance counter functions
 int start_data_transfer_counter(int bar_handle);

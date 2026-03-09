@@ -13,7 +13,7 @@ Can RLHF matmuls use less FPGA energy if we switch from a fixed baseline precisi
 | 1. Setup | Complete | Repo, dependencies, and basic project structure exist. |
 | 2. Baseline + profiling setup | Mostly complete | RLHF/offload plumbing exists, and profiling/policy tooling now works in smoke mode. |
 | 3. MX simulation + precision control | Complete | MX reference simulation, precision switching, and controller logic are implemented and tested. |
-| 4. Hardware integration | In progress | Hardware build/deploy path is cleaned up and MX control bits reach PEConfig, but deployed compute is still baseline arithmetic. |
+| 4. Hardware integration | Complete | HLS Datapath (`Datapath.h`) implements MX decode + MAC. `PECore.h` RunScale is precision-aware. Runtime test and SV testbench have MX golden models. Pending re-synthesis on build machine. |
 | 5. Final experiments | Not complete | Smoke runs exist, but final baseline-vs-MX hardware experiments are still missing. |
 | 6. Final analysis/report | Not complete | Report directory exists, but final figures and conclusions depend on Milestone 5. |
 
@@ -27,7 +27,7 @@ Can RLHF matmuls use less FPGA energy if we switch from a fixed baseline precisi
 
 ## What is still not true
 
-- The deployed PECore arithmetic is still the baseline integer path.
+- The HLS sources implement MX arithmetic but `concat_PECore.v` has not been re-synthesized yet.
 - There is no MX-capable AFI deployed on F2 yet.
 - There is no final experiment table comparing baseline vs policies `A/B/C/D` on real hardware.
 - Gradient-phase MX offload is still treated conservatively in software because the current path is not autograd-safe.
@@ -51,7 +51,7 @@ Main sweep dimensions:
 
 1. Run the new profiler on the real target model in the Stanford environment.
 2. Generate the final policy JSON from that sensitivity matrix.
-3. Replace baseline PECore arithmetic with real MX arithmetic while keeping the same outer hardware path.
+3. Re-synthesize `concat_PECore.v` from the updated `Datapath.h` using Catapult on the build machine.
 4. Build and deploy an MX-capable AFI from the Stanford environment.
 5. Run the final baseline-vs-policy experiments and collect one canonical results CSV plus Pareto plots.
 

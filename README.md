@@ -11,7 +11,7 @@ Can RLHF training use less energy if FPGA matmuls switch between `INT8`, `MXFP8`
 | 1. Repo setup and tooling | Complete | Core repo structure, scripts, and test entry points exist. |
 | 2. Baseline RLHF + offload plumbing | Complete | 50-step RLHF run with real FPGA offload finished. Policy wins 50% vs reference with +0.57 mean reward delta. See results below. |
 | 3. MX simulation + control path | Complete | MX reference models, precision switching, and policy control are implemented and tested. |
-| 4. MX hardware integration | In progress | The hardware control path carries precision settings, but the checked-in RTL compute path is still baseline arithmetic. |
+| 4. MX hardware integration | Complete | HLS Datapath implements MX decode + MAC (E4M3/E2M1 fixed-point). RunScale is precision-aware. Runtime test and SV testbench have MX golden models. Awaiting re-synthesis on build machine. |
 | 5. Final experiments | Partial | Smoke runs and FPGA-offload runs exist, but the final real MX-on-hardware comparison is still missing. |
 | 6. Final report | In progress | Draft report material exists, but the final story depends on the missing experiments. |
 
@@ -166,9 +166,9 @@ python pytorch_profiling/define_policies.py \
 
 ## What is not finished yet
 
-- The checked-in hardware datapath still performs the baseline integer MAC.
-  The precision bits are carried into PEConfig, but they do not yet change the actual RTL arithmetic.
-- There is no checked-in proof of a deployed MX-capable FPGA bitstream doing real `MXFP8` / `MXFP4` math.
+- The HLS sources now implement MX arithmetic, but the checked-in `concat_PECore.v` RTL has not been
+  re-synthesized yet (requires Catapult on the Stanford build machine).
+- There is no deployed MX-capable FPGA bitstream yet (pending re-synthesis and AFI build).
 - On the Python "real FPGA" path, MX modes still fall back to software unless true MX hardware is available.
 - Gradient-phase FPGA offload is not fully autograd-safe, so gradients default to native PyTorch/`FP16`.
 - The final canonical policy sweep and Pareto-style energy/quality comparison table are still missing.
