@@ -52,7 +52,9 @@ CCS_MAIN (int argc, char *argv[]) {
   }
 
   // Run DUT
-  CCS_DESIGN(Datapath)(dp_weight, dp_input, dp_output);
+  const NVUINT2 precision_mode = spec::kPrecisionINT8;
+  const NVUINT1 mx_group_size_is_16 = spec::kMXGroupSize8;
+  CCS_DESIGN(Datapath)(dp_weight, dp_input, precision_mode, mx_group_size_is_16, dp_output);
 
   // Compare outputs
   int total_tests = spec::kNumVectorLanes;

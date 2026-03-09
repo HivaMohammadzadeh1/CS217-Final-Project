@@ -35,13 +35,14 @@ class Lab1FPGAInterface:
 
         self.TILE_SIZE = 16
 
-        # Milestone 3 precision control state.
-        # Current Lab 1 bitstream supports INT8 compute. MX modes are modeled
-        # in software above this layer until MX hardware is deployed.
+        # Precision control state. The repo-side PEConfig path now carries
+        # precision/group-size fields end-to-end; the loaded bitstream still
+        # determines whether MX compute is truly available in hardware.
         self.precision_mode = "INT8"
         self.pending_precision_mode = "INT8"
         self.precision_switch_pending = False
         self.group_size = 8
+        self.pending_group_size = 8
         self.pipeline_flush_count = 0
 
         # Performance tracking
@@ -91,6 +92,10 @@ class Lab1FPGAInterface:
             ]
             self.lib.fpga_matmul_16x16.restype = ctypes.c_int
 
+            if hasattr(self.lib, "fpga_configure_mode"):
+                self.lib.fpga_configure_mode.argtypes = [ctypes.c_int, ctypes.c_int]
+                self.lib.fpga_configure_mode.restype = ctypes.c_int
+
             # void fpga_cleanup()
             self.lib.fpga_cleanup.argtypes = []
             self.lib.fpga_cleanup.restype = None
@@ -130,19 +135,25 @@ class Lab1FPGAInterface:
           - MXFP8 (accepted for API compatibility; hardware fallback path)
           - MXFP4 (accepted for API compatibility; hardware fallback path)
 
-        If/when a dedicated MX bitstream is deployed, this method is where the
-        PEConfig precision/group-size fields should be programmed before start.
+        This method tracks active vs pending mode/group-size state and, when
+        supported by the shared library, programs the PEConfig payload during
+        flush_pipeline().
         """
         mode = str(precision_mode).upper()
         if mode not in ("INT8", "MXFP8", "MXFP4"):
             raise ValueError(f"Unsupported precision mode: {precision_mode}")
+        pending_group_size = self.group_size
         if group_size is not None:
             if group_size not in (8, 16):
                 raise ValueError("group_size must be 8 or 16.")
-            self.group_size = group_size
+            pending_group_size = group_size
 
         self.pending_precision_mode = mode
-        self.precision_switch_pending = (self.pending_precision_mode != self.precision_mode)
+        self.pending_group_size = pending_group_size
+        self.precision_switch_pending = (
+            self.pending_precision_mode != self.precision_mode
+            or self.pending_group_size != self.group_size
+        )
 
         if flush:
             self.flush_pipeline()
@@ -151,13 +162,25 @@ class Lab1FPGAInterface:
         """
         Apply pending precision change.
 
-        In current Lab 1 INT8 hardware this is a software-level state update.
-        For future MX hardware this should also trigger hardware pipeline drain
-        semantics around mode transitions.
+        Commit the pending precision/group-size request. If the C wrapper
+        exposes fpga_configure_mode(), program the PEConfig payload first.
         """
         if not self.precision_switch_pending:
             return
+
+        if self.use_hardware and hasattr(self, "lib") and hasattr(self.lib, "fpga_configure_mode"):
+            mode_map = {"INT8": 0, "MXFP8": 1, "MXFP4": 2}
+            rc = self.lib.fpga_configure_mode(
+                mode_map[self.pending_precision_mode],
+                int(self.pending_group_size),
+            )
+            if rc != 0:
+                raise RuntimeError(
+                    "fpga_configure_mode failed; precision change not committed."
+                )
+
         self.precision_mode = self.pending_precision_mode
+        self.group_size = self.pending_group_size
         self.precision_switch_pending = False
         self.pipeline_flush_count += 1
 
@@ -215,6 +238,7 @@ class Lab1FPGAInterface:
             'using_hardware': self.use_hardware,
             'precision_mode': self.precision_mode,
             'group_size': self.group_size,
+            'pending_group_size': self.pending_group_size,
             'switch_pending': self.precision_switch_pending,
             'pipeline_flush_count': self.pipeline_flush_count,
         }
