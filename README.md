@@ -9,7 +9,7 @@ Can RLHF training use less energy if FPGA matmuls switch between `INT8`, `MXFP8`
 | Milestone | Status | What that means today |
 | --- | --- | --- |
 | 1. Repo setup and tooling | Complete | Core repo structure, scripts, and test entry points exist. |
-| 2. Baseline RLHF + offload plumbing | **Complete** | 50-step RLHF run with real FPGA offload finished. Policy wins 50% vs reference with +0.57 mean reward delta. See results below. |
+| 2. Baseline RLHF + offload plumbing | Complete | 50-step RLHF run with real FPGA offload finished. Policy wins 50% vs reference with +0.57 mean reward delta. See results below. |
 | 3. MX simulation + control path | Complete | MX reference models, precision switching, and policy control are implemented and tested. |
 | 4. MX hardware integration | In progress | The hardware control path carries precision settings, but the checked-in RTL compute path is still baseline arithmetic. |
 | 5. Final experiments | Partial | Smoke runs and FPGA-offload runs exist, but the final real MX-on-hardware comparison is still missing. |
