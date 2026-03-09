@@ -31,6 +31,34 @@ static bool fpga_initialized = false;
 #define ADDR_START_CFG      0x000404
 #define ADDR_ACT_PORT_START 0x000440
 
+// PEConfig control payload layout (must match PECoreSpec + design_top runtime)
+#define PE_CONFIG_IS_VALID_BIT 0
+#define PE_CONFIG_IS_BIAS_BIT 24
+#define PE_CONFIG_NUM_MANAGER_BIT 32
+#define PE_CONFIG_NUM_OUTPUT_BIT 40
+#define PE_CONFIG_PRECISION_MODE_BIT 48
+#define PE_CONFIG_GROUP_SIZE_IS_16_BIT 56
+
+#define PE_PRECISION_INT8 0
+#define PE_PRECISION_MXFP8 1
+#define PE_PRECISION_MXFP4 2
+
+static uint8_t current_precision_mode = PE_PRECISION_INT8;
+static int current_group_size = 8;
+
+static uint64_t build_pe_config_word(uint8_t precision_mode, int group_size) {
+    uint64_t word = 0;
+    word |= ((uint64_t)1 << PE_CONFIG_IS_VALID_BIT);
+    word |= ((uint64_t)1 << PE_CONFIG_IS_BIAS_BIT);
+    word |= ((uint64_t)1 << PE_CONFIG_NUM_MANAGER_BIT);
+    word |= ((uint64_t)1 << PE_CONFIG_NUM_OUTPUT_BIT);
+    word |= ((uint64_t)(precision_mode & 0x3u) << PE_CONFIG_PRECISION_MODE_BIT);
+    if (group_size == 16) {
+        word |= ((uint64_t)1 << PE_CONFIG_GROUP_SIZE_IS_16_BIT);
+    }
+    return word;
+}
+
 /**
  * Initialize FPGA connection
  * Returns 0 on success, -1 on failure
@@ -111,6 +139,26 @@ int fpga_read32(uint32_t addr, uint32_t *data) {
 }
 
 /**
+ * Configure precision mode and MX group size for subsequent matmuls.
+ */
+int fpga_configure_mode(int precision_mode, int group_size) {
+    if (precision_mode != PE_PRECISION_INT8 &&
+        precision_mode != PE_PRECISION_MXFP8 &&
+        precision_mode != PE_PRECISION_MXFP4) {
+        fprintf(stderr, "Unsupported precision mode: %d\n", precision_mode);
+        return -1;
+    }
+    if (group_size != 8 && group_size != 16) {
+        fprintf(stderr, "Unsupported group size: %d\n", group_size);
+        return -1;
+    }
+
+    current_precision_mode = (uint8_t)precision_mode;
+    current_group_size = group_size;
+    return 0;
+}
+
+/**
  * Perform 16x16 matrix multiplication on Lab 1 FPGA
  *
  * A: 16x16 weight matrix (float32)
@@ -128,8 +176,9 @@ int fpga_matmul_16x16(float *A, float *B, float *C) {
     int rc;
 
     // Step 1: Configure PE
-    rc = fpga_write32(ADDR_PE_CONFIG, 0x00000001);
-    rc |= fpga_write32(ADDR_PE_CONFIG + 4, 0x01010000);
+    const uint64_t pe_config = build_pe_config_word(current_precision_mode, current_group_size);
+    rc = fpga_write32(ADDR_PE_CONFIG, (uint32_t)(pe_config & 0xFFFFFFFFu));
+    rc |= fpga_write32(ADDR_PE_CONFIG + 4, (uint32_t)((pe_config >> 32) & 0xFFFFFFFFu));
     if (rc != 0) {
         fprintf(stderr, "PE configuration failed\n");
         return -1;

@@ -8,6 +8,7 @@ Run:
 import unittest
 
 import numpy as np
+import torch
 
 from integration.fpga_matmul_offload import FPGAMatmulOffload
 
@@ -124,6 +125,16 @@ class TestMXOffloadIntegration(unittest.TestCase):
         self.assertTrue(stats.get("switch_pending"))
         with self.assertRaises(RuntimeError):
             _ = offloader.matmul(self.a, self.b)
+
+    def test_torch_input_preserves_dtype(self):
+        offloader = FPGAMatmulOffload(use_mock=True, precision_mode="INT8")
+        a = torch.randn(16, 16, dtype=torch.float16)
+        b = torch.randn(16, 16, dtype=torch.float16)
+
+        got = offloader.matmul(a, b)
+
+        self.assertEqual(got.dtype, torch.float16)
+        self.assertEqual(tuple(got.shape), (16, 16))
 
 
 if __name__ == "__main__":

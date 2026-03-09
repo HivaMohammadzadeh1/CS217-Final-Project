@@ -1,116 +1,122 @@
 # Layer-Adaptive MX Quantization for RLHF on FPGA
 
-This repo asks one research question:
+This project asks one question:
 
-Can RLHF training use less energy if FPGA matmuls switch between `INT8`, `MXFP8`, and `MXFP4` adaptively, without hurting quality too much?
+Can RLHF matmuls use less FPGA energy if we switch from fixed `INT8` to adaptive `MXFP8` / `MXFP4`, without hurting model quality too much?
 
-## Current milestone status
+## Status
 
-| Milestone | Status | What that means today |
-| --- | --- | --- |
-| 1. Repo setup and tooling | Complete | Core repo structure, scripts, and test entry points exist. |
-| 2. Baseline RLHF + offload plumbing | Mostly complete | RLHF training, evaluation, timing, and FPGA hook-up code all exist. |
-| 3. MX simulation + control path | Complete | MX reference models, precision switching, and policy control are implemented and tested. |
-| 4. MX hardware integration | In progress | The hardware control path carries precision settings, but the checked-in RTL compute path is still baseline arithmetic. |
-| 5. Final experiments | Partial | Smoke runs and FPGA-offload runs exist, but the final real MX-on-hardware comparison is still missing. |
-| 6. Final report | In progress | Draft report material exists, but the final story depends on the missing experiments. |
+The project is in a good Milestone 4 state on the host side and an in-progress Milestone 4 state on the hardware side.
 
-## What is implemented
+What is true today:
 
-- `systemc/`
-  Portable dual-precision MX reference model with group scaling and flush-on-mode-switch behavior.
-- `integration/`
-  Python matmul tiling/offload layer, Lab 1 bridge, adaptive precision controller, and MX software fallback path.
-- `baseline_energy/`
-  RLHF training scripts, timing/energy logging, evaluation, and policy sweep runner.
-- `pytorch_profiling/`
-  Layer sensitivity profiler and A/B/C/D policy generator.
-- `fpga/`
-  Stanford/AWS F2 build/deploy flow wrapper plus runtime control-path plumbing for precision mode and group size.
-- `results/`
-  Saved smoke runs and several FPGA-offload experiment directories, including a 50-step run in `results/fpga_final-full/`.
+- `pytorch_profiling/` can profile layer sensitivity and generate policy JSON for policies `A/B/C/D`.
+- `systemc/` has a working MX reference model with precision switching and group scaling.
+- `integration/` has a phase-aware offload path, adaptive precision controller, Lab 1 bridge, and tested MX software fallback.
+- `baseline_energy/rlhf_with_fpga.py` can run PPO with selective FPGA offload, save timing, and record per-phase FPGA usage.
+- `baseline_energy/test_fpga_integration.py` provides a fast smoke path and a tiny end-to-end RLHF smoke run.
+- `fpga/src/PECore/Datapath/Datapath.h` now has checked-in `INT8` / `MXFP8` / `MXFP4` datapath code wired through the existing PEConfig path.
 
-## What is not finished yet
+What is not true yet:
 
-- The checked-in hardware datapath still performs the baseline integer MAC.
-  The precision bits are carried into PEConfig, but they do not yet change the actual RTL arithmetic.
-- There is no checked-in proof of a deployed MX-capable FPGA bitstream doing real `MXFP8` / `MXFP4` math.
-- On the Python "real FPGA" path, MX modes still fall back to software unless true MX hardware is available.
-- Gradient-phase FPGA offload is not fully autograd-safe, so gradients default to native PyTorch/`FP16`.
-- The final canonical policy sweep and Pareto-style energy/quality comparison table are still missing.
+- There is no checked-in proof yet that the new MX datapath synthesizes and runs correctly in the Stanford/Catapult/F2 flow.
+- There is no checked-in proof of a deployed MX-capable AFI running real MX math on F2.
+- Gradient-phase offload still falls back to native PyTorch because the current FPGA matmul path is not autograd-safe.
+- The final canonical experiment table and Pareto plot are still missing.
 
-## Repo map
+## Checklist
+
+- [x] Repo structure, configs, and test entry points are in place.
+- [x] RLHF host training path exists and runs with selective FPGA offload.
+- [x] MX precision control and policy selection are implemented in software.
+- [x] Local and mock-FPGA smoke tests exist.
+- [x] Per-phase FPGA statistics are saved for rollout, reward, and gradient.
+- [x] Add checked-in tri-mode datapath code for `INT8` / `MXFP8` / `MXFP4`.
+- [ ] Build and validate an MX-capable FPGA image on the Stanford/AWS flow.
+- [ ] Run the final baseline vs `A/B/C/D` policy sweep on the real hardware path.
+- [ ] Produce the final energy-vs-quality table, Pareto figure, and report conclusion.
+
+## What To Do Next
+
+1. Validate the new MX datapath on the Stanford build machines:
+   `make fpga-doctor`, `make fpga-systemc-sim`, `make fpga-hls-sim`, `make fpga-hw-sim`
+2. If those pass, build and load the FPGA image:
+   `make fpga-build`, `python3 fpga/run_fpga_flow.py generate-afi`, `python3 fpga/run_fpga_flow.py check-afi`, `make fpga-program`, `make fpga-test`
+3. Compare `INT8`, `MXFP8`, and `MXFP4` runtime outputs against the reference MX model.
+4. Then run the final experiment sweep: `INT8` baseline plus policies `A/B/C/D`.
+
+## Fast Start
+
+Local sanity checks:
+
+```bash
+make py-tests
+make fpga-ref-sim
+.venv/bin/python3 baseline_energy/test_fpga_integration.py
+```
+
+Tiny end-to-end smoke run:
+
+```bash
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv/bin/python3 baseline_energy/test_fpga_integration.py \
+  --run-end-to-end \
+  --steps 1 \
+  --output results/milestone4_smoke_tiny \
+  --model-name HuggingFaceH4/tiny-random-LlamaForCausalLM \
+  --reward-model-name HuggingFaceH4/tiny-random-LlamaForCausalLM \
+  --local-dataset-path baseline_energy/data/smoke_rlhf.jsonl \
+  --num-samples 2 \
+  --train-size 1 \
+  --eval-size 1 \
+  --batch-size 1 \
+  --mini-batch-size 1 \
+  --gradient-accumulation-steps 1 \
+  --max-seq-length 64 \
+  --max-prompt-length 32 \
+  --max-response-length 4 \
+  --fpga-response-length 4 \
+  --pretrain-reward-steps 1 \
+  --policy-blocks 0 \
+  --reward-policy-blocks 0
+```
+
+Stanford/AWS hardware flow:
+
+```bash
+make fpga-doctor
+make fpga-systemc-sim
+make fpga-hls-sim
+make fpga-hw-sim
+make fpga-build
+make fpga-program
+make fpga-test
+```
+
+## Repo Map
 
 - [baseline_energy](/Users/dannyadkins/CS217-Final-Project/baseline_energy)
-  Host-side RLHF experiments, configs, timing, evaluation, and sweep orchestration.
+  Host-side RLHF runs, smoke tests, timing, energy logging, and sweep orchestration.
 - [integration](/Users/dannyadkins/CS217-Final-Project/integration)
-  FPGA matmul offload wrapper, Lab 1 interface, adaptive controller, and integration tests.
+  Adaptive controller, FPGA offload wrapper, Lab 1 bridge, and integration tests.
 - [pytorch_profiling](/Users/dannyadkins/CS217-Final-Project/pytorch_profiling)
-  Sensitivity profiling and policy generation.
+  Layer sensitivity profiling and policy generation.
 - [systemc](/Users/dannyadkins/CS217-Final-Project/systemc)
   Clean MX reference implementation and local C++ testbench.
 - [fpga](/Users/dannyadkins/CS217-Final-Project/fpga)
-  Hardware build/deploy path for the Stanford/AWS environment.
+  Stanford/AWS F2 build and deploy path.
 - [results](/Users/dannyadkins/CS217-Final-Project/results)
-  Saved experiment outputs and smoke artifacts.
-- [docs](/Users/dannyadkins/CS217-Final-Project/docs)
-  Short project-state notes and report support material.
+  Saved experiment outputs and report artifacts.
 - [report](/Users/dannyadkins/CS217-Final-Project/report)
   LaTeX report drafts.
 
-## Command entry points
+## Source Of Truth
 
-Top-level `Makefile`:
+Use this README as the top-level status page.
 
-```bash
-make help
-make fpga-doctor
-make fpga-ref-sim
-make py-tests
-```
+For component details:
 
-Useful direct commands:
-
-```bash
-python3 fpga/run_fpga_flow.py doctor
-make -C systemc run
-```
-
-Where they run:
-
-- Local machine
-  - `make fpga-ref-sim`
-  - `make py-tests`
-  - `make -C systemc run`
-- Stanford build machine
-  - `make fpga-systemc-sim`
-  - `make fpga-hls-sim`
-  - `make fpga-hw-sim`
-  - `make fpga-build`
-- F2 runtime host
-  - `make fpga-program`
-  - `make fpga-test`
-
-## Verified locally
-
-- `make py-tests`
-- `make -C systemc clean all run`
-
-Both passed in the current repo state.
-
-## Best docs to read next
-
-- Current state and missing work:
-  [docs/CURRENT_STATE_AND_SWEEP_PLAN.md](/Users/dannyadkins/CS217-Final-Project/docs/CURRENT_STATE_AND_SWEEP_PLAN.md)
-- Host-side RLHF path:
-  [baseline_energy/README.md](/Users/dannyadkins/CS217-Final-Project/baseline_energy/README.md)
-- Python integration layer:
-  [integration/README.md](/Users/dannyadkins/CS217-Final-Project/integration/README.md)
-- Profiling and policy generation:
-  [pytorch_profiling/README.md](/Users/dannyadkins/CS217-Final-Project/pytorch_profiling/README.md)
-- FPGA build/deploy path:
-  [fpga/README.md](/Users/dannyadkins/CS217-Final-Project/fpga/README.md)
-
-## Documentation note
-
-Several older top-level milestone/setup notes are still kept in the repo, but they have been shortened and treated as historical snapshots. The main source of truth is this README plus the component READMEs above.
+- [baseline_energy/README.md](/Users/dannyadkins/CS217-Final-Project/baseline_energy/README.md)
+- [integration/README.md](/Users/dannyadkins/CS217-Final-Project/integration/README.md)
+- [pytorch_profiling/README.md](/Users/dannyadkins/CS217-Final-Project/pytorch_profiling/README.md)
+- [fpga/README.md](/Users/dannyadkins/CS217-Final-Project/fpga/README.md)
+- [docs/CURRENT_STATE_AND_SWEEP_PLAN.md](/Users/dannyadkins/CS217-Final-Project/docs/CURRENT_STATE_AND_SWEEP_PLAN.md)

@@ -7,7 +7,10 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from integration.adaptive_controller import AdaptivePrecisionController
+from integration.adaptive_controller import (
+    AdaptivePrecisionController,
+    resolve_policy_group_size,
+)
 
 
 class TestAdaptivePrecisionController(unittest.TestCase):
@@ -89,6 +92,45 @@ class TestAdaptivePrecisionController(unittest.TestCase):
         with controller.phase_scope("reward"):
             self.assertEqual(controller.current_phase, "reward")
         self.assertEqual(controller.current_phase, "rollout")
+
+    def test_policy_group_size_overrides_default_when_present(self):
+        payload = {
+            "D": {
+                "name": "D - Phase-Adaptive",
+                "group_size": 16,
+                "layers": {
+                    "model.layers.0.self_attn.q_proj": {
+                        "rollout": "MXFP4",
+                        "reward": "MXFP8",
+                        "gradient": "FP16",
+                    }
+                },
+            }
+        }
+        policy_path = self.write_policy_file(payload)
+        group_size = resolve_policy_group_size(
+            default_group_size=8,
+            policy_name="D",
+            policy_path=str(policy_path),
+        )
+        self.assertEqual(group_size, 16)
+
+    def test_policy_group_size_falls_back_to_default_when_missing(self):
+        payload = {
+            "layers": {
+                "model.layers.0.self_attn.q_proj": {
+                    "rollout": "MXFP4",
+                    "reward": "MXFP8",
+                    "gradient": "FP16",
+                }
+            }
+        }
+        policy_path = self.write_policy_file(payload)
+        group_size = resolve_policy_group_size(
+            default_group_size=8,
+            policy_path=str(policy_path),
+        )
+        self.assertEqual(group_size, 8)
 
     def test_stats_count_decisions_by_phase_and_precision(self):
         controller = AdaptivePrecisionController(default_precision="INT8")
