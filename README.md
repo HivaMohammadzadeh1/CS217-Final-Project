@@ -66,6 +66,89 @@ Saved artifacts are in `results/fpga_final-full/` (trained policy, reward model,
 
 ---
 
+## Milestone 3: MX Simulation + Precision Control
+
+Milestone 3 validates the dual-precision MX datapath (SystemC reference model), layer sensitivity profiling, and automatic policy generation.
+
+### SystemC Testbench Results
+
+All five test categories passed via `make -C systemc clean all run`:
+
+| Test | Metric | Value | Limit | Result |
+| --- | --- | --- | --- | --- |
+| Quantize/dequantize | FP8 reconstruction MAE | 0.00884 | 0.10 | PASS |
+| Quantize/dequantize | FP4 reconstruction MAE | 0.07951 | 0.35 | PASS |
+| MAC accuracy | FP8 mean normalized error | 0.00665 | 0.08 | PASS |
+| MAC accuracy | FP4 mean normalized error | 0.05165 | 0.25 | PASS |
+| GEMM accuracy (16x16) | FP8 mean abs error | 0.03559 | 0.25 | PASS |
+| GEMM accuracy (16x16) | FP4 mean abs error | 0.24754 | 0.85 | PASS |
+| Mode switching | MAC blocked until FlushPipeline() | — | — | PASS |
+| Mode switching | Mode updated to MXFP4 after flush | — | — | PASS |
+| Mode switching | MAC succeeds after flush | — | — | PASS |
+| Group size comparison | Group 8 not worse than group 16 | within margin | — | PASS |
+
+### Sensitivity Profiling
+
+Layer sensitivity was profiled on `sshleifer/tiny-gpt2` using the `hivamoh/cs217-rlhf-dataset`:
+
+```bash
+python pytorch_profiling/sensitivity_profiler.py \
+  --model sshleifer/tiny-gpt2 \
+  --dataset hivamoh/cs217-rlhf-dataset \
+  --text-field chosen \
+  --num-examples 4 \
+  --max-seq-len 96 \
+  --max-layers 4 \
+  --device cpu \
+  --output results/profiling_smoke/sensitivity_matrix.csv
+```
+
+Baseline perplexity: 50278.3945. All layers were profiled across MXFP4/MXFP8 at group sizes 8 and 16, with all precision modes marked as tolerant (delta within threshold).
+
+### Policy Generation
+
+Four precision policies (A–D) were generated from the sensitivity matrix:
+
+```bash
+python pytorch_profiling/define_policies.py \
+  --sensitivity results/profiling_smoke/sensitivity_matrix.csv \
+  --group-size 8 \
+  --output results/profiling_smoke/policies_g8.json
+```
+
+| Policy | Strategy | Description |
+| --- | --- | --- |
+| A | Conservative | Keeps layers at highest precision unless strongly tolerant |
+| B | Balanced | Mixes MXFP8/MXFP4 based on per-layer sensitivity |
+| C | Aggressive | Pushes as many layers as possible to MXFP4 |
+| D | Phase-Adaptive | Varies precision by training phase (rollout, reward, gradient) |
+
+### How to reproduce
+
+```bash
+# 1. SystemC datapath tests
+make -C systemc clean all run
+
+# 2. Sensitivity profiling (smoke run)
+python pytorch_profiling/sensitivity_profiler.py \
+  --model sshleifer/tiny-gpt2 \
+  --dataset hivamoh/cs217-rlhf-dataset \
+  --text-field chosen \
+  --num-examples 4 \
+  --max-seq-len 96 \
+  --max-layers 4 \
+  --device cpu \
+  --output results/profiling_smoke/sensitivity_matrix.csv
+
+# 3. Policy generation
+python pytorch_profiling/define_policies.py \
+  --sensitivity results/profiling_smoke/sensitivity_matrix.csv \
+  --group-size 8 \
+  --output results/profiling_smoke/policies_g8.json
+```
+
+---
+
 ## What is implemented
 
 - `systemc/`
