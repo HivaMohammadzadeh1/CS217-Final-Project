@@ -6,7 +6,7 @@ Can RLHF matmuls use less FPGA energy if we switch from fixed `INT8` to adaptive
 
 ## Status
 
-The project is in a good Milestone 4 state on the host side and a partial Milestone 4 state on the hardware side.
+The project is in a good Milestone 4 state on the host side and an in-progress Milestone 4 state on the hardware side.
 
 What is true today:
 
@@ -14,11 +14,12 @@ What is true today:
 - `systemc/` has a working MX reference model with precision switching and group scaling.
 - `integration/` has a phase-aware offload path, adaptive precision controller, Lab 1 bridge, and tested MX software fallback.
 - `baseline_energy/rlhf_with_fpga.py` can run PPO with selective FPGA offload, save timing, and record per-phase FPGA usage.
-- `baseline_energy/test_fpga_integration.py` now provides a fast smoke path and a tiny end-to-end RLHF smoke run.
+- `baseline_energy/test_fpga_integration.py` provides a fast smoke path and a tiny end-to-end RLHF smoke run.
+- `fpga/src/PECore/Datapath/Datapath.h` now has checked-in `INT8` / `MXFP8` / `MXFP4` datapath code wired through the existing PEConfig path.
 
 What is not true yet:
 
-- The checked-in FPGA compute path still does baseline arithmetic, not real `MXFP8` / `MXFP4` MACs.
+- There is no checked-in proof yet that the new MX datapath synthesizes and runs correctly in the Stanford/Catapult/F2 flow.
 - There is no checked-in proof of a deployed MX-capable AFI running real MX math on F2.
 - Gradient-phase offload still falls back to native PyTorch because the current FPGA matmul path is not autograd-safe.
 - The final canonical experiment table and Pareto plot are still missing.
@@ -30,18 +31,19 @@ What is not true yet:
 - [x] MX precision control and policy selection are implemented in software.
 - [x] Local and mock-FPGA smoke tests exist.
 - [x] Per-phase FPGA statistics are saved for rollout, reward, and gradient.
-- [ ] Replace baseline PE arithmetic with real MX arithmetic in the checked-in hardware path.
+- [x] Add checked-in tri-mode datapath code for `INT8` / `MXFP8` / `MXFP4`.
 - [ ] Build and validate an MX-capable FPGA image on the Stanford/AWS flow.
 - [ ] Run the final baseline vs `A/B/C/D` policy sweep on the real hardware path.
 - [ ] Produce the final energy-vs-quality table, Pareto figure, and report conclusion.
 
-## Next Steps
+## What To Do Next
 
-1. Finish the real MX datapath in [fpga/src/PECore/Datapath/Datapath.h](/Users/dannyadkins/CS217-Final-Project/fpga/src/PECore/Datapath/Datapath.h) and the connected PECore path so precision mode changes actual hardware math, not just control metadata.
-2. Build and deploy an MX-capable bitstream through [fpga/README.md](/Users/dannyadkins/CS217-Final-Project/fpga/README.md), then validate outputs against the SystemC and Python MX reference paths.
-3. Regenerate the final sensitivity matrix and policy JSON for the target model, then lock one canonical set of policies for experiments.
-4. Run one clean experiment matrix: `INT8` baseline plus policies `A/B/C/D`, with one saved manifest, one canonical CSV, and one results directory structure.
-5. Finish the report with the final figures: sensitivity heatmap, phase breakdown, energy-quality table, and Pareto curve.
+1. Validate the new MX datapath on the Stanford build machines:
+   `make fpga-doctor`, `make fpga-systemc-sim`, `make fpga-hls-sim`, `make fpga-hw-sim`
+2. If those pass, build and load the FPGA image:
+   `make fpga-build`, `python3 fpga/run_fpga_flow.py generate-afi`, `python3 fpga/run_fpga_flow.py check-afi`, `make fpga-program`, `make fpga-test`
+3. Compare `INT8`, `MXFP8`, and `MXFP4` runtime outputs against the reference MX model.
+4. Then run the final experiment sweep: `INT8` baseline plus policies `A/B/C/D`.
 
 ## Fast Start
 
@@ -84,6 +86,7 @@ Stanford/AWS hardware flow:
 make fpga-doctor
 make fpga-systemc-sim
 make fpga-hls-sim
+make fpga-hw-sim
 make fpga-build
 make fpga-program
 make fpga-test
