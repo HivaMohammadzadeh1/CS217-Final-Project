@@ -16,6 +16,57 @@ import tb_type_defines_pkg::*;
     return (x > 0.0) ? $floor(x + 0.5) : $ceil(x - 0.5);
   endfunction
 
+  // MX minifloat parameters
+  localparam int PE_PRECISION_INT8  = 0;
+  localparam int PE_PRECISION_MXFP8 = 1;
+  localparam int PE_PRECISION_MXFP4 = 2;
+
+  localparam int PE_CONFIG_IS_VALID_BIT       = 0;
+  localparam int PE_CONFIG_IS_BIAS_BIT        = 24;
+  localparam int PE_CONFIG_NUM_MANAGER_BIT    = 32;
+  localparam int PE_CONFIG_NUM_OUTPUT_BIT     = 40;
+  localparam int PE_CONFIG_PRECISION_MODE_BIT = 48;
+  localparam int PE_CONFIG_GROUP_SIZE_16_BIT  = 56;
+
+  // Test configuration: change these to test different MX modes
+  int test_precision_mode = PE_PRECISION_MXFP8;
+  int test_group_size     = 8;
+
+  function automatic [63:0] build_pe_config_word(input int precision_mode, input int group_size);
+    logic [63:0] w;
+    w = 64'h0;
+    w[PE_CONFIG_IS_VALID_BIT]    = 1'b1;
+    w[PE_CONFIG_IS_BIAS_BIT]     = 1'b1;
+    w[PE_CONFIG_NUM_MANAGER_BIT] = 1'b1;
+    w[PE_CONFIG_NUM_OUTPUT_BIT]  = 1'b1;
+    w[PE_CONFIG_PRECISION_MODE_BIT +: 2] = precision_mode[1:0];
+    if (group_size == 16)
+      w[PE_CONFIG_GROUP_SIZE_16_BIT] = 1'b1;
+    return w;
+  endfunction
+
+  function automatic real decode_minifloat_real(
+    input [7:0] code, input int exp_bits, input int mant_bits, input int exp_bias
+  );
+    int sign_shift = exp_bits + mant_bits;
+    int exp_mask   = (1 << exp_bits) - 1;
+    int mant_mask  = (1 << mant_bits) - 1;
+    int neg        = (code >> sign_shift) & 1;
+    int exp_field  = (code >> mant_bits) & exp_mask;
+    int mantissa   = code & mant_mask;
+    real value;
+
+    if (exp_field == 0 && mantissa == 0) return 0.0;
+    if (exp_field == 0) begin
+      real frac = $itor(mantissa) / $itor(1 << mant_bits);
+      value = frac * (2.0 ** (1 - exp_bias));
+    end else begin
+      real frac = 1.0 + ($itor(mantissa) / $itor(1 << mant_bits));
+      value = frac * (2.0 ** (exp_field - exp_bias));
+    end
+    return neg ? -value : value;
+  endfunction
+
   task automatic start_data_transfer_counter();
     logic [WIDTH_ADDR_AXI - 1 : 0] addr;
     logic [WIDTH_DATA_AXI - 1:0] data;
@@ -198,10 +249,11 @@ import tb_type_defines_pkg::*;
     // 1) WRITE PEConfig (region 0x4, local_index = 0x0001)
     // ---------------------------
 
-    $display("---- STEP 1: WRITE PEConfig");    
+    $display("---- STEP 1: WRITE PEConfig (precision=%0d, group_size=%0d)", test_precision_mode, test_group_size);
     rva_in_addr = 24'h4000_10;
     rva_in_rw = 1;
-    cfg = 64'h0000_0101_0000_0001; rva_in_data = 0;
+    cfg = build_pe_config_word(test_precision_mode, test_group_size);
+    rva_in_data = 0;
     rva_in_data[63:0] = cfg;
     rva_format(rva_in_rw, rva_in_addr, rva_in_data, rva_in);
     start_data_transfer_counter();
@@ -303,20 +355,40 @@ import tb_type_defines_pkg::*;
 
     for (int i = 0; i < kNumVectorLanes; i++)
     begin
-      output_accum = 0;
-      for (int j = 0; j < kVectorSize; j++)
-      begin
-        weight_byte = (weight[i] >> kIntWordWidth*j) & ((1 << kIntWordWidth) - 1);
-        input_byte = (input_written >> kIntWordWidth*j) & ((1 << kIntWordWidth) - 1);
-        output_accum += weight_byte * input_byte;
+      output_obtained[i] = output_obtained_flat[i*kActWordWidth +: kActWordWidth];
+
+      if (test_precision_mode == PE_PRECISION_INT8) begin
+        output_accum = 0;
+        for (int j = 0; j < kVectorSize; j++) begin
+          weight_byte = (weight[i] >> kIntWordWidth*j) & ((1 << kIntWordWidth) - 1);
+          input_byte = (input_written >> kIntWordWidth*j) & ((1 << kIntWordWidth) - 1);
+          output_accum += weight_byte * input_byte;
+        end
+        scaled = output_accum / 12.25;
+      end else begin
+        // MX golden model: decode bytes as minifloat, group-scaled dot product
+        int eb, mb, bias;
+        real acc_mx;
+        if (test_precision_mode == PE_PRECISION_MXFP8) begin
+          eb = 4; mb = 3; bias = 7;
+        end else begin
+          eb = 2; mb = 1; bias = 1;
+        end
+        acc_mx = 0.0;
+        for (int j = 0; j < kVectorSize; j++) begin
+          real wf, inf;
+          wf = decode_minifloat_real((weight[i] >> kIntWordWidth*j) & 8'hFF, eb, mb, bias);
+          inf = decode_minifloat_real((input_written >> kIntWordWidth*j) & 8'hFF, eb, mb, bias);
+          acc_mx += wf * inf;
+        end
+        scaled = acc_mx;
       end
-      scaled = output_accum / 12.25;
+
       if (scaled > kActWordMax)
         scaled = kActWordMax;
       else if (scaled < kActWordMin)
         scaled = kActWordMin;
       output_act[i] = round(scaled);
-      output_obtained[i] = output_obtained_flat[i*kActWordWidth +: kActWordWidth];
     end
 
     compare_act_vectors(output_obtained, output_act, error_cnt);

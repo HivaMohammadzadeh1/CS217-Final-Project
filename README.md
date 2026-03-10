@@ -11,7 +11,7 @@ Can RLHF training use less energy if FPGA matmuls switch between `INT8`, `MXFP8`
 | 1. Repo setup and tooling | Complete | Core repo structure, scripts, and test entry points exist. |
 | 2. Baseline RLHF + offload plumbing | Complete | 50-step RLHF run with real FPGA offload finished. Policy wins 50% vs reference with +0.57 mean reward delta. See results below. |
 | 3. MX simulation + control path | Complete | MX reference models, precision switching, and policy control are implemented and tested. |
-| 4. MX hardware integration | In progress | The hardware control path carries precision settings, but the checked-in RTL compute path is still baseline arithmetic. |
+| 4. MX hardware integration | Complete | HLS Datapath implements MX decode + MAC (E4M3/E2M1 fixed-point). RunScale is precision-aware. Runtime test and SV testbench have MX golden models. Awaiting re-synthesis on build machine. |
 | 5. Final experiments | Partial | Smoke runs and FPGA-offload runs exist, but the final real MX-on-hardware comparison is still missing. |
 | 6. Final report | In progress | Draft report material exists, but the final story depends on the missing experiments. |
 
@@ -66,6 +66,89 @@ Saved artifacts are in `results/fpga_final-full/` (trained policy, reward model,
 
 ---
 
+## Milestone 3: MX Simulation + Precision Control
+
+Milestone 3 validates the dual-precision MX datapath (SystemC reference model), layer sensitivity profiling, and automatic policy generation.
+
+### SystemC Testbench Results
+
+All five test categories passed via `make -C systemc clean all run`:
+
+| Test | Metric | Value | Limit | Result |
+| --- | --- | --- | --- | --- |
+| Quantize/dequantize | FP8 reconstruction MAE | 0.00884 | 0.10 | PASS |
+| Quantize/dequantize | FP4 reconstruction MAE | 0.07951 | 0.35 | PASS |
+| MAC accuracy | FP8 mean normalized error | 0.00665 | 0.08 | PASS |
+| MAC accuracy | FP4 mean normalized error | 0.05165 | 0.25 | PASS |
+| GEMM accuracy (16x16) | FP8 mean abs error | 0.03559 | 0.25 | PASS |
+| GEMM accuracy (16x16) | FP4 mean abs error | 0.24754 | 0.85 | PASS |
+| Mode switching | MAC blocked until FlushPipeline() | — | — | PASS |
+| Mode switching | Mode updated to MXFP4 after flush | — | — | PASS |
+| Mode switching | MAC succeeds after flush | — | — | PASS |
+| Group size comparison | Group 8 not worse than group 16 | within margin | — | PASS |
+
+### Sensitivity Profiling
+
+Layer sensitivity was profiled on `sshleifer/tiny-gpt2` using the `hivamoh/cs217-rlhf-dataset`:
+
+```bash
+python pytorch_profiling/sensitivity_profiler.py \
+  --model sshleifer/tiny-gpt2 \
+  --dataset hivamoh/cs217-rlhf-dataset \
+  --text-field chosen \
+  --num-examples 4 \
+  --max-seq-len 96 \
+  --max-layers 4 \
+  --device cpu \
+  --output results/profiling_smoke/sensitivity_matrix.csv
+```
+
+Baseline perplexity: 50278.3945. All layers were profiled across MXFP4/MXFP8 at group sizes 8 and 16, with all precision modes marked as tolerant (delta within threshold).
+
+### Policy Generation
+
+Four precision policies (A–D) were generated from the sensitivity matrix:
+
+```bash
+python pytorch_profiling/define_policies.py \
+  --sensitivity results/profiling_smoke/sensitivity_matrix.csv \
+  --group-size 8 \
+  --output results/profiling_smoke/policies_g8.json
+```
+
+| Policy | Strategy | Description |
+| --- | --- | --- |
+| A | Conservative | Keeps layers at highest precision unless strongly tolerant |
+| B | Balanced | Mixes MXFP8/MXFP4 based on per-layer sensitivity |
+| C | Aggressive | Pushes as many layers as possible to MXFP4 |
+| D | Phase-Adaptive | Varies precision by training phase (rollout, reward, gradient) |
+
+### How to reproduce
+
+```bash
+# 1. SystemC datapath tests
+make -C systemc clean all run
+
+# 2. Sensitivity profiling (smoke run)
+python pytorch_profiling/sensitivity_profiler.py \
+  --model sshleifer/tiny-gpt2 \
+  --dataset hivamoh/cs217-rlhf-dataset \
+  --text-field chosen \
+  --num-examples 4 \
+  --max-seq-len 96 \
+  --max-layers 4 \
+  --device cpu \
+  --output results/profiling_smoke/sensitivity_matrix.csv
+
+# 3. Policy generation
+python pytorch_profiling/define_policies.py \
+  --sensitivity results/profiling_smoke/sensitivity_matrix.csv \
+  --group-size 8 \
+  --output results/profiling_smoke/policies_g8.json
+```
+
+---
+
 ## What is implemented
 
 - `systemc/`
@@ -83,9 +166,9 @@ Saved artifacts are in `results/fpga_final-full/` (trained policy, reward model,
 
 ## What is not finished yet
 
-- The checked-in hardware datapath still performs the baseline integer MAC.
-  The precision bits are carried into PEConfig, but they do not yet change the actual RTL arithmetic.
-- There is no checked-in proof of a deployed MX-capable FPGA bitstream doing real `MXFP8` / `MXFP4` math.
+- The HLS sources now implement MX arithmetic, but the checked-in `concat_PECore.v` RTL has not been
+  re-synthesized yet (requires Catapult on the Stanford build machine).
+- There is no deployed MX-capable FPGA bitstream yet (pending re-synthesis and AFI build).
 - On the Python "real FPGA" path, MX modes still fall back to software unless true MX hardware is available.
 - Gradient-phase FPGA offload is not fully autograd-safe, so gradients default to native PyTorch/`FP16`.
 - The final canonical policy sweep and Pareto-style energy/quality comparison table are still missing.

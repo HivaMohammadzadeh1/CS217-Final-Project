@@ -65,8 +65,16 @@ python3 fpga/run_fpga_flow.py run-fpga-test --slot-id 0 --fpga-test-args "MXFP8 
 - PEConfig now carries precision mode and MX group size through the existing hardware control path.
 - The runtime test binary can program those fields from CLI args.
 
+## What is now implemented
+
+- `Datapath.h` contains `DecodeE4M3Fixed`, `DecodeE2M1Fixed`, and `ProductSumMX` functions
+  that perform MX minifloat decode and MAC in HLS-synthesizable fixed-point arithmetic.
+- `PECore.h` `RunScale` is precision-aware: INT8 divides by 12.25, MX modes pass through directly.
+- `design_top.c` runtime test has an MX-aware golden model for hardware verification.
+- `design_top_base_test.sv` writes precision mode into PEConfig and verifies against an MX golden model.
+
 ## What still needs to happen
 
-- Replace the baseline integer compute path in `PECore` with real MX arithmetic.
+- Re-synthesize `concat_PECore.v` from the updated HLS sources using Catapult on the build machine.
 - Build and deploy an MX-capable AFI.
 - Run the real policy experiments against that deployed hardware.

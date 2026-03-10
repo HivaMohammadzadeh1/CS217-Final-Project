@@ -500,41 +500,38 @@ accum_vector = dp_out;
   {
     if (state == SCALE)
     {
-
-      NVUINT8 scale = spec::kAccumScale;
-      NVUINT8 right_shift = spec::kAccumShift;
       spec::AccumVectorType accum_vector_out;
 
-      // TODO 5:
-      // 1. Implement the scaling operation on accum_vector using scale and right_shift
-      // 2. Store the result in act_port_reg after checking for overflow and cutting to the activation unit range
-      // 3. You can use pragmas to optimize the loop used for scaling and storing the result
-      // 4. If overflow occurs, set the value to kActWordMax or kActWordMin accordingly (these can be found in Spec.h)
-
-
-      /////// YOUR CODE STARTS HERE ////////
+      if (pe_config.precision_mode != spec::kPrecisionINT8) {
+        // MX path: accumulator already holds the integer-scale result
+        // (fractional bits removed in ProductSumMX). Just clamp.
 #pragma hls_unroll yes
-for (int i = 0; i < spec::kNumVectorLanes; i++) {
-  // Perform scaling: (accum * scale) >> right_shift
-  spec::ActScalarType scaled_val = (accum_vector[i] * scale) >> right_shift;
-  
-  // Check overflow and clamp to activation range
-  if (scaled_val > spec::kActWordMax) {
-    accum_vector_out[i] = spec::kActWordMax;
-  } else if (scaled_val < spec::kActWordMin) {
-    accum_vector_out[i] = spec::kActWordMin;
-  } else {
-    accum_vector_out[i] = scaled_val;
-  }
-}
-
-// Store result in output register
+        for (int i = 0; i < spec::kNumVectorLanes; i++) {
+          spec::ActScalarType val = accum_vector[i];
+          if (val > spec::kActWordMax) val = spec::kActWordMax;
+          else if (val < spec::kActWordMin) val = spec::kActWordMin;
+          act_port_reg[i] = val;
+        }
+      } else {
+        // INT8 path: divide by 12.25 via (accum * 167) >> 11
+        NVUINT8 scale = spec::kAccumScale;
+        NVUINT8 right_shift = spec::kAccumShift;
 #pragma hls_unroll yes
-for (int i = 0; i < spec::kNumVectorLanes; i++) {
-  act_port_reg[i] = accum_vector_out[i];
-}
-      /////// YOUR CODE ENDS HERE ////////
-
+        for (int i = 0; i < spec::kNumVectorLanes; i++) {
+          spec::ActScalarType scaled_val = (accum_vector[i] * scale) >> right_shift;
+          if (scaled_val > spec::kActWordMax) {
+            accum_vector_out[i] = spec::kActWordMax;
+          } else if (scaled_val < spec::kActWordMin) {
+            accum_vector_out[i] = spec::kActWordMin;
+          } else {
+            accum_vector_out[i] = scaled_val;
+          }
+        }
+#pragma hls_unroll yes
+        for (int i = 0; i < spec::kNumVectorLanes; i++) {
+          act_port_reg[i] = accum_vector_out[i];
+        }
+      }
     }
   }
 
