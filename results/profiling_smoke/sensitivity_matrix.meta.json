@@ -1,0 +1,34 @@
+{
+  "baseline_perplexity": 50278.39453125,
+  "combinations": [
+    {
+      "precision": "MXFP4",
+      "group_size": 8
+    },
+    {
+      "precision": "MXFP4",
+      "group_size": 16
+    },
+    {
+      "precision": "MXFP8",
+      "group_size": 8
+    },
+    {
+      "precision": "MXFP8",
+      "group_size": 16
+    }
+  ],
+  "config": {
+    "model_name": "sshleifer/tiny-gpt2",
+    "dataset": "hivamoh/cs217-rlhf-dataset",
+    "dataset_split": "train",
+    "dataset_config": null,
+    "text_field": "chosen",
+    "num_examples": 4,
+    "max_seq_len": 96,
+    "max_layers": 4,
+    "tolerance_pct": 2.0,
+    "device": "cpu"
+  },
+  "num_layers_profiled": 1
+}
