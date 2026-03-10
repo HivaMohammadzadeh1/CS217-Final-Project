@@ -1,0 +1,34 @@
+{
+  "lab1_fpga_performance": {
+    "cycles_per_matmul": {
+      "data_transfer": 15357,
+      "compute": 15,
+      "total": 15372
+    },
+    "timing": {
+      "clock_frequency_mhz": 250,
+      "time_per_matmul_us": 61.48800000000001,
+      "throughput_matmuls_per_sec": 16263.335935467081
+    },
+    "energy": {
+      "fpga_power_w": 35,
+      "energy_per_matmul_mj": 2.15208
+    },
+    "breakdown": {
+      "data_transfer_cycles": 15357,
+      "data_transfer_pct": 99.90241998438721,
+      "compute_cycles": 15,
+      "compute_pct": 0.0975800156128025,
+      "bottleneck": "Data Transfer (PCIe)"
+    }
+  },
+  "rlhf_workload_estimate": {
+    "num_ppo_steps": 50,
+    "total_matmuls": 6144000,
+    "total_cycles": 94445568000,
+    "total_time_seconds": 377.782272,
+    "total_time_minutes": 6.296371199999999,
+    "total_energy_joules": 13222.379519999999,
+    "total_energy_wh": 3.6728832
+  }
+}

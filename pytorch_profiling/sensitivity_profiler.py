@@ -335,7 +335,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--text-field", default="chosen")
     parser.add_argument("--num-examples", type=int, default=16)
     parser.add_argument("--max-seq-len", type=int, default=256)
-    parser.add_argument("--max-layers", type=int, default=8)
+    parser.add_argument("--max-layers", type=int, default=None,
+                        help="Max layers to profile. Default: all layers.")
     parser.add_argument("--tolerance-pct", type=float, default=2.0)
     parser.add_argument("--device", default=auto_device())
     parser.add_argument(

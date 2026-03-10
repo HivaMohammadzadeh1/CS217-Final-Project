@@ -87,41 +87,49 @@ All five test categories passed via `make -C systemc clean all run`:
 | Mode switching | MAC succeeds after flush | — | — | PASS |
 | Group size comparison | Group 8 not worse than group 16 | within margin | — | PASS |
 
-### Sensitivity Profiling
+### Sensitivity Profiling (Qwen2.5-0.5B-Instruct)
 
-Layer sensitivity was profiled on `sshleifer/tiny-gpt2` using the `hivamoh/cs217-rlhf-dataset`:
+Layer sensitivity was profiled on the real target model `Qwen/Qwen2.5-0.5B-Instruct` using `hivamoh/cs217-rlhf-dataset` (16 examples, seq_len 256). Baseline perplexity: **13.3231**.
 
-```bash
-python pytorch_profiling/sensitivity_profiler.py \
-  --model sshleifer/tiny-gpt2 \
-  --dataset hivamoh/cs217-rlhf-dataset \
-  --text-field chosen \
-  --num-examples 4 \
-  --max-seq-len 96 \
-  --max-layers 4 \
-  --device cpu \
-  --output results/profiling_smoke/sensitivity_matrix.csv
-```
+| Layer | Type | MXFP4 g8 delta | MXFP4 g16 delta | MXFP8 g8 delta | MXFP8 g16 delta | All tolerant? |
+| --- | --- | --- | --- | --- | --- | --- |
+| layers.0.self_attn.q_proj | attention | -0.06% | -0.01% | +0.00% | +0.00% | Yes |
+| layers.0.self_attn.k_proj | attention | -0.15% | -0.20% | +0.02% | +0.02% | Yes |
+| layers.0.self_attn.v_proj | attention | -0.05% | -0.18% | +0.05% | +0.05% | Yes |
+| layers.0.self_attn.o_proj | attention | +0.22% | -0.03% | +0.08% | +0.08% | Yes |
+| layers.0.mlp.gate_proj | mlp | +0.51% | +1.38% | +0.01% | +0.01% | Yes |
+| layers.0.mlp.up_proj | mlp | +0.43% | +1.13% | -0.03% | -0.03% | Yes |
+| layers.0.mlp.down_proj | mlp | +0.65% | +1.28% | +0.08% | +0.08% | Yes |
+| layers.1.self_attn.q_proj | attention | -0.02% | +0.11% | -0.00% | -0.00% | Yes |
 
-Baseline perplexity: 50278.3945. All layers were profiled across MXFP4/MXFP8 at group sizes 8 and 16, with all precision modes marked as tolerant (delta within threshold).
+Summary (8 layers profiled, tolerance threshold 2%):
+
+| Format | Tolerant | Avg delta |
+| --- | --- | --- |
+| MXFP4 g8 | 8/8 | +0.19% |
+| MXFP4 g16 | 8/8 | +0.44% |
+| MXFP8 g8 | 8/8 | +0.03% |
+| MXFP8 g16 | 8/8 | +0.03% |
+
+Key findings: Attention layers tolerate MXFP4 very well (deltas near zero or negative). MLP layers show slightly higher MXFP4 sensitivity (+0.4–1.4%), especially at group size 16, but remain within the 2% tolerance. MXFP8 is nearly lossless across all layers.
 
 ### Policy Generation
 
 Four precision policies (A–D) were generated from the sensitivity matrix:
 
 ```bash
-python pytorch_profiling/define_policies.py \
-  --sensitivity results/profiling_smoke/sensitivity_matrix.csv \
+python3 pytorch_profiling/define_policies.py \
+  --sensitivity results/sensitivity_matrix.csv \
   --group-size 8 \
-  --output results/profiling_smoke/policies_g8.json
+  --output results/policies.json
 ```
 
 | Policy | Strategy | Description |
 | --- | --- | --- |
-| A | Conservative | Keeps layers at highest precision unless strongly tolerant |
-| B | Balanced | Mixes MXFP8/MXFP4 based on per-layer sensitivity |
-| C | Aggressive | Pushes as many layers as possible to MXFP4 |
-| D | Phase-Adaptive | Varies precision by training phase (rollout, reward, gradient) |
+| A | Conservative | MXFP8 all layers for rollout/reward, FP16 for gradients |
+| B | Balanced | MXFP4 for tolerant layers, MXFP8 for sensitive, FP16 for gradients |
+| C | Aggressive | MXFP4 everywhere possible, MXFP8 fallback for sensitive gradients |
+| D | Phase-Adaptive | MXFP4-biased rollout, MXFP8-biased reward, FP16-safe gradients |
 
 ### How to reproduce
 
@@ -129,22 +137,21 @@ python pytorch_profiling/define_policies.py \
 # 1. SystemC datapath tests
 make -C systemc clean all run
 
-# 2. Sensitivity profiling (smoke run)
-python pytorch_profiling/sensitivity_profiler.py \
-  --model sshleifer/tiny-gpt2 \
+# 2. Sensitivity profiling on Qwen2.5-0.5B-Instruct
+python3 pytorch_profiling/sensitivity_profiler.py \
+  --model Qwen/Qwen2.5-0.5B-Instruct \
   --dataset hivamoh/cs217-rlhf-dataset \
   --text-field chosen \
-  --num-examples 4 \
-  --max-seq-len 96 \
-  --max-layers 4 \
+  --num-examples 16 \
+  --max-seq-len 256 \
   --device cpu \
-  --output results/profiling_smoke/sensitivity_matrix.csv
+  --output results/sensitivity_matrix.csv
 
 # 3. Policy generation
-python pytorch_profiling/define_policies.py \
-  --sensitivity results/profiling_smoke/sensitivity_matrix.csv \
+python3 pytorch_profiling/define_policies.py \
+  --sensitivity results/sensitivity_matrix.csv \
   --group-size 8 \
-  --output results/profiling_smoke/policies_g8.json
+  --output results/policies.json
 ```
 
 ---
