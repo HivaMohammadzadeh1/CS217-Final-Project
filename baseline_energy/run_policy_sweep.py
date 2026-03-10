@@ -36,6 +36,8 @@ def build_command(args, policy_name: str, output_dir: Path, passthrough_args=Non
         cmd.extend(["--group-size", str(args.group_size)])
     if args.allow_gradient_offload:
         cmd.append("--allow-gradient-offload")
+    if getattr(args, "allow_mx_software_fallback", False):
+        cmd.append("--allow-mx-software-fallback")
     if passthrough_args:
         cmd.extend(passthrough_args)
 
@@ -103,6 +105,12 @@ def main():
         action="store_true",
         default=False,
         help="Allow gradient-phase offload in the controller.",
+    )
+    parser.add_argument(
+        "--allow-mx-software-fallback",
+        action="store_true",
+        default=False,
+        help="Acknowledge mixed backend on real Lab1 runs where MX still falls back to software. Debug-only.",
     )
     parser.add_argument(
         "--keep-going",

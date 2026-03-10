@@ -46,12 +46,19 @@ F2 runtime host:
 ```bash
 python3 fpga/run_fpga_flow.py program-fpga
 python3 fpga/run_fpga_flow.py run-fpga-test --slot-id 0
+python3 integration/validate_fpga_runtime.py --use-real-fpga
 ```
 
 To push staged MX control bits through the runtime path:
 
 ```bash
 python3 fpga/run_fpga_flow.py run-fpga-test --slot-id 0 --fpga-test-args "MXFP8 16"
+```
+
+To verify what backend the Python runtime actually used for `INT8` / `MXFP8` / `MXFP4`:
+
+```bash
+python3 integration/validate_fpga_runtime.py --use-real-fpga --output-json results/runtime_validation.json
 ```
 
 ## What is already true

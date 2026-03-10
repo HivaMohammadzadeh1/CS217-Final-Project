@@ -44,7 +44,7 @@ What is not true yet:
    `make fpga-doctor`, `make fpga-systemc-sim`, `make fpga-hls-sim`, `make fpga-hw-sim`
 2. If those pass, build and load the FPGA image:
    `make fpga-build`, `python3 fpga/run_fpga_flow.py generate-afi`, `python3 fpga/run_fpga_flow.py check-afi`, `make fpga-program`, `make fpga-test`
-3. Compare `INT8`, `MXFP8`, and `MXFP4` runtime outputs against the reference MX model and fix any numeric mismatch.
+3. Run `make fpga-runtime-check` to see which backend each mode actually used and compare it against the repo reference.
 4. Switch the RLHF runtime path to use validated MX hardware instead of MX software fallback.
 5. Then run the final experiment sweep: `INT8` baseline plus policies `A/B/C/D`.
 
@@ -93,6 +93,7 @@ make fpga-hw-sim
 make fpga-build
 make fpga-program
 make fpga-test
+make fpga-runtime-check
 ```
 
 ## Repo Map

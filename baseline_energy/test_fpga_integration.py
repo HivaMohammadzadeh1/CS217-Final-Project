@@ -111,6 +111,13 @@ def quick_offload_check(args):
     print(f"Tiles processed: {stats.get('total_tiles')}", flush=True)
     if "using_hardware" in stats:
         print(f"Using hardware: {stats.get('using_hardware')}", flush=True)
+    if "last_tile_backend" in stats:
+        print(f"Last tile backend: {stats.get('last_tile_backend')}", flush=True)
+    if "mx_software_fallback_tile_calls" in stats:
+        print(
+            f"MX software fallback tiles: {stats.get('mx_software_fallback_tile_calls')}",
+            flush=True,
+        )
 
     if not torch.isfinite(mxfp8_result).all():
         raise RuntimeError("MXFP8 smoke result contains non-finite values.")
@@ -127,6 +134,7 @@ def verify_end_to_end_outputs(output_dir: Path):
 
     phase_timing = json.loads((output_dir / "phase_timing.json").read_text())
     fpga_stats = json.loads((output_dir / "fpga_stats.json").read_text())
+    training_meta = json.loads((output_dir / "training_meta.json").read_text())
 
     print("Generated outputs:", flush=True)
     for name in EXPECTED_OUTPUTS:
@@ -146,6 +154,8 @@ def verify_end_to_end_outputs(output_dir: Path):
     print("\nFPGA totals:", flush=True)
     print(f"  matmuls={fpga_stats.get('total_matmuls', 0)}", flush=True)
     print(f"  tiles={fpga_stats.get('total_tiles', 0)}", flush=True)
+    print("\nRuntime contract:", flush=True)
+    print(f"  {training_meta.get('runtime_contract', 'unknown')}", flush=True)
 
 
 def run_end_to_end_smoke(args):

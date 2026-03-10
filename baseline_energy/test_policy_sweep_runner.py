@@ -20,6 +20,7 @@ class TestPolicySweepRunner(unittest.TestCase):
             precision_mode="INT8",
             group_size=16,
             allow_gradient_offload=True,
+            allow_mx_software_fallback=True,
         )
 
         cmd = build_command(args, "D", Path("results/policy_sweep/policy_D"))
@@ -31,6 +32,7 @@ class TestPolicySweepRunner(unittest.TestCase):
         self.assertIn("D", cmd)
         self.assertIn("--skip-eval", cmd)
         self.assertIn("--allow-gradient-offload", cmd)
+        self.assertIn("--allow-mx-software-fallback", cmd)
         self.assertIn("16", cmd)
 
     def test_build_command_appends_passthrough_args(self):
@@ -43,6 +45,7 @@ class TestPolicySweepRunner(unittest.TestCase):
             precision_mode=None,
             group_size=None,
             allow_gradient_offload=False,
+            allow_mx_software_fallback=False,
         )
 
         cmd = build_command(

@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python3
 
-.PHONY: help fpga-doctor fpga-ref-sim fpga-systemc-sim fpga-hls-sim fpga-hw-sim fpga-build fpga-program fpga-test py-tests
+.PHONY: help fpga-doctor fpga-ref-sim fpga-systemc-sim fpga-hls-sim fpga-hw-sim fpga-build fpga-program fpga-test fpga-runtime-check py-tests
 
 help:
 	@printf '%s\n' \
@@ -13,6 +13,7 @@ help:
 	"  make fpga-build       # build FPGA checkpoint / AFI input" \
 	"  make fpga-program     # load image on F2 runtime host" \
 	"  make fpga-test        # run runtime binary on F2 runtime host" \
+	"  make fpga-runtime-check # compare INT8/MX runtime backends against repo reference" \
 	"  make py-tests         # run repo-local Python tests"
 
 fpga-doctor:
@@ -39,5 +40,12 @@ fpga-program:
 fpga-test:
 	$(PYTHON) fpga/run_fpga_flow.py run-fpga-test --slot-id 0
 
+fpga-runtime-check:
+	$(PYTHON) integration/validate_fpga_runtime.py
+
 py-tests:
-	$(PYTHON) -m unittest integration.test_mx_offload_integration fpga.test_run_fpga_flow -v
+	$(PYTHON) -m unittest \
+		integration.test_mx_offload_integration \
+		integration.test_validate_fpga_runtime \
+		baseline_energy.test_policy_sweep_runner \
+		fpga.test_run_fpga_flow -v

@@ -126,6 +126,7 @@ results/policy_sweep/
 results/policy_sweep_smoke*/
 results/profiling_smoke*/
 results/smoke_*/
+results/milestone4_smoke*/
 !results/README.md
 
 # Temporary files
