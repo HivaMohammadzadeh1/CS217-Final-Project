@@ -261,8 +261,8 @@ SC_MODULE(testbench)
     rva_write_tmp.data.set_slc<1>(24, 1);
     rva_write_tmp.data.set_slc<4>(32, 1);
     rva_write_tmp.data.set_slc<8>(40, 1);
-    rva_write_tmp.data.set_slc<2>(48, spec::kPrecisionMXFP8);
-    rva_write_tmp.data.set_slc<1>(56, spec::kMXGroupSize16);
+    rva_write_tmp.data.set_slc<2>(48, NVUINTW(2)(spec::kPrecisionMXFP8));
+    rva_write_tmp.data.set_slc<1>(56, NVUINTW(1)(spec::kMXGroupSize16));
     rva_write_tmp.addr = set_bytes<3>("40_00_10"); // correct local_index
     peconfig_written = rva_write_tmp.data;
     source.src_vec.push_back(rva_write_tmp);
