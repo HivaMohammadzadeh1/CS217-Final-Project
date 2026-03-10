@@ -10,8 +10,11 @@ import torch.nn as nn
 from baseline_energy.rlhf_with_fpga import (
     FPGALinearLayer,
     RLHFWithFPGATrainer,
+    policy_definition_uses_mx,
     replace_linear_with_fpga_selective,
+    runtime_requires_mx_software_fallback,
 )
+from integration.adaptive_controller import AdaptivePrecisionController
 
 
 class FakeOffloader:
@@ -117,6 +120,41 @@ class TestRLHFWithFPGAHelpers(unittest.TestCase):
         self.assertEqual(trainer.phase_fpga_stats["rollout"]["tile_ops"], 6)
         self.assertEqual(trainer.fpga_stats["total_matmuls"], 5)
         self.assertEqual(trainer.fpga_stats["total_tiles"], 6)
+
+    def test_policy_definition_uses_mx_detects_any_mx_request(self):
+        policy = {
+            "layers": {
+                "model.layers.0.self_attn.q_proj": {
+                    "rollout": "MXFP4",
+                    "reward": "INT8",
+                    "gradient": "FP16",
+                }
+            }
+        }
+        self.assertTrue(policy_definition_uses_mx(policy))
+        self.assertFalse(policy_definition_uses_mx({"layers": {"x": {"rollout": "INT8"}}}))
+        self.assertFalse(policy_definition_uses_mx(None))
+
+    def test_runtime_requires_mx_software_fallback_only_for_real_lab1_mx_runs(self):
+        controller = AdaptivePrecisionController(default_precision="INT8")
+        self.assertFalse(
+            runtime_requires_mx_software_fallback(
+                use_fpga_offload=True,
+                use_mock_fpga=True,
+                use_lab1_fpga=False,
+                controller=controller,
+            )
+        )
+
+        mx_controller = AdaptivePrecisionController(default_precision="MXFP8")
+        self.assertTrue(
+            runtime_requires_mx_software_fallback(
+                use_fpga_offload=True,
+                use_mock_fpga=False,
+                use_lab1_fpga=True,
+                controller=mx_controller,
+            )
+        )
 
 
 if __name__ == "__main__":

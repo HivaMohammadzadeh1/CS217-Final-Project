@@ -64,6 +64,29 @@ def parse_int_list(raw_value):
     return values
 
 
+def policy_definition_uses_mx(policy):
+    """Return True if any layer/phase in a loaded policy requests MX."""
+    if not policy:
+        return False
+    for phase_map in policy.get("layers", {}).values():
+        for precision in phase_map.values():
+            if str(precision).strip().upper() in ("MXFP8", "MXFP4"):
+                return True
+    return False
+
+
+def runtime_requires_mx_software_fallback(use_fpga_offload,
+                                          use_mock_fpga,
+                                          use_lab1_fpga,
+                                          controller):
+    """True when the current runtime would mix INT8 hardware with MX software fallback."""
+    if not use_fpga_offload or use_mock_fpga or not use_lab1_fpga:
+        return False
+    if controller.default_precision in ("MXFP8", "MXFP4"):
+        return True
+    return policy_definition_uses_mx(controller.policy)
+
+
 def apply_runtime_overrides(args):
     """Apply CLI overrides directly onto the shared config module."""
     scalar_overrides = {
@@ -326,6 +349,19 @@ class RLHFWithFPGATrainer:
             policy_name=self.policy_name,
             policy_path=self.policy_path,
         )
+        self.mx_software_fallback_required = runtime_requires_mx_software_fallback(
+            use_fpga_offload=config.USE_FPGA_OFFLOAD,
+            use_mock_fpga=config.USE_MOCK_FPGA,
+            use_lab1_fpga=config.USE_LAB1_FPGA,
+            controller=self.precision_controller,
+        )
+        if self.mx_software_fallback_required and not args.allow_mx_software_fallback:
+            raise RuntimeError(
+                "This run requests MXFP8/MXFP4 on the real Lab1 runtime path, but the "
+                "current runtime still routes MX matmuls through software fallback. "
+                "Use --allow-mx-software-fallback only for control-path/debugging runs, "
+                "not for final hardware claims."
+            )
         print(f"\n{'='*60}")
         print("RLHF Training with FPGA Offload")
         print(f"{'='*60}")
@@ -342,6 +378,8 @@ class RLHFWithFPGATrainer:
         else:
             print(f"Precision Policy: global {self.precision_controller.default_precision}")
         print(f"Gradient Offload: {'enabled' if self.precision_controller.allow_gradient_offload else 'disabled'}")
+        if self.mx_software_fallback_required:
+            print("Runtime Contract: INT8 -> Lab1 FPGA hardware, MX -> software fallback")
         print(f"{'='*60}\n")
 
         # Create output directory
@@ -1082,6 +1120,13 @@ class RLHFWithFPGATrainer:
             "fpga_allow_gradient_offload": self.precision_controller.allow_gradient_offload,
             "fpga_policy_name": self.precision_controller.policy_name,
             "fpga_policy_path": self.precision_controller.policy_path,
+            "allow_mx_software_fallback": bool(self.args.allow_mx_software_fallback),
+            "mx_software_fallback_required": self.mx_software_fallback_required,
+            "runtime_contract": (
+                "INT8=Lab1 FPGA hardware, MX=software fallback"
+                if self.mx_software_fallback_required
+                else "no_mixed_backend_required"
+            ),
             "fp16": config.FP16,
             "learning_rate": config.LEARNING_RATE,
             "batch_size": config.BATCH_SIZE,
@@ -1254,6 +1299,12 @@ def main():
         action="store_true",
         default=False,
         help="Allow policy/controller to offload gradient-phase layers. Disabled by default because the current offload path is not autograd-safe.",
+    )
+    parser.add_argument(
+        "--allow-mx-software-fallback",
+        action="store_true",
+        default=False,
+        help="Acknowledge that real Lab1 runs still use software fallback for MXFP8/MXFP4. Intended only for control-path/debugging runs.",
     )
     parser.add_argument(
         "--model-name",

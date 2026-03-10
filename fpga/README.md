@@ -64,9 +64,11 @@ python3 fpga/run_fpga_flow.py run-fpga-test --slot-id 0 --fpga-test-args "MXFP8 
   - `FPGA_TEST_ARGS="..."`
 - PEConfig now carries precision mode and MX group size through the existing hardware control path.
 - The runtime test binary can program those fields from CLI args.
+- The RLHF runtime path does not use this MX hardware yet; on real Lab1 runs it still uses `INT8` hardware plus MX software fallback until validation is complete.
 
 ## What still needs to happen
 
-- Replace the baseline integer compute path in `PECore` with real MX arithmetic.
+- Validate and refine the checked-in MX datapath in Catapult/F2.
 - Build and deploy an MX-capable AFI.
+- Switch the RLHF runtime path to use validated MX hardware.
 - Run the real policy experiments against that deployed hardware.

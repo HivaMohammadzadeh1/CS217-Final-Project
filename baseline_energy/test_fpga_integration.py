@@ -50,6 +50,8 @@ def build_end_to_end_command(args):
         cmd.append("--skip-eval")
     if args.allow_gradient_offload:
         cmd.append("--allow-gradient-offload")
+    if args.allow_mx_software_fallback:
+        cmd.append("--allow-mx-software-fallback")
 
     append_optional_flag(cmd, "--eval-samples", args.eval_samples if args.run_eval else None)
     append_optional_flag(cmd, "--policy-json", args.policy_json)
@@ -187,6 +189,7 @@ def parse_args():
     parser.add_argument("--precision-mode", default=None, help="Optional fallback precision override.")
     parser.add_argument("--group-size", type=int, default=None, help="Optional MX group-size override.")
     parser.add_argument("--allow-gradient-offload", action="store_true", default=False, help="Allow gradient-phase offload during the smoke run.")
+    parser.add_argument("--allow-mx-software-fallback", action="store_true", default=False, help="Acknowledge mixed backend when using real Lab1 runtime with MX policies.")
     parser.add_argument("--model-name", default=None, help="Optional model override.")
     parser.add_argument("--reward-model-name", default=None, help="Optional reward-model override.")
     parser.add_argument("--dataset-name", default=None, help="Optional dataset override.")

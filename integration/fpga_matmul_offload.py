@@ -56,6 +56,9 @@ class MockFPGAInterface:
         self.group_size = group_size
         self.mode_switch_count = 0
         self.flush_count = 0
+        self.hardware_tile_calls = 0
+        self.mx_software_fallback_tile_calls = 0
+        self.last_tile_backend = "uninitialized"
         self._sim = DualPrecisionMXSimulator(
             group_size=group_size,
             initial_mode=PrecisionMode.MXFP8
@@ -153,9 +156,12 @@ class MockFPGAInterface:
 
         if self.precision_mode == "INT8":
             # Keep previous behavior for baseline comparisons.
+            self.last_tile_backend = "mock_int8_numpy"
             result = np.matmul(tile_a, tile_b)
         else:
             # Milestone 3: run through explicit MX simulation model.
+            self.mx_software_fallback_tile_calls += 1
+            self.last_tile_backend = "mock_mx_simulator"
             result = self._sim.matmul_16x16(tile_a, tile_b)
 
         return result
@@ -170,6 +176,10 @@ class MockFPGAInterface:
             'mode_switches': self.mode_switch_count,
             'flush_count': self.flush_count,
             'switch_pending': self.precision_switch_pending,
+            'supports_real_mx_hardware': False,
+            'hardware_tile_calls': self.hardware_tile_calls,
+            'mx_software_fallback_tile_calls': self.mx_software_fallback_tile_calls,
+            'last_tile_backend': self.last_tile_backend,
         }
 
     def reset_stats(self):
@@ -178,6 +188,9 @@ class MockFPGAInterface:
         self.total_tiles_processed = 0
         self.mode_switch_count = 0
         self.flush_count = 0
+        self.hardware_tile_calls = 0
+        self.mx_software_fallback_tile_calls = 0
+        self.last_tile_backend = "reset"
 
 
 class RealFPGAInterface:
@@ -202,6 +215,10 @@ class RealFPGAInterface:
         self.group_size = group_size
         self.mode_switch_count = 0
         self.flush_count = 0
+        self.hardware_tile_calls = 0
+        self.mx_software_fallback_tile_calls = 0
+        self.supports_real_mx_hardware = False
+        self.last_tile_backend = "uninitialized"
         self._mx_fallback = DualPrecisionMXSimulator(
             group_size=group_size,
             initial_mode=PrecisionMode.MXFP8
@@ -248,7 +265,8 @@ class RealFPGAInterface:
 
         Current hardware support:
           - INT8: handled by Lab 1 path.
-          - MXFP8/MXFP4: software fallback in this interface until MX RTL is deployed.
+          - MXFP8/MXFP4: software fallback in this interface until a validated
+            MX-capable runtime path is enabled.
         """
         mode = str(precision_mode).upper()
         if mode not in ("INT8", "MXFP8", "MXFP4"):
@@ -323,10 +341,14 @@ class RealFPGAInterface:
             )
 
         if self.precision_mode in ("MXFP8", "MXFP4"):
+            self.mx_software_fallback_tile_calls += 1
+            self.last_tile_backend = "software_mx_fallback"
             return self._mx_fallback.matmul_16x16(tile_a, tile_b)
 
         if self.use_lab1:
             # Use Lab 1 FPGA hardware (or software fallback if hardware unavailable)
+            self.hardware_tile_calls += 1
+            self.last_tile_backend = "lab1_fpga_int8"
             return self.fpga.matmul_16x16(tile_a, tile_b)
         else:
             raise NotImplementedError("Generic FPGA interface not yet implemented")
@@ -341,6 +363,10 @@ class RealFPGAInterface:
                 "mode_switches": self.mode_switch_count,
                 "flush_count": self.flush_count,
                 "switch_pending": self._switch_pending(),
+                "supports_real_mx_hardware": self.supports_real_mx_hardware,
+                "hardware_tile_calls": self.hardware_tile_calls,
+                "mx_software_fallback_tile_calls": self.mx_software_fallback_tile_calls,
+                "last_tile_backend": self.last_tile_backend,
             })
             return stats
         return {}
@@ -351,6 +377,9 @@ class RealFPGAInterface:
             self.fpga.reset_stats()
         self.mode_switch_count = 0
         self.flush_count = 0
+        self.hardware_tile_calls = 0
+        self.mx_software_fallback_tile_calls = 0
+        self.last_tile_backend = "reset"
 
 
 class FPGAMatmulOffload:

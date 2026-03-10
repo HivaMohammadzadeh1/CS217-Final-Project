@@ -21,6 +21,7 @@ What is not true yet:
 
 - There is no checked-in proof yet that the new MX datapath synthesizes and runs correctly in the Stanford/Catapult/F2 flow.
 - There is no checked-in proof of a deployed MX-capable AFI running real MX math on F2.
+- The RLHF runtime path still uses a mixed backend on real Lab1 runs: `INT8` can use hardware, but `MXFP8` / `MXFP4` still fall back to software until the runtime path is switched after validation.
 - Gradient-phase offload still falls back to native PyTorch because the current FPGA matmul path is not autograd-safe.
 - The final canonical experiment table and Pareto plot are still missing.
 
@@ -33,6 +34,7 @@ What is not true yet:
 - [x] Per-phase FPGA statistics are saved for rollout, reward, and gradient.
 - [x] Add checked-in tri-mode datapath code for `INT8` / `MXFP8` / `MXFP4`.
 - [ ] Build and validate an MX-capable FPGA image on the Stanford/AWS flow.
+- [ ] Switch the RLHF runtime path from MX software fallback to validated MX hardware execution.
 - [ ] Run the final baseline vs `A/B/C/D` policy sweep on the real hardware path.
 - [ ] Produce the final energy-vs-quality table, Pareto figure, and report conclusion.
 
@@ -42,8 +44,9 @@ What is not true yet:
    `make fpga-doctor`, `make fpga-systemc-sim`, `make fpga-hls-sim`, `make fpga-hw-sim`
 2. If those pass, build and load the FPGA image:
    `make fpga-build`, `python3 fpga/run_fpga_flow.py generate-afi`, `python3 fpga/run_fpga_flow.py check-afi`, `make fpga-program`, `make fpga-test`
-3. Compare `INT8`, `MXFP8`, and `MXFP4` runtime outputs against the reference MX model.
-4. Then run the final experiment sweep: `INT8` baseline plus policies `A/B/C/D`.
+3. Compare `INT8`, `MXFP8`, and `MXFP4` runtime outputs against the reference MX model and fix any numeric mismatch.
+4. Switch the RLHF runtime path to use validated MX hardware instead of MX software fallback.
+5. Then run the final experiment sweep: `INT8` baseline plus policies `A/B/C/D`.
 
 ## Fast Start
 

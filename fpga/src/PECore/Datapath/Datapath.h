@@ -21,8 +21,10 @@
 #ifndef __DATAPATH__
 #define __DATAPATH__
 
-// Datapath that supports baseline INT8 MAC plus staged MXFP8/MXFP4
-// quantize-dequantize compute over the existing 8-bit storage interface.
+// Datapath that supports baseline INT8 MAC plus a staged MXFP8/MXFP4
+// functional model over the existing 8-bit storage interface.
+// This is intended for correctness bring-up in the PECore path; it is not yet
+// the final energy-oriented low-precision MX microarchitecture.
 #include <nvhls_int.h>
 #include <nvhls_types.h>
 #include <stdint.h>
