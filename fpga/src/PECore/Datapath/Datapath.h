@@ -126,11 +126,15 @@ inline void Datapath(spec::VectorType weight_in[spec::kNumVectorLanes],
 
 #pragma hls_unroll yes
   for (int i = 0; i < spec::kNumVectorLanes; i++) {
+#ifdef MX_ONLY
+    ProductSumMX(weight_in[i], input_in, precision_mode, accum_out_tmp[i]);
+#else
     if (precision_mode == spec::kPrecisionINT8) {
       ProductSum(weight_in[i], input_in, accum_out_tmp[i]);
     } else {
       ProductSumMX(weight_in[i], input_in, precision_mode, accum_out_tmp[i]);
     }
+#endif
   }
   accum_out = accum_out_tmp;
 }

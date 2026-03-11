@@ -29,10 +29,10 @@ namespace spec {
   namespace PE {
     namespace Weight {  
       typedef VectorType WordType;
-      const int kNumReadPorts = kNumVectorLanes; // spec::kNumVectorLanes = 16
+      const int kNumReadPorts = kNumVectorLanes;
       const int kNumWritePorts = 1;
       const int kNumBanks = kNumVectorLanes;
-      const int kEntriesPerBank = 4096;       // need to configure
+      const int kEntriesPerBank = 1024;       // reduced for faster HLS synthesis
       const unsigned int kAddressWidth = nvhls::index_width<kNumBanks * kEntriesPerBank>::val;
       const unsigned int kBankIndexSize = nvhls::index_width<kNumBanks>::val;
       const unsigned int kLocalIndexSize = nvhls::index_width<kEntriesPerBank>::val;
@@ -110,11 +110,11 @@ class PEManager {
   }
   
   Address GetWeightAddr(Address input_index, Address output_index, bool is_cluster) const {
-    if (is_cluster) { // read 8 banks (hard coded)
-      return (output_index*num_input+input_index)*8 + base_weight;
+    if (is_cluster) {
+      return (output_index*num_input+input_index)*(spec::kNumVectorLanes/2) + base_weight;
     }
     else {
-      return (output_index*num_input+input_index)*16 + base_weight;  
+      return (output_index*num_input+input_index)*spec::kNumVectorLanes + base_weight;
     }
   }
   

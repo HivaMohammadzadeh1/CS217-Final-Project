@@ -17,7 +17,7 @@
 ROOT            := ../..
 SRC_PATH        := $(ROOT)/src/
 SYSTEMC_DESIGN  := 1
-COMPILER_FLAGS  := HLS_ALGORITHMICC
+COMPILER_FLAGS  := HLS_ALGORITHMICC MX_ONLY
 CLK_PERIOD      := 4.0 
 RUN_SCVERIFY    := 0
 REPO_TOP        ?= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)

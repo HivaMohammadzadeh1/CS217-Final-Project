@@ -502,9 +502,16 @@ accum_vector = dp_out;
     {
       spec::AccumVectorType accum_vector_out;
 
+#ifdef MX_ONLY
+#pragma hls_unroll yes
+      for (int i = 0; i < spec::kNumVectorLanes; i++) {
+        spec::ActScalarType val = accum_vector[i];
+        if (val > spec::kActWordMax) val = spec::kActWordMax;
+        else if (val < spec::kActWordMin) val = spec::kActWordMin;
+        act_port_reg[i] = val;
+      }
+#else
       if (pe_config.precision_mode != spec::kPrecisionINT8) {
-        // MX path: accumulator already holds the integer-scale result
-        // (fractional bits removed in ProductSumMX). Just clamp.
 #pragma hls_unroll yes
         for (int i = 0; i < spec::kNumVectorLanes; i++) {
           spec::ActScalarType val = accum_vector[i];
@@ -513,7 +520,6 @@ accum_vector = dp_out;
           act_port_reg[i] = val;
         }
       } else {
-        // INT8 path: divide by 12.25 via (accum * 167) >> 11
         NVUINT8 scale = spec::kAccumScale;
         NVUINT8 right_shift = spec::kAccumShift;
 #pragma hls_unroll yes
@@ -532,6 +538,7 @@ accum_vector = dp_out;
           act_port_reg[i] = accum_vector_out[i];
         }
       }
+#endif
     }
   }
 

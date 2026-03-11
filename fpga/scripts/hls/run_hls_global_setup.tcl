@@ -72,8 +72,8 @@ directive set -DESIGN_GOAL latency
 directive set -SPECULATE true
 directive set -MERGEABLE true
 # originally 256, 32
-directive set -REGISTER_THRESHOLD 2048
-directive set -MEM_MAP_THRESHOLD 2048
+directive set -REGISTER_THRESHOLD 4096
+directive set -MEM_MAP_THRESHOLD 4096
 directive set -FSM_ENCODING binary
 directive set -REG_MAX_FANOUT 0
 directive set -NO_X_ASSIGNMENTS true
@@ -102,7 +102,7 @@ directive set -ROM_THRESHOLD 64
 directive set -CLUSTER_ADDTREE_IN_WIDTH_THRESHOLD 0
 directive set -CLUSTER_OPT_CONSTANT_INPUTS true
 directive set -CLUSTER_RTL_SYN false
-directive set -CLUSTER_FAST_MODE false
+directive set -CLUSTER_FAST_MODE true
 directive set -CLUSTER_TYPE combinational
 directive set -COMPGRADE fast
 directive set -PIPELINE_RAMP_UP true
