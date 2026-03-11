@@ -26,9 +26,9 @@
     "text_field": "chosen",
     "num_examples": 16,
     "max_seq_len": 256,
-    "max_layers": 8,
+    "max_layers": null,
     "tolerance_pct": 2.0,
     "device": "cpu"
   },
-  "num_layers_profiled": 8
+  "num_layers_profiled": 169
 }
