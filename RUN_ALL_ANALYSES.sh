@@ -47,8 +47,8 @@ fi
 
 # Load FPGA bitstream
 echo "Loading Lab 1 FPGA bitstream..."
-if [ -f "$HOME/cs217-lab-1-hiva/design_top/generated_afid.sh" ]; then
-    source ~/cs217-lab-1-hiva/design_top/generated_afid.sh
+if [ -f "fpga/design_top/generated_afid.sh" ]; then
+    source fpga/design_top/generated_afid.sh
     sudo fpga-load-local-image -S 0 -I $AGFI 2>&1 | tee -a $REPORT_DIR/fpga_status.txt
     echo ""
 else

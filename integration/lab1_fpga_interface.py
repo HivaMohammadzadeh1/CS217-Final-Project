@@ -1,12 +1,11 @@
 """
-Lab 1 FPGA Interface for RLHF Training
-Integrates your CS217 Lab 1 16x16 matmul FPGA with the RLHF training pipeline.
+Repo-local FPGA interface for RLHF training.
 
-Uses liblab1_wrapper.so which properly initializes the FPGA via AWS SDK
-(fpga_mgmt_init + fpga_pci_attach) and exposes fpga_matmul_16x16().
+This loads the shared bridge library built from `integration/lab1_wrapper.c`,
+which is aligned with the current project's `fpga/design_top` BAR0/RVA
+protocol rather than an external Lab 1 checkout.
 
 Build the wrapper first:
-    export SDK_DIR=/home/ubuntu/src/project_data/aws-fpga/sdk
     bash integration/compile_lab1_wrapper.sh
 """
 
@@ -26,7 +25,7 @@ class Lab1FPGAInterface:
     - INT8 precision (kIntWordWidth = 8)
     - Output: INT32 activations (kActWordWidth = 32)
 
-    Uses liblab1_wrapper.so for proper FPGA init and register access.
+    Uses the repo-local bridge library for proper FPGA init and register access.
     """
 
     def __init__(self, device_id=0, verbose=False):
@@ -53,11 +52,14 @@ class Lab1FPGAInterface:
         self._init_fpga()
 
     def _init_fpga(self):
-        """Load liblab1_wrapper.so and initialize the FPGA device."""
+        """Load the bridge shared library and initialize the FPGA device."""
         search_paths = [
+            Path(__file__).parent / "libfpga_bridge.so",
             Path(__file__).parent / "liblab1_wrapper.so",
+            Path(__file__).parent / "build" / "libdesign_top.so",
+            Path.home() / "CS217-Final-Project" / "integration" / "libfpga_bridge.so",
             Path.home() / "CS217-Final-Project" / "integration" / "liblab1_wrapper.so",
-            Path.home() / "cs217-lab-1-hiva" / "design_top" / "software" / "build" / "liblab1_wrapper.so",
+            Path.home() / "CS217-Final-Project" / "integration" / "build" / "libdesign_top.so",
         ]
 
         lib_path = None
@@ -68,7 +70,7 @@ class Lab1FPGAInterface:
 
         if lib_path is None:
             if self.verbose:
-                print("⚠️  liblab1_wrapper.so not found. Searched:")
+                print("⚠️  FPGA bridge library not found. Searched:")
                 for p in search_paths:
                     print(f"    {p}")
                 print("    Build it with: bash integration/compile_lab1_wrapper.sh")
@@ -106,7 +108,7 @@ class Lab1FPGAInterface:
             if rc != 0:
                 if self.verbose:
                     print(f"⚠️  fpga_init(slot={self.device_id}) failed (rc={rc})")
-                    print("    Make sure FPGA bitstream is loaded and you're running as root/sudo")
+                    print("    Make sure a compatible project AGFI is loaded and you're running as root/sudo")
                     print("    Using software fallback")
                 self.use_hardware = False
                 return
@@ -180,7 +182,7 @@ class Lab1FPGAInterface:
             return self._matmul_software(A, B)
 
     def _matmul_hardware(self, A, B):
-        """Execute 16x16 matmul on Lab 1 FPGA via liblab1_wrapper.so."""
+        """Execute 16x16 matmul on FPGA via the bridge shared library."""
         A_f32 = np.ascontiguousarray(A, dtype=np.float32)
         B_f32 = np.ascontiguousarray(B, dtype=np.float32)
         C_f32 = np.zeros((16, 16), dtype=np.float32)

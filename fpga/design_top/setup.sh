@@ -16,8 +16,10 @@ generate_afi () {
     echo $OUTPUT
     export AFI=$(echo "$OUTPUT" | jq -r '.FpgaImageId')
     export AGFI=$(echo "$OUTPUT" | jq -r '.FpgaImageGlobalId')
-    echo "export AFI=$AFI" >> generated_afid.sh
-    echo "export AGFI=$AGFI" >> generated_afid.sh
+    {
+        echo "export AFI=$AFI"
+        echo "export AGFI=$AGFI"
+    } > generated_afid.sh
     echo "AFI is set to: $AFI"
     echo "AGFI is set to: $AGFI"
 }

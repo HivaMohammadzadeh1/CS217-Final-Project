@@ -7,7 +7,11 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import PPOConfig, AutoModelForCausalLMWithValueHead
 from datasets import load_dataset
-import config
+
+try:
+    from baseline_energy import config
+except ImportError:
+    import config
 
 def main():
     print("=" * 60)

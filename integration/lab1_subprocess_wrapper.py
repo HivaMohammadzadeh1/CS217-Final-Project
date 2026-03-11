@@ -25,13 +25,20 @@ class Lab1SubprocessWrapper:
 
     def __init__(self, verbose=False):
         self.verbose = verbose
-        self.lab1_exe = Path.home() / "cs217-lab-1-hiva/design_top/software/runtime/design_top"
+        self.lab1_exe = (
+            Path(__file__).resolve().parent.parent
+            / "fpga"
+            / "design_top"
+            / "software"
+            / "runtime"
+            / "design_top"
+        )
 
         if not self.lab1_exe.exists():
             if verbose:
                 print(f"⚠️  Lab 1 executable not found at {self.lab1_exe}")
                 print("    Compile Lab 1 first:")
-                print("    cd ~/cs217-lab-1-hiva/design_top/software/runtime && make")
+                print("    python fpga/run_fpga_flow.py run-fpga-test --slot-id 0 --dry-run")
             self.use_hardware = False
         else:
             self.use_hardware = True

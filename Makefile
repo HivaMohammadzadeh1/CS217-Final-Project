@@ -1,4 +1,7 @@
-PYTHON ?= .venv/bin/python3
+PYTHON := $(shell \
+	if [ -x .venv/bin/python3 ]; then echo .venv/bin/python3; \
+	elif [ -x venv/bin/python3 ]; then echo venv/bin/python3; \
+	else echo python3; fi)
 
 .PHONY: help fpga-doctor fpga-ref-sim fpga-systemc-sim fpga-hls-sim fpga-hw-sim fpga-build fpga-program fpga-test py-tests
 

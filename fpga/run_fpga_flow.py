@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import os
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import sys
@@ -27,6 +28,35 @@ from typing import Dict, List, Sequence, Tuple
 ROOT = Path(__file__).resolve().parent.parent
 FPGA_ROOT = Path(__file__).resolve().parent
 DESIGN_TOP = FPGA_ROOT / "design_top"
+AWS_FPGA_CANDIDATES = (
+    Path.home() / "aws-fpga",
+    Path.home() / "src" / "project_data" / "aws-fpga",
+)
+AWS_FLOW_ACTIONS = {
+    "hw-sim",
+    "fpga-build",
+    "generate-afi",
+    "check-afi",
+    "program-fpga",
+    "run-fpga-test",
+}
+HDK_SETUP_ACTIONS = {
+    "hw-sim",
+    "fpga-build",
+}
+
+
+def resolve_aws_fpga_repo() -> Path | None:
+    candidates = []
+    env_candidate = os.environ.get("AWS_FPGA_REPO_DIR")
+    if env_candidate:
+        candidates.append(Path(env_candidate).expanduser())
+    candidates.extend(AWS_FPGA_CANDIDATES)
+
+    for candidate in candidates:
+        if (candidate / "hdk_setup.sh").exists() and (candidate / "sdk_setup.sh").exists():
+            return candidate.resolve()
+    return None
 
 
 def build_env() -> Dict[str, str]:
@@ -35,6 +65,18 @@ def build_env() -> Dict[str, str]:
     env.setdefault("AWS_HOME", str(DESIGN_TOP))
     env.setdefault("CL_DIR", str(DESIGN_TOP))
     env.setdefault("CL_DESIGN_NAME", "design_top")
+    aws_repo = resolve_aws_fpga_repo()
+    if aws_repo is not None:
+        env["AWS_FPGA_REPO_DIR"] = str(aws_repo)
+        env["SDK_DIR"] = str(aws_repo / "sdk")
+        env["HDK_DIR"] = str(aws_repo / "hdk")
+        env["VITIS_DIR"] = str(aws_repo / "vitis")
+        shared_lib = aws_repo / "shared" / "lib"
+        if shared_lib.exists():
+            existing_pythonpath = env.get("PYTHONPATH", "")
+            env["PYTHONPATH"] = (
+                f"{shared_lib}:{existing_pythonpath}" if existing_pythonpath else str(shared_lib)
+            )
     return env
 
 
@@ -53,11 +95,13 @@ def tool_status() -> List[Tuple[str, str]]:
 
 
 def render_doctor(env: Dict[str, str]) -> int:
+    aws_repo = env.get("AWS_FPGA_REPO_DIR", "<unset>")
     print("FPGA build environment")
     print(f"  repo root:   {ROOT}")
     print(f"  fpga root:   {FPGA_ROOT}")
     print(f"  systemc ref: {ROOT / 'systemc'}")
     print(f"  design_top:  {DESIGN_TOP}")
+    print(f"  aws-fpga:    {aws_repo}")
     print("")
     print("Resolved environment")
     for key in ("REPO_TOP", "AWS_HOME", "CL_DIR", "CL_DESIGN_NAME", "AWS_FPGA_REPO_DIR"):
@@ -107,7 +151,39 @@ def dispatch_command(action: str, args: argparse.Namespace) -> Tuple[List[str], 
     raise ValueError(f"Unsupported action: {action}")
 
 
-def run_command(command: Sequence[str], cwd: Path, env: Dict[str, str], dry_run: bool) -> int:
+def wrap_with_aws_repo(action: str, command: Sequence[str], cwd: Path, env: Dict[str, str]) -> List[str]:
+    aws_repo = env.get("AWS_FPGA_REPO_DIR")
+    if not aws_repo:
+        raise RuntimeError(
+            "AWS FPGA flow requested but AWS_FPGA_REPO_DIR could not be resolved. "
+            "Install or point to ~/aws-fpga."
+        )
+
+    command_str = " ".join(shlex.quote(part) for part in command)
+    setup_cmd = ""
+    if action in HDK_SETUP_ACTIONS:
+        setup_cmd = f"source {shlex.quote(str(Path(aws_repo) / 'hdk_setup.sh'))} -s && "
+    shell_cmd = (
+        f"cd {shlex.quote(aws_repo)} && "
+        f"export AWS_FPGA_REPO_DIR={shlex.quote(aws_repo)} "
+        f"SDK_DIR={shlex.quote(env['SDK_DIR'])} "
+        f"HDK_DIR={shlex.quote(env['HDK_DIR'])} "
+        f"VITIS_DIR={shlex.quote(env['VITIS_DIR'])} "
+        f"CL_DIR={shlex.quote(env['CL_DIR'])} "
+        f"CL_DESIGN_NAME={shlex.quote(env['CL_DESIGN_NAME'])} "
+        f"REPO_TOP={shlex.quote(env['REPO_TOP'])} "
+        f"AWS_HOME={shlex.quote(env['AWS_HOME'])} && "
+        f"{setup_cmd}"
+        f"cd {shlex.quote(str(cwd))} && "
+        f"exec {command_str}"
+    )
+    return ["bash", "-lc", shell_cmd]
+
+
+def run_command(action: str, command: Sequence[str], cwd: Path, env: Dict[str, str], dry_run: bool) -> int:
+    if action in AWS_FLOW_ACTIONS:
+        command = wrap_with_aws_repo(action, command, cwd, env)
+
     pretty = " ".join(command)
     print(pretty, flush=True)
     if dry_run:
@@ -166,7 +242,7 @@ def main() -> int:
         return render_doctor(env)
 
     command, cwd = dispatch_command(args.action, args)
-    return run_command(command, cwd, env, args.dry_run)
+    return run_command(args.action, command, cwd, env, args.dry_run)
 
 
 if __name__ == "__main__":

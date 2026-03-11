@@ -27,6 +27,7 @@ program_fpga:
     sudo fpga-load-local-image -S 0 -I $$AGFI
 
 run_fpga_test:
+	mkdir -p $(LOGS_DIR)
 	cd $(CL_DIR)/software/runtime && make clean && make $(CL_DESIGN_NAME) && sudo ./$(CL_DESIGN_NAME) $(SLOT_ID) $(FPGA_TEST_ARGS) | tee $(LOGS_DIR)/fpga_test.log.txt 
 
 clean:

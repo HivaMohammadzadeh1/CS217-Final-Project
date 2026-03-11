@@ -12,121 +12,132 @@ Usage:
     python baseline_energy/test_fpga_integration.py
 """
 
+import subprocess
 import sys
-import torch
 from pathlib import Path
 
-print("=" * 60)
-print("Testing FPGA Integration")
-print("=" * 60)
+import torch
 
-# Test 1: Import check
-print("\n✓ Test 1: Checking imports...")
-try:
-    sys.path.insert(0, str(Path(__file__).parent.parent / "integration"))
-    from fpga_matmul_offload import FPGAMatmulOffload
-    print("  ✓ FPGA offload module imported")
-except ImportError as e:
-    print(f"  ✗ Failed to import: {e}")
-    sys.exit(1)
 
-# Test 2: FPGA offloader initialization
-print("\n✓ Test 2: Initializing FPGA offloader...")
-try:
-    offloader = FPGAMatmulOffload(use_mock=True, verbose=False)
-    print("  ✓ FPGA offloader initialized (mock mode)")
-except Exception as e:
-    print(f"  ✗ Failed: {e}")
-    sys.exit(1)
+def main():
+    print("=" * 60)
+    print("Testing FPGA Integration")
+    print("=" * 60)
 
-# Test 3: Simple matmul test
-print("\n✓ Test 3: Testing matmul offload...")
-try:
-    A = torch.randn(32, 32)
-    B = torch.randn(32, 32)
+    # Test 1: Import check
+    print("\n✓ Test 1: Checking imports...")
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent / "integration"))
+        from fpga_matmul_offload import FPGAMatmulOffload
+        print("  ✓ FPGA offload module imported")
+    except ImportError as e:
+        print(f"  ✗ Failed to import: {e}")
+        sys.exit(1)
 
-    result_fpga = offloader.matmul(A, B)
-    result_torch = torch.matmul(A, B)
+    # Test 2: FPGA offloader initialization
+    print("\n✓ Test 2: Initializing FPGA offloader...")
+    try:
+        offloader = FPGAMatmulOffload(use_mock=True, verbose=False)
+        print("  ✓ FPGA offloader initialized (mock mode)")
+    except Exception as e:
+        print(f"  ✗ Failed: {e}")
+        sys.exit(1)
 
-    error = torch.max(torch.abs(result_fpga - result_torch)).item()
-    print(f"  ✓ Matmul test passed (error: {error:.2e})")
+    # Test 3: Simple matmul test
+    print("\n✓ Test 3: Testing matmul offload...")
+    try:
+        A = torch.randn(32, 32)
+        B = torch.randn(32, 32)
 
-    stats = offloader.get_stats()
-    print(f"  ✓ FPGA processed {stats['total_tiles']} tiles")
-except Exception as e:
-    print(f"  ✗ Failed: {e}")
-    sys.exit(1)
+        result_fpga = offloader.matmul(A, B)
+        result_torch = torch.matmul(A, B)
 
-# Test 4: Config check
-print("\n✓ Test 4: Checking configuration...")
-try:
-    import config
-    print(f"  Dataset: {config.DATASET_NAME}")
-    print(f"  Train size: {config.TRAIN_SIZE}")
-    print(f"  Eval size: {config.EVAL_SIZE}")
-    print(f"  Total: {config.NUM_SAMPLES}")
-    print(f"  FPGA offload: {config.USE_FPGA_OFFLOAD}")
-    print(f"  Mock FPGA: {config.USE_MOCK_FPGA}")
+        error = torch.max(torch.abs(result_fpga - result_torch)).item()
+        print(f"  ✓ Matmul test passed (error: {error:.2e})")
 
-    assert config.TRAIN_SIZE == 800, "Train size should be 800"
-    assert config.EVAL_SIZE == 200, "Eval size should be 200"
-    print("  ✓ Configuration is correct")
-except Exception as e:
-    print(f"  ✗ Failed: {e}")
-    sys.exit(1)
+        stats = offloader.get_stats()
+        print(f"  ✓ FPGA processed {stats['total_tiles']} tiles")
+    except Exception as e:
+        print(f"  ✗ Failed: {e}")
+        sys.exit(1)
 
-# Test 5: Run 2-step mini training
-print("\n✓ Test 5: Running 2-step mini training...")
-print("  (This will test the full pipeline)")
-try:
-    import subprocess
-    result = subprocess.run(
-        [
-            "/opt/Xilinx/Vitis_HLS/2024.1/vcxx/third-party/python-linux/user/3.10.10/bin/python3", "baseline_energy/rlhf_with_fpga.py",
-            "--steps", "2",
-            "--output", "results/integration_test"
-        ],
-        capture_output=True,
-        text=True,
-        timeout=300  # 5 minute timeout
-    )
+    # Test 4: Config check
+    print("\n✓ Test 4: Checking configuration...")
+    try:
+        try:
+            from baseline_energy import config
+        except ImportError:
+            import config
+        print(f"  Dataset: {config.DATASET_NAME}")
+        print(f"  Train size: {config.TRAIN_SIZE}")
+        print(f"  Eval size: {config.EVAL_SIZE}")
+        print(f"  Total: {config.NUM_SAMPLES}")
+        print(f"  FPGA offload: {config.USE_FPGA_OFFLOAD}")
+        print(f"  Mock FPGA: {config.USE_MOCK_FPGA}")
 
-    if result.returncode == 0:
-        print("  ✓ 2-step training completed successfully")
+        assert config.TRAIN_SIZE == 800, "Train size should be 800"
+        assert config.EVAL_SIZE == 200, "Eval size should be 200"
+        print("  ✓ Configuration is correct")
+    except Exception as e:
+        print(f"  ✗ Failed: {e}")
+        sys.exit(1)
 
-        # Check output files
-        output_dir = Path("results/integration_test")
-        expected_files = [
-            "phase_timing.json",
-            "training_stats.json",
-            "fpga_stats.json"
-        ]
+    # Test 5: Run 2-step mini training
+    print("\n✓ Test 5: Running 2-step mini training...")
+    print("  (This will test the full pipeline)")
+    try:
+        result = subprocess.run(
+            [
+                sys.executable,
+                "baseline_energy/rlhf_with_fpga.py",
+                "--steps", "2",
+                "--output", "results/integration_test",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=300,  # 5 minute timeout
+        )
 
-        for fname in expected_files:
-            if (output_dir / fname).exists():
-                print(f"    ✓ {fname} created")
-            else:
-                print(f"    ✗ {fname} missing")
-    else:
-        print(f"  ✗ Training failed with return code {result.returncode}")
-        print(f"  stderr: {result.stderr[:500]}")
+        if result.returncode == 0:
+            print("  ✓ 2-step training completed successfully")
 
-except subprocess.TimeoutExpired:
-    print("  ⚠️  Training timed out (this is OK, probably model downloading)")
-except Exception as e:
-    print(f"  ⚠️  Could not run full test: {e}")
-    print("     You can manually test with:")
-    print("     python baseline_energy/rlhf_with_fpga.py --steps 2 --output results/test")
+            # Check output files
+            output_dir = Path("results/integration_test")
+            expected_files = [
+                "phase_timing.json",
+                "training_stats.json",
+                "fpga_stats.json",
+            ]
 
-print("\n" + "=" * 60)
-print("✅ FPGA Integration Tests Complete!")
-print("=" * 60)
-print("\n📝 Next steps:")
-print("  1. Run full 50-step baseline:")
-print("     python baseline_energy/rlhf_with_fpga.py --steps 50 --output results/baseline_50")
-print("\n  2. Calculate energy:")
-print("     python baseline_energy/calculate_energy.py --results results/baseline_50")
-print("\n  3. When FPGA hardware is ready:")
-print("     - Set USE_MOCK_FPGA = False in config.py")
-print("     - Implement RealFPGAInterface in fpga_matmul_offload.py")
-print("=" * 60)
+            for fname in expected_files:
+                if (output_dir / fname).exists():
+                    print(f"    ✓ {fname} created")
+                else:
+                    print(f"    ✗ {fname} missing")
+        else:
+            print(f"  ✗ Training failed with return code {result.returncode}")
+            print(f"  stderr: {result.stderr[:500]}")
+
+    except subprocess.TimeoutExpired:
+        print("  ⚠️  Training timed out (this is OK, probably model downloading)")
+    except Exception as e:
+        print(f"  ⚠️  Could not run full test: {e}")
+        print("     You can manually test with:")
+        print("     python baseline_energy/rlhf_with_fpga.py --steps 2 --output results/test")
+
+    print("\n" + "=" * 60)
+    print("✅ FPGA Integration Tests Complete!")
+    print("=" * 60)
+    print("\n📝 Next steps:")
+    print("  1. Run full 50-step baseline:")
+    print("     python baseline_energy/rlhf_with_fpga.py --steps 50 --output results/baseline_50")
+    print("\n  2. Calculate energy:")
+    print("     python baseline_energy/calculate_energy.py --results results/baseline_50")
+    print("\n  3. When FPGA hardware is ready:")
+    print("     - Set USE_MOCK_FPGA = False in config.py")
+    print("     - Implement RealFPGAInterface in fpga_matmul_offload.py")
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    main()

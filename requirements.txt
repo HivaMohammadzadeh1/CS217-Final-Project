@@ -3,7 +3,7 @@ transformers==4.39.3
 datasets==2.18.0
 accelerate==0.29.3
 trl==0.8.6
-pandas==2.2.2
+pandas<2.1
 numpy<2
 sentencepiece>=0.1.99
 rich>=14.0.0

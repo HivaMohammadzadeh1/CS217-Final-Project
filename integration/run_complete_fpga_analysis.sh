@@ -99,31 +99,22 @@ echo "STEP 3: Compile Lab 1 Library (Solution #2)"
 echo "========================================================================"
 echo ""
 
-LAB1_DIR="$HOME/cs217-lab-1-hiva/design_top/software"
+echo "Attempting to compile the repo-local FPGA bridge..."
+echo ""
 
-if [ ! -d "$LAB1_DIR" ]; then
-    echo "⚠️  Lab 1 directory not found: $LAB1_DIR"
-    echo "   Skipping Python integration (Solution #1 still works!)"
-    SKIP_INTEGRATION=true
-else
-    echo "Attempting to compile Lab 1 as shared library..."
+if bash integration/compile_lab1_library.sh; then
     echo ""
+    echo "✓ Library compilation successful!"
+    SKIP_INTEGRATION=false
 
-    if bash integration/compile_lab1_library.sh; then
-        echo ""
-        echo "✓ Library compilation successful!"
-        SKIP_INTEGRATION=false
-
-        # Test the integration
-        echo ""
-        echo "Testing Python integration..."
-        python integration/test_lab1_integration.py || echo "⚠️  Python test failed (this is OK, energy calculations still work)"
-    else
-        echo ""
-        echo "⚠️  Library compilation failed (this is OK)"
-        echo "   You can still use energy calculations from Solution #1"
-        SKIP_INTEGRATION=true
-    fi
+    echo ""
+    echo "Testing Python integration..."
+    python integration/test_lab1_integration.py || echo "⚠️  Python test failed (this is OK, energy calculations still work)"
+else
+    echo ""
+    echo "⚠️  Library compilation failed (this is OK)"
+    echo "   You can still use energy calculations from Solution #1"
+    SKIP_INTEGRATION=true
 fi
 
 echo ""

@@ -18,7 +18,10 @@ echo "Running Lab 1 FPGA test 10 times to get average performance..."
 echo ""
 
 OUTPUT_FILE="lab1_fpga_performance.txt"
-cd ~/cs217-lab-1-hiva/design_top/software/runtime
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+RUNTIME_DIR="$REPO_ROOT/fpga/design_top/software/runtime"
+
+cd "$RUNTIME_DIR"
 
 # Run test 10 times
 for i in {1..10}; do
