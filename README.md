@@ -125,10 +125,33 @@ Block   Attn (q/k/v/o avg)   MLP (gate/up/down avg)   MLP MXFP4 tolerant?
   3        +0.32%                +3.26%  ← sensitive     NO (all 3 MLP layers)
   4        +0.02%                +0.21%                  Yes
   5        +0.07%                +0.25%                  Yes
-  6        +0.33%                (running...)             ...
+  6        +0.53%                -0.13%                  Yes
+  7        +0.32%                +0.37%                  Yes
+  8        -0.06%                +0.22%                  Yes
+  9        +0.19%                -0.63%                  Yes
+ 10        -0.07%                +0.02%                  Yes
+ 11        -0.10%                +0.49%                  Yes
+ 12        -0.34%                +0.68%                  Yes
+ 13        -0.11%                +0.22%                  Yes
+ 14        +0.00%                +0.43%                  Yes
+ 15        -0.13%                +0.19%                  Yes
+ 16        +0.21%                +0.24%                  Yes
+ 17        +0.63%  ← o_proj!    +0.42%                  Yes (but o_proj +2.12%)
+ 18        +0.00%                +0.34%                  Yes
+ 19        +0.06%                +0.64%                  Yes
+ 20        +0.54%                +0.06%                  Yes
+ 21        +0.58%  ← o_proj!    +6.58%  ← sensitive     NO (all 3 MLP layers)
+ 22        +0.16%                +0.76%                  Yes
+ 23        +0.76%                +5.05%  ← sensitive     NO (up +3.99%, down +9.29%)
+ lm_head   (pending final output)
 ```
 
-MXFP8 is tolerant everywhere (max delta +0.43%). Full 169-layer run in progress — results for blocks 7–23 + lm_head will follow.
+**169/169 layers complete.** Final MXFP4 g8 results:
+- **Tolerant**: 159/169 layers (94%) — safe for MXFP4
+- **Intolerant**: 10/169 layers (6%) — need MXFP8 fallback
+- **MXFP8**: 169/169 tolerant (100%) — safe everywhere
+- Sensitive hotspots: blocks 2–3 MLP, block 17 `o_proj`, blocks 21+23 MLP
+- Worst layer: `layers.23.mlp.down_proj` at +9.29% (g8) / +14.39% (g16)
 
 ### Policy Generation
 
