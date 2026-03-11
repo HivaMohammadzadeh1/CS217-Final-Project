@@ -20,7 +20,9 @@ SYSTEMC_DESIGN  := 1
 COMPILER_FLAGS  := HLS_ALGORITHMICC MX_ONLY
 CLK_PERIOD      := 4.0 
 RUN_SCVERIFY    := 0
-REPO_TOP        ?= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
-HLS_SCRIPTS		:= $(REPO_TOP)/scripts/hls
+# Use := to ignore env REPO_TOP from old lab (cs217-lab-1-hiva)
+REPO_TOP        := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
+HLS_SCRIPTS     := $(REPO_TOP)/scripts/hls
+INCLUDE         := $(REPO_TOP)/src/include
 
 include $(HLS_SCRIPTS)/Makefile_hls
