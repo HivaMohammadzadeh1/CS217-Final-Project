@@ -118,40 +118,50 @@ All five test categories passed via `make -C systemc clean all run`:
 Per-layer quantization sensitivity on `Qwen/Qwen2.5-0.5B-Instruct`, baseline perplexity **13.3231**, tolerance threshold 2%. MXFP4 g8 perplexity delta by block (attention vs MLP):
 
 ```
-Block   Attn (q/k/v/o avg)   MLP (gate/up/down avg)   MLP MXFP4 tolerant?
-  0        -0.01%                +0.53%                  Yes
-  1        +0.12%                +0.15%                  Yes
-  2        +0.23%                +2.27%  ← sensitive     NO (down_proj +7.48%)
-  3        +0.32%                +3.26%  ← sensitive     NO (all 3 MLP layers)
-  4        +0.02%                +0.21%                  Yes
-  5        +0.07%                +0.25%                  Yes
-  6        +0.53%                -0.13%                  Yes
-  7        +0.32%                +0.37%                  Yes
-  8        -0.06%                +0.22%                  Yes
-  9        +0.19%                -0.63%                  Yes
- 10        -0.07%                +0.02%                  Yes
- 11        -0.10%                +0.49%                  Yes
- 12        -0.34%                +0.68%                  Yes
- 13        -0.11%                +0.22%                  Yes
- 14        +0.00%                +0.43%                  Yes
- 15        -0.13%                +0.19%                  Yes
- 16        +0.21%                +0.24%                  Yes
- 17        +0.63%  ← o_proj!    +0.42%                  Yes (but o_proj +2.12%)
- 18        +0.00%                +0.34%                  Yes
- 19        +0.06%                +0.64%                  Yes
- 20        +0.54%                +0.06%                  Yes
- 21        +0.58%  ← o_proj!    +6.58%  ← sensitive     NO (all 3 MLP layers)
- 22        +0.16%                +0.76%                  Yes
- 23        +0.76%                +5.05%  ← sensitive     NO (up +3.99%, down +9.29%)
- lm_head   (pending final output)
+         ── MXFP4 g8 ──────────────────────────────────    ── MXFP8 g8 ──────────────
+Block   Attn (q/k/v/o avg)   MLP (gate/up/down avg)       Attn avg     MLP avg
+  0        -0.01%                +0.53%                     +0.04%       +0.02%
+  1        +0.12%                +0.15%                     -0.01%       -0.02%
+  2        +0.23%                +2.27%  ← sensitive        +0.01%       +0.07%
+  3        +0.32%                +3.26%  ← sensitive        -0.02%       -0.03%
+  4        +0.02%                +0.21%                     -0.07%       -0.03%
+  5        +0.07%                +0.25%                     -0.04%       +0.01%
+  6        +0.53%                -0.13%                     -0.00%       -0.06%
+  7        +0.32%                +0.37%                     -0.04%       -0.03%
+  8        -0.06%                +0.22%                     -0.00%       -0.04%
+  9        +0.19%                -0.63%                     -0.01%       +0.01%
+ 10        -0.07%                +0.02%                     +0.02%       +0.01%
+ 11        -0.10%                +0.49%                     +0.01%       -0.05%
+ 12        -0.34%                +0.68%                     -0.09%       +0.00%
+ 13        -0.11%                +0.22%                     +0.01%       -0.00%
+ 14        +0.00%                +0.43%                     +0.03%       +0.03%
+ 15        -0.13%                +0.19%                     -0.01%       -0.03%
+ 16        +0.21%                +0.24%                     +0.02%       +0.01%
+ 17        +0.63%  ← o_proj!    +0.42%                     -0.03%       +0.03%
+ 18        +0.00%                +0.34%                     +0.01%       -0.02%
+ 19        +0.06%                +0.64%                     +0.01%       -0.01%
+ 20        +0.54%                +0.06%                     +0.03%       -0.02%
+ 21        +0.58%  ← o_proj!    +6.58%  ← sensitive        -0.00%       +0.16%
+ 22        +0.16%                +0.76%                     +0.06%       -0.04%
+ 23        +0.76%                +5.05%  ← sensitive        +0.01%       -0.01%
+ lm_head  +60.49%  ← MXFP4 catastrophic           —              +0.47%        —
 ```
 
-**169/169 layers complete.** Final MXFP4 g8 results:
-- **Tolerant**: 159/169 layers (94%) — safe for MXFP4
-- **Intolerant**: 10/169 layers (6%) — need MXFP8 fallback
-- **MXFP8**: 169/169 tolerant (100%) — safe everywhere
-- Sensitive hotspots: blocks 2–3 MLP, block 17 `o_proj`, blocks 21+23 MLP
-- Worst layer: `layers.23.mlp.down_proj` at +9.29% (g8) / +14.39% (g16)
+**169/169 layers complete.** Overall avg delta: MXFP4 g8 +0.85%, MXFP8 g8 +0.00%.
+
+MXFP4 g8 summary:
+- **Tolerant**: 158/169 layers (93.5%) — safe for MXFP4
+- **Intolerant**: 11/169 layers (6.5%) — need MXFP8 fallback
+- Sensitive hotspots: blocks 2–3 MLP, block 17 `o_proj`, blocks 21+23 MLP, `lm_head`
+- Worst layer: `lm_head` at +60.49% (g8) / +93.20% (g16)
+- Worst hidden layer: `layers.23.mlp.down_proj` at +9.29% (g8) / +14.39% (g16)
+
+MXFP8 g8 summary:
+- **Tolerant**: 169/169 layers (100%) — safe everywhere
+- Max per-layer delta: +0.47% (`lm_head`)
+- Max hidden-layer delta: +0.42% (`layers.21.mlp.gate_proj`)
+- All block-level averages stay within ±0.16%, well below the 2% threshold
+- MXFP8 is a reliable fallback for every layer that fails MXFP4 tolerance
 
 ### Policy Generation
 
@@ -164,12 +174,12 @@ python3 pytorch_profiling/define_policies.py \
   --output results/policies.json
 ```
 
-| Policy | Strategy | Description |
-| --- | --- | --- |
-| A | Conservative | MXFP8 all layers for rollout/reward, FP16 for gradients |
-| B | Balanced | MXFP4 for tolerant layers, MXFP8 for sensitive, FP16 for gradients |
-| C | Aggressive | MXFP4 everywhere possible, MXFP8 fallback for sensitive gradients |
-| D | Phase-Adaptive | MXFP4-biased rollout, MXFP8-biased reward, FP16-safe gradients |
+| Policy | Strategy | Rollout | Reward | Gradient |
+| --- | --- | --- | --- | --- |
+| A | Conservative | MXFP8 169 (100%) | MXFP8 169 (100%) | FP16 169 (100%) |
+| B | Balanced | MXFP4 158 / MXFP8 11 | MXFP4 158 / MXFP8 11 | FP16 169 (100%) |
+| C | Aggressive | MXFP4 169 (100%) | MXFP4 169 (100%) | MXFP4 158 / MXFP8 11 |
+| D | Phase-Adaptive | MXFP4 158 / MXFP8 11 | MXFP8 169 (100%) | MXFP8 158 / FP16 11 |
 
 ### How to reproduce
 
