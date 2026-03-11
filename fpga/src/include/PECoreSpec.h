@@ -32,7 +32,7 @@ namespace spec {
       const int kNumReadPorts = kNumVectorLanes;
       const int kNumWritePorts = 1;
       const int kNumBanks = kNumVectorLanes;
-      const int kEntriesPerBank = 1024;       // reduced for faster HLS synthesis
+      const int kEntriesPerBank = 512;        // reduced for faster HLS, fewer MEM-74 warnings
       const unsigned int kAddressWidth = nvhls::index_width<kNumBanks * kEntriesPerBank>::val;
       const unsigned int kBankIndexSize = nvhls::index_width<kNumBanks>::val;
       const unsigned int kLocalIndexSize = nvhls::index_width<kEntriesPerBank>::val;
@@ -47,7 +47,7 @@ namespace spec {
       const int kNumReadPorts = 1; // spec::kNumVectorLanes
       const int kNumWritePorts = 1;
       const int kNumBanks = 1;
-      const int kEntriesPerBank = 256;       // need to configure
+      const int kEntriesPerBank = 128;       // reduced for faster HLS synthesis
       const unsigned int kAddressWidth = nvhls::index_width<kNumBanks * kEntriesPerBank>::val;
       const unsigned int kBankIndexSize = nvhls::index_width<kNumBanks>::val;
       const unsigned int kLocalIndexSize = nvhls::index_width<kEntriesPerBank>::val;
@@ -62,7 +62,7 @@ namespace spec {
       const int kNumReadPorts = 1; // spec::kNumVectorLanes
       const int kNumWritePorts = 1;
       const int kNumBanks = 1;
-      const int kEntriesPerBank = 256;     // need to configure
+      const int kEntriesPerBank = 128;     // reduced for faster HLS synthesis
       const unsigned int kAddressWidth = nvhls::index_width<kNumBanks * kEntriesPerBank>::val;
       const unsigned int kBankIndexSize = nvhls::index_width<kNumBanks>::val;
       const unsigned int kLocalIndexSize = nvhls::index_width<kEntriesPerBank>::val;

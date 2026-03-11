@@ -71,9 +71,9 @@ solution options set Architectural/DefaultResetClearsAllRegs yes
 directive set -DESIGN_GOAL latency
 directive set -SPECULATE true
 directive set -MERGEABLE true
-# originally 256, 32
-directive set -REGISTER_THRESHOLD 4096
-directive set -MEM_MAP_THRESHOLD 4096
+# Raised to 8192 to reduce MEM-74 dynamic-index analysis and prefer RAM over registers
+directive set -REGISTER_THRESHOLD 8192
+directive set -MEM_MAP_THRESHOLD 8192
 directive set -FSM_ENCODING binary
 directive set -REG_MAX_FANOUT 0
 directive set -NO_X_ASSIGNMENTS true
