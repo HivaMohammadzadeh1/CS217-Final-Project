@@ -46,6 +46,32 @@ A full 50-step RLHF training run with real FPGA offload was completed on an AWS 
 - Total matmuls offloaded: 65,013,760
 - Total tiles processed: 65,013,760
 
+### FPGA Energy Baseline
+
+Hardware power estimated via Xilinx Power Estimator (XPE). Cycle counts measured on the Lab 1 bitstream (16x16 INT8 matmul).
+
+| Parameter | Value |
+| --- | --- |
+| FPGA power | 35 W |
+| Cycles per 16x16 matmul | 148,656 (15 compute + 148,641 PCIe transfer) |
+| Energy per matmul | 20,811.84 μJ |
+| Total energy for 50 PPO steps | 2,830.41 J (0.786 Wh) |
+
+Data transfer accounts for 99.99% of per-matmul cycles; computation is just 15 cycles (0.01%). This PCIe bottleneck is the dominant cost and the primary target for MX-format compression.
+
+### Phase-Level Energy Breakdown
+
+FPGA power is constant at 35 W, so energy per phase = power × runtime. Phase runtimes from the actual 50-step RLHF run (`results/milestone_report/phase_timing.json`):
+
+| Phase | Runtime (s) | FPGA Energy (J) | % of Total |
+| --- | --- | --- | --- |
+| Rollout | 140.3 | 4,911 | 32.5% |
+| Reward | 112.3 | 3,931 | 26.0% |
+| Gradient | 178.6 | 6,251 | 41.4% |
+| **Total** | **431.2** | **15,092** | **100%** |
+
+This is the "before" baseline. MX precision policies target the compute portion of energy, though PCIe transfer dominates in the current Lab 1 setup.
+
 ### Post-Training Evaluation (50 held-out examples)
 
 | Metric | Policy (FPGA) | Reference | Delta |
@@ -87,31 +113,45 @@ All five test categories passed via `make -C systemc clean all run`:
 | Mode switching | MAC succeeds after flush | — | — | PASS |
 | Group size comparison | Group 8 not worse than group 16 | within margin | — | PASS |
 
-### Sensitivity Profiling (Qwen2.5-0.5B-Instruct)
+### Sensitivity Profiling (Qwen2.5-0.5B-Instruct, 169 layers)
 
-Layer sensitivity was profiled on the real target model `Qwen/Qwen2.5-0.5B-Instruct` using `hivamoh/cs217-rlhf-dataset` (16 examples, seq_len 256). Baseline perplexity: **13.3231**.
+Per-layer quantization sensitivity on `Qwen/Qwen2.5-0.5B-Instruct`, baseline perplexity **13.3231**, tolerance threshold 2%. MXFP4 g8 perplexity delta by block (attention vs MLP):
 
-| Layer | Type | MXFP4 g8 delta | MXFP4 g16 delta | MXFP8 g8 delta | MXFP8 g16 delta | All tolerant? |
-| --- | --- | --- | --- | --- | --- | --- |
-| layers.0.self_attn.q_proj | attention | -0.06% | -0.01% | +0.00% | +0.00% | Yes |
-| layers.0.self_attn.k_proj | attention | -0.15% | -0.20% | +0.02% | +0.02% | Yes |
-| layers.0.self_attn.v_proj | attention | -0.05% | -0.18% | +0.05% | +0.05% | Yes |
-| layers.0.self_attn.o_proj | attention | +0.22% | -0.03% | +0.08% | +0.08% | Yes |
-| layers.0.mlp.gate_proj | mlp | +0.51% | +1.38% | +0.01% | +0.01% | Yes |
-| layers.0.mlp.up_proj | mlp | +0.43% | +1.13% | -0.03% | -0.03% | Yes |
-| layers.0.mlp.down_proj | mlp | +0.65% | +1.28% | +0.08% | +0.08% | Yes |
-| layers.1.self_attn.q_proj | attention | -0.02% | +0.11% | -0.00% | -0.00% | Yes |
+```
+Block   Attn (q/k/v/o avg)   MLP (gate/up/down avg)   MLP MXFP4 tolerant?
+  0        -0.01%                +0.53%                  Yes
+  1        +0.12%                +0.15%                  Yes
+  2        +0.23%                +2.27%  ← sensitive     NO (down_proj +7.48%)
+  3        +0.32%                +3.26%  ← sensitive     NO (all 3 MLP layers)
+  4        +0.02%                +0.21%                  Yes
+  5        +0.07%                +0.25%                  Yes
+  6        +0.53%                -0.13%                  Yes
+  7        +0.32%                +0.37%                  Yes
+  8        -0.06%                +0.22%                  Yes
+  9        +0.19%                -0.63%                  Yes
+ 10        -0.07%                +0.02%                  Yes
+ 11        -0.10%                +0.49%                  Yes
+ 12        -0.34%                +0.68%                  Yes
+ 13        -0.11%                +0.22%                  Yes
+ 14        +0.00%                +0.43%                  Yes
+ 15        -0.13%                +0.19%                  Yes
+ 16        +0.21%                +0.24%                  Yes
+ 17        +0.63%  ← o_proj!    +0.42%                  Yes (but o_proj +2.12%)
+ 18        +0.00%                +0.34%                  Yes
+ 19        +0.06%                +0.64%                  Yes
+ 20        +0.54%                +0.06%                  Yes
+ 21        +0.58%  ← o_proj!    +6.58%  ← sensitive     NO (all 3 MLP layers)
+ 22        +0.16%                +0.76%                  Yes
+ 23        +0.76%                +5.05%  ← sensitive     NO (up +3.99%, down +9.29%)
+ lm_head   (pending final output)
+```
 
-Summary (8 layers profiled, tolerance threshold 2%):
-
-| Format | Tolerant | Avg delta |
-| --- | --- | --- |
-| MXFP4 g8 | 8/8 | +0.19% |
-| MXFP4 g16 | 8/8 | +0.44% |
-| MXFP8 g8 | 8/8 | +0.03% |
-| MXFP8 g16 | 8/8 | +0.03% |
-
-Key findings: Attention layers tolerate MXFP4 very well (deltas near zero or negative). MLP layers show slightly higher MXFP4 sensitivity (+0.4–1.4%), especially at group size 16, but remain within the 2% tolerance. MXFP8 is nearly lossless across all layers.
+**169/169 layers complete.** Final MXFP4 g8 results:
+- **Tolerant**: 159/169 layers (94%) — safe for MXFP4
+- **Intolerant**: 10/169 layers (6%) — need MXFP8 fallback
+- **MXFP8**: 169/169 tolerant (100%) — safe everywhere
+- Sensitive hotspots: blocks 2–3 MLP, block 17 `o_proj`, blocks 21+23 MLP
+- Worst layer: `layers.23.mlp.down_proj` at +9.29% (g8) / +14.39% (g16)
 
 ### Policy Generation
 
