@@ -261,7 +261,8 @@ SC_MODULE(testbench)
     rva_write_tmp.data.set_slc(24, NVUINTW(1)(1));
     rva_write_tmp.data.set_slc(32, NVUINTW(4)(1));
     rva_write_tmp.data.set_slc(40, NVUINTW(8)(1));
-    rva_write_tmp.data.set_slc(48, NVUINTW(2)(spec::kPrecisionMXFP8));
+    // MXFP8 deferred — validating MXFP4 path first.
+    rva_write_tmp.data.set_slc(48, NVUINTW(2)(spec::kPrecisionMXFP4));
     rva_write_tmp.data.set_slc(56, NVUINTW(1)(spec::kMXGroupSize16));
     rva_write_tmp.addr = set_bytes<3>("40_00_10"); // correct local_index
     peconfig_written = rva_write_tmp.data;
@@ -297,20 +298,33 @@ SC_MODULE(testbench)
     manager1_cfg_written = rva_write_tmp.data;
     source.src_vec.push_back(rva_write_tmp);
 
-    // Expected Act Vector
+    // Expected Act Vector — MXFP4 path: decode E2M1, multiply in fixed-point,
+    // accumulate, right-shift by 8 to remove fractional bits, then clamp.
+    // (MX path in RunScale() skips the INT8 ÷12.25 scale factor.)
     spec::ActVectorType act_vector;
-    spec::AccumScalarType accum ;
     for (int i = 0; i < spec::kNumVectorLanes; i++)
     {
-      accum = 0;
+      long long acc = 0;
       for (int j = 0; j < spec::kVectorSize; j++)
       {
-        spec::ScalarType weight = (weight_written[i] >> spec::kIntWordWidth*j) & ((1 << spec::kIntWordWidth) - 1);
-        spec::ScalarType input = (input_written >> spec::kIntWordWidth*j) & ((1 << spec::kIntWordWidth) - 1);
-        accum += weight * input;
-        //cout << "Weight = " << weight << " Input = " << input << " Partial sum = " << accum << std::endl;
+        unsigned char w_byte = (unsigned char)((weight_written[i] >> spec::kIntWordWidth*j) & 0xFF);
+        unsigned char i_byte = (unsigned char)((input_written    >> spec::kIntWordWidth*j) & 0xFF);
+        // E2M1 decode: sign=bit3, exp=bits[2:1], mant=bit0
+        auto decode_e2m1 = [](unsigned char b) -> long long {
+          int sign = (b >> 3) & 1;
+          int exp  = (b >> 1) & 3;
+          int mant =  b       & 1;
+          long long abs_val = 0;
+          if (exp == 0) { abs_val = mant ? 8 : 0; }
+          else          { abs_val = (long long)(2 | mant) << (exp + 2); }
+          return sign ? -abs_val : abs_val;
+        };
+        acc += decode_e2m1(w_byte) * decode_e2m1(i_byte);
       }
-      act_vector[i] = int(double(accum) /  12.25); // 12.25 is the scale factor
+      long long scaled = acc >> 8; // remove 8 fractional bits (4+4)
+      if (scaled >  spec::kActWordMax) scaled =  spec::kActWordMax;
+      if (scaled <  spec::kActWordMin) scaled =  spec::kActWordMin;
+      act_vector[i] = (int)scaled;
     }
     dest.act_vector = act_vector;
 
