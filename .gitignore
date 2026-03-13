@@ -90,6 +90,15 @@ vivado*
 *.xml
 !constraints.xdc
 
+# HLS build artifacts
+fpga/hls/*/Catapult/
+fpga/hls/*/Catapult.ccs
+fpga/hls/*/*.key
+fpga/hls/*/catapult.pinfo
+
+# Allow fpga submission logs (.log.txt extension avoids *.log rule)
+!fpga/logs/
+
 # SystemC
 *.o
 *.out

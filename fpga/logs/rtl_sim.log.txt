@@ -1,0 +1,485 @@
+//  Catapult Ultra Synthesis 2024.2_1/1143609 (Production Release) Wed Nov 13 18:57:31 PST 2024
+//  
+//          Copyright (c) Siemens EDA, 1996-2024, All Rights Reserved.
+//                        UNPUBLISHED, LICENSED SOFTWARE.
+//             CONFIDENTIAL AND PROPRIETARY INFORMATION WHICH IS THE
+//                   PROPERTY OF SIEMENS EDA OR ITS LICENSORS.
+//  
+//  Running on Linux dadkins@rice-03:1326835 6.14.0-37-generic x86_64 aol
+//  
+//  Package information: SIFLIBS v27.2_1.0, HLS_PKGS v27.2_1.0, 
+//                       SIF_TOOLKITS v27.2_1.0, SIF_XILINX v27.2_1.0, 
+//                       SIF_ALTERA v27.2_1.0, CCS_LIBS v27.2_1.0, 
+//                       CDS_PPRO v2024.1_3, CDS_DesignChecker v2024.2_1, 
+//                       CDS_OASYS v21.1_3.1, CDS_PSR v24.1_0.20, 
+//                       DesignPad v2.78_1.0, DesignAnalyzer 2024.2/1130210
+//  
+//  Start time Thu Mar 12 23:33:06 2026
+# -------------------------------------------------
+# Logging session transcript to file "/tmp/log1326835dc3a4063.0"
+dofile ../../scripts/hls/go_vcs.tcl
+# > source Catapult.ccs
+# Creating project directory '/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/'. (PRJ-1)
+# Moving session transcript to file "/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/catapult.log"
+# Reading solution library '/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/td_ccore_solutions/Connections__InBlocking_bool_Connections__SYN_PORT___PopNB_7dc2ddd2603b8e923a641b51d78539e07744_0/.sif/solIndex_2_1aca11c1-29d6-4191-a406-77eddea4cb15.xml' ... (LIB-129)
+# Reading solution library '/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/td_ccore_solutions/Connections__OutBlocking_spec__ActVectorType_Connections__--_acf7bfcb7a6e99de7ac1234e89cfdb4e7b64_0/.sif/solIndex_2_cc4a9002-eed9-46ee-9cdf-b8eb7a814eaf.xml' ... (LIB-129)
+# Reading solution library '/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/td_ccore_solutions/Connections__InBlocking_spec__StreamType_Connections__SYN_--_947c29444e25f14670b0ba1b595c33c48bed_0/.sif/solIndex_2_84f09d62-c643-4b0a-85db-4c7571abcb6a.xml' ... (LIB-129)
+# Reading solution library '/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/td_ccore_solutions/Connections__OutBlocking_RVSink_spec__Axi__rvaCfg___Read_C--_5e6a198461b0391d77e6bea04d215033757d_0/.sif/solIndex_2_49a0e288-2b62-4fe8-9c51-f4be4ab883d8.xml' ... (LIB-129)
+# Reading solution library '/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/td_ccore_solutions/Connections__InBlocking_RVSink_spec__Axi__rvaCfg___Write_C--_a3e30d1aa576bfe893b618b8b694a1cb922f_0/.sif/solIndex_2_502b621f-843c-4618-b86d-c214a96a4c48.xml' ... (LIB-129)
+# > global env
+# > set USER_VARS {TOP_NAME CLK_PERIOD SRC_PATH SEARCH_PATH HLS_CATAPULT RUN_SCVERIFY COMPILER_FLAGS SYSTEMC_DESIGN RUN_CDESIGN_CHECKER}
+# TOP_NAME CLK_PERIOD SRC_PATH SEARCH_PATH HLS_CATAPULT RUN_SCVERIFY COMPILER_FLAGS SYSTEMC_DESIGN RUN_CDESIGN_CHECKER
+# > echo "***USER SETTINGS***"
+# ***USER SETTINGS***
+# >         foreach var $USER_VARS {
+# >             if [info exists env($var)] {
+# >                 echo "$var = $env($var)"
+# >                 set $var $env($var)
+# >             } else { 
+# >                 echo "Warning: $var not set by user"
+# >                 set $var ""
+# >             }
+# >         }
+# TOP_NAME = PECore
+# CLK_PERIOD = 4.0 
+# SRC_PATH = ../../src/
+# SEARCH_PATH = /cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib/cmod/include /cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include /cad/mentor/2024.2_1/Mgc_home/shared/include /cad/xilinx/vitis/2020.1/Vitis/2020.1/cardano/tps/boost_1_64_0 /home/users/dadkins/CS217-Final-Project/fpga/src/include
+# HLS_CATAPULT = 1
+# RUN_SCVERIFY = 0
+# COMPILER_FLAGS = HLS_ALGORITHMICC CONNECTIONS_ACCURATE_SIM SC_INCLUDE_DYNAMIC_PROCESSES
+# SYSTEMC_DESIGN = 1
+# RUN_CDESIGN_CHECKER = 0
+# > if { [info exist env(VG_GNU_PACKAGE)] } {
+# >     solution options set /Flows/VCS/VG_GNU_PACKAGE $env(VG_GNU_PACKAGE)
+# > } else {
+# >     solution options set /Flows/VCS/VG_GNU_PACKAGE $env(VCS_HOME)/gnu/linux
+# > }
+# /cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux
+# > solution options set /Flows/VCS/VG_ENV64_SCRIPT source_me.csh
+# source_me.csh
+# > solution options set /Flows/VCS/SYSC_VERSION 2.3.3
+# 2.3.3
+# > flow run /SCVerify/launch_make ./scverify/Verify_concat_sim_${TOP_NAME}_v_vcs.mk SIMTOOL=vcs sim
+# Warning: One or more options were changed. Full or partial rebuild may be required.
+# Making './scverify/Verify_concat_sim_PECore_v_vcs.mk SIMTOOL=vcs sim'
+# Make utility invoked from '/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1'
+#     /cad/mentor/2024.2_1/Mgc_home/bin/make -f ./scverify/Verify_concat_sim_PECore_v_vcs.mk SIMTOOL=vcs build < "/dev/null" (BASIC-15)
+# make[1]: Entering directory `/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1'
+# /cad/mentor/2024.2_1/Mgc_home/shared/include/mkfiles/ccs_vcs.mk:277: Warning: Applying the gcc option for the C++11 language standard
+# ============================================
+# Compiling Verilog file: scverify/ccs_wrapper_PECore.v
+# vlogan -kdb -full64  -psl -verbose  -Mdir=scverify/concat_sim_PECore_v_vcs -sysc=233 +v2k -sysc=233 -sc_model ccs_wrapper -sc_portmap ./scverify/dut_v_ports.map    scverify/ccs_wrapper_PECore.v
+# 
+# Warning-[LNX_OS_VERUN] Unsupported Linux version
+#   Linux version 'Rocky Linux release 8.10 (Green Obsidian)' is not supported 
+#   on 'x86_64' officially, assuming linux compatibility by default. Set 
+#   VCS_ARCH_OVERRIDE to linux or suse32 to override.
+#   Please refer to release notes for information on supported platforms.
+# 
+# 
+# Warning-[LINX_KRNL] Unsupported Linux kernel
+#   Linux kernel '6.14.0-37-generic' is not supported.
+#   Supported versions are 2.4* or 2.6*.
+# 
+# vlogan  '-kdb' '-full64' '-psl' '-verbose' '-Mdir=scverify/concat_sim_PECore_v_vcs' '+v2k'  scverify/ccs_wrapper_PECore.v 
+# 
+# Warning-[LNX_OS_VERUN] Unsupported Linux version
+#   Linux version 'Rocky Linux release 8.10 (Green Obsidian)' is not supported 
+#   on 'x86_64' officially, assuming linux compatibility by default. Set 
+#   VCS_ARCH_OVERRIDE to linux or suse32 to override.
+#   Please refer to release notes for information on supported platforms.
+# 
+# 
+# Warning-[LINX_KRNL] Unsupported Linux kernel
+#   Linux kernel '6.14.0-37-generic' is not supported.
+#   Supported versions are 2.4* or 2.6*.
+# 
+# /cad/synopsys/vcs/U-2023.03/linux64/bin/vcs1 -Mdir=scverify/concat_sim_PECore_v_vcs -Mcc=gcc -Mcplusplus=g++ -Masflags= -Mcfl= -pipe -O -I/cad/synopsys/vcs/U-2023.03/include  -Mldflags=  -Mout=simv -Mamsrun="" -Mvcsaceobjs="" -Mobjects=" " -Msaverestoreobj= -Mcrt0= -Mcrtn="" -Mcsrc="" -Mdir=scverify/concat_sim_PECore_v_vcs -Msyslibs=-ldl  -Xvlogan=0x1 -kdb -full64 -psl +v2k scverify/ccs_wrapper_PECore.v  
+# Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+# Please use '-no_save' simv switch to avoid this.
+#                          Chronologic VCS (TM)
+#          Version U-2023.03_Full64 -- Thu Mar 12 23:33:51 2026
+# 
+#                     Copyright (c) 1991 - 2023 Synopsys, Inc.
+#    This software and the associated documentation are proprietary to Synopsys,
+#  Inc. This software may only be used in accordance with the terms and conditions
+#  of a written license agreement with Synopsys, Inc. All other use, reproduction,
+#    or distribution of this software is strictly prohibited.  Licensed Products
+#      communicate with Synopsys servers for the purpose of providing software
+#     updates, detecting software piracy and verifying that customers are using
+#     Licensed Products in conformity with the applicable License Key for such
+#   Licensed Products. Synopsys will use information gathered in connection with
+#     this process to deliver software updates and pursue software pirates and
+#                                    infringers.
+# 
+#  Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+#             Inclusivity and Diversity" (Refer to article 000036315 at
+#                         https://solvnetplus.synopsys.com)
+# 
+# Parsing design file 'scverify/ccs_wrapper_PECore.v'
+# CPU time: .445 seconds to compile
+# syscan  -full64 -kdb -verilog_file -vlogan   -cpp g++ -sysc=233  -Mdir=scverify/concat_sim_PECore_v_vcs -cflags ""   scverify/ccs_wrapper_PECore.v:ccs_wrapper   -V -port ./scverify/dut_v_ports.map    -vcs_args '-kdb' '-full64' '-psl' '-verbose' '-Mdir=scverify/concat_sim_PECore_v_vcs' '+v2k' 
+# 
+# Note-[SC-SYSCAN-USE-CPP] Using C++-compiler
+#   Using 'g++' C++-compiler for C++ compilation.
+# 
+# /cad/synopsys/vcs/U-2023.03/linux64/bin/verilog2vdef /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/ccs_wrapper_PECore.v             -m ccs_wrapper             -o ccs_wrapper             -output_dir /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/ccs_wrapper             -f /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/dut_v_ports.map             -osci                                       -work DEFAULT -work_dir /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/work/AN.DB
+# /cad/synopsys/vcs/U-2023.03/linux64/bin/ifgen /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/ccs_wrapper/ccs_wrapper.vdef             -output ccs_wrapper             -hdl_output  /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/ccs_wrapper             -ccss_output /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/ccs_wrapper             -sysc 233                                       -direct -osci
+# ============================================
+# Compiling C++ file: ../../../../src/PECore/testbench.cpp
+# syscan -kdb -full64 -sysc=233 -Mdir=scverify/concat_sim_PECore_v_vcs -debug_acc+all -cflags "-DCCS_DUT_RTL -DCCS_DUT_VERILOG -D_SYNTHESIS_ -DHLS_CATAPULT -DHLS_ALGORITHMICC -DCONNECTIONS_ACCURATE_SIM -DSC_INCLUDE_DYNAMIC_PROCESSES  -DSC_INCLUDE_DYNAMIC_PROCESSES -DCCS_SYSC -DSC_USE_STD_STRING -DTOP_HDL_ENTITY=PECore -DDEADLOCK_DETECTION -std=gnu++11 -g -Wall -Wno-unknown-pragmas -I. -I../.. -I/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib/cmod/include -I/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/xilinx/vitis/2020.1/Vitis/2020.1/cardano/tps/boost_1_64_0 -I/home/users/dadkins/CS217-Final-Project/fpga/src/include -I./scverify -I. -I../.. -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/synopsys/vcs/U-2023.03/include/systemc233 -I. -I../.. -I/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib/cmod/include -I/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include -I/cad/mentor/2024.2_1/Mgc_home/shared/include 
+# -I/cad/xilinx/vitis/2020.1/Vitis/2020.1/cardano/tps/boost_1_64_0 -I/home/users/dadkins/CS217-Final-Project/fpga/src/include -I./scverify -I. -I../.. -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/mentor/2024.2_1/Mgc_home/pkgs/hls_pkgs/src -I/cad/mentor/2024.2_1/Mgc_home/pkgs/siflibs -I/cad/mentor/2024.2_1/Mgc_home/pkgs/hls_pkgs/mgc_comps_src -DSC_USE_STD_STRING " ../../../../src/PECore/testbench.cpp
+# 
+# Warning-[SC-SYSCAN-IDIR] Ignoring nonexistent include dir
+#   Ignoring nonexistent include dir 
+#   '/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include'.
+#   Make sure the directory specified with the '-I <dir>' option is available 
+#   and readable.
+# 
+# 
+# Warning-[SC-SYSCAN-IDIR] Ignoring nonexistent include dir
+#   Ignoring nonexistent include dir 
+#   '/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include'.
+#   Make sure the directory specified with the '-I <dir>' option is available 
+#   and readable.
+# 
+# In file included from /home/users/dadkins/CS217-Final-Project/fpga/src/include/AxiSpec.h:29,
+#                  from /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/../../../../src/PECore/PECore.h:33,
+#                  from /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/sysc_sim.h:32,
+#                  from /cad/mentor/2024.2_1/Mgc_home/shared/include/mc_scverify.h:130,
+#                  from /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/../../../../src/PECore/testbench.cpp:22:
+# /home/users/dadkins/CS217-Final-Project/fpga/src/include/Spec.h:66:52: warning: integer overflow in expression of type ‘int’ results in ‘2147483647’ [-Woverflow]
+#    66 |   const int kActWordMax = (1 << (kActWordWidth-1)) -1;
+#       |                           ~~~~~~~~~~~~~~~~~~~~~~~~~^~
+# ============================================
+# Compiling C++ file: scverify/sysc_sim.cpp
+# syscan -kdb -full64 -sysc=233 -Mdir=scverify/concat_sim_PECore_v_vcs -debug_acc+all -cflags "-DCCS_DUT_RTL -DCCS_DUT_VERILOG -D_SYNTHESIS_ -DHLS_CATAPULT -DHLS_ALGORITHMICC -DCONNECTIONS_ACCURATE_SIM -DSC_INCLUDE_DYNAMIC_PROCESSES  -DSC_INCLUDE_DYNAMIC_PROCESSES -DCCS_SYSC -DSC_USE_STD_STRING -DTOP_HDL_ENTITY=PECore -DDEADLOCK_DETECTION -std=gnu++11 -g -Wall -Wno-unknown-pragmas -I. -I../.. -I/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib/cmod/include -I/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/xilinx/vitis/2020.1/Vitis/2020.1/cardano/tps/boost_1_64_0 -I/home/users/dadkins/CS217-Final-Project/fpga/src/include -I./scverify -I. -I../.. -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/synopsys/vcs/U-2023.03/include/systemc233 -I. -I../.. -I/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib/cmod/include -I/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include -I/cad/mentor/2024.2_1/Mgc_home/shared/include 
+# -I/cad/xilinx/vitis/2020.1/Vitis/2020.1/cardano/tps/boost_1_64_0 -I/home/users/dadkins/CS217-Final-Project/fpga/src/include -I./scverify -I. -I../.. -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/mentor/2024.2_1/Mgc_home/pkgs/hls_pkgs/src -I/cad/mentor/2024.2_1/Mgc_home/pkgs/siflibs -I/cad/mentor/2024.2_1/Mgc_home/pkgs/hls_pkgs/mgc_comps_src -DSC_USE_STD_STRING " scverify/sysc_sim.cpp
+# 
+# Warning-[SC-SYSCAN-IDIR] Ignoring nonexistent include dir
+#   Ignoring nonexistent include dir 
+#   '/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include'.
+#   Make sure the directory specified with the '-I <dir>' option is available 
+#   and readable.
+# 
+# 
+# Warning-[SC-SYSCAN-IDIR] Ignoring nonexistent include dir
+#   Ignoring nonexistent include dir 
+#   '/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include'.
+#   Make sure the directory specified with the '-I <dir>' option is available 
+#   and readable.
+# 
+# In file included from /home/users/dadkins/CS217-Final-Project/fpga/src/include/AxiSpec.h:29,
+#                  from /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/../../../../src/PECore/PECore.h:33,
+#                  from /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/sysc_sim.h:32,
+#                  from /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/sysc_sim.cpp:18:
+# /home/users/dadkins/CS217-Final-Project/fpga/src/include/Spec.h:66:52: warning: integer overflow in expression of type ‘int’ results in ‘2147483647’ [-Woverflow]
+#    66 |   const int kActWordMax = (1 << (kActWordWidth-1)) -1;
+#       |                           ~~~~~~~~~~~~~~~~~~~~~~~~~^~
+# ============================================
+# Elaborating design
+# SYNOPSYS_SIM_SETUP: scverify/concat_sim_PECore_v_vcs/synopsys_sim.setup
+# vcs -full64 +libverbose -lca -psl -cm assert -assert enable_diag  -Mdir=scverify/concat_sim_PECore_v_vcs -timescale=1ps/1ps -sysc=blocksync -debug_acc+all -debug_region+cell+encrypt -sysc=show_sc_main -sysc=233 sc_main -kdb=sysc_elab -o scverify/concat_sim_PECore_v_vcs/sc_main -LDFLAGS "" -l scverify/concat_sim_PECore_v_vcs/elab.log
+# 
+# Warning-[LNX_OS_VERUN] Unsupported Linux version
+#   Linux version 'Rocky Linux release 8.10 (Green Obsidian)' is not supported 
+#   on 'x86_64' officially, assuming linux compatibility by default. Set 
+#   VCS_ARCH_OVERRIDE to linux or suse32 to override.
+#   Please refer to release notes for information on supported platforms.
+# 
+# 
+# Warning-[LINX_KRNL] Unsupported Linux kernel
+#   Linux kernel '6.14.0-37-generic' is not supported.
+#   Supported versions are 2.4* or 2.6*.
+# 
+# Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+# Please use '-no_save' simv switch to avoid this.
+# Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+# Please use '-no_save' simv switch to avoid this.
+# 
+# Warning-[LNX_OS_VERUN] Unsupported Linux version
+#   Linux version 'Rocky Linux release 8.10 (Green Obsidian)' is not supported 
+#   on 'x86_64' officially, assuming linux compatibility by default. Set 
+#   VCS_ARCH_OVERRIDE to linux or suse32 to override.
+#   Please refer to release notes for information on supported platforms.
+# 
+# 
+# Warning-[LINX_KRNL] Unsupported Linux kernel
+#   Linux kernel '6.14.0-37-generic' is not supported.
+#   Supported versions are 2.4* or 2.6*.
+# 
+# 
+# Warning-[LCA_FEATURES_ENABLED] Usage warning
+#   LCA features enabled by '-lca' argument on the command line.  For more 
+#   information regarding list of LCA features please refer to Chapter "LCA 
+#   features" in the VCS Release Notes
+# 
+# Doing common elaboration 
+# 
+# Warning-[LNX_OS_VERUN] Unsupported Linux version
+#   Linux version 'Rocky Linux release 8.10 (Green Obsidian)' is not supported 
+#   on 'x86_64' officially, assuming linux compatibility by default. Set 
+#   VCS_ARCH_OVERRIDE to linux or suse32 to override.
+#   Please refer to release notes for information on supported platforms.
+# 
+# 
+# Warning-[LINX_KRNL] Unsupported Linux kernel
+#   Linux kernel '6.14.0-37-generic' is not supported.
+#   Supported versions are 2.4* or 2.6*.
+# 
+# *** Using c compiler gcc instead of cc ...
+# Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+# Please use '-no_save' simv switch to avoid this.
+#                          Chronologic VCS (TM)
+#          Version U-2023.03_Full64 -- Thu Mar 12 23:34:41 2026
+# 
+#                     Copyright (c) 1991 - 2023 Synopsys, Inc.
+#    This software and the associated documentation are proprietary to Synopsys,
+#  Inc. This software may only be used in accordance with the terms and conditions
+#  of a written license agreement with Synopsys, Inc. All other use, reproduction,
+#    or distribution of this software is strictly prohibited.  Licensed Products
+#      communicate with Synopsys servers for the purpose of providing software
+#     updates, detecting software piracy and verifying that customers are using
+#     Licensed Products in conformity with the applicable License Key for such
+#   Licensed Products. Synopsys will use information gathered in connection with
+#     this process to deliver software updates and pursue software pirates and
+#                                    infringers.
+# 
+#  Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+#             Inclusivity and Diversity" (Refer to article 000036315 at
+#                         https://solvnetplus.synopsys.com)
+# 
+# Top Level Modules:
+#        sc_main
+# TimeScale is 1 ps / 1 ps
+# Starting vcs inline pass...
+# 
+# 1 module and 0 UDP read.
+# recompiling module sc_main
+# make[2]: Entering directory `/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs'
+# 
+# Warning-[SC-SYSCAN-IDIR] Ignoring nonexistent include dir
+#   Ignoring nonexistent include dir 
+#   '/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include'.
+#   Make sure the directory specified with the '-I <dir>' option is available 
+#   and readable.
+# 
+# 
+# Warning-[SC-SYSCAN-IDIR] Ignoring nonexistent include dir
+#   Ignoring nonexistent include dir 
+#   '/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include'.
+#   Make sure the directory specified with the '-I <dir>' option is available 
+#   and readable.
+# 
+# 
+# Warning-[SC-SYSCAN-IDIR] Ignoring nonexistent include dir
+#   Ignoring nonexistent include dir 
+#   '/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include'.
+#   Make sure the directory specified with the '-I <dir>' option is available 
+#   and readable.
+# 
+# 
+# Warning-[SC-SYSCAN-IDIR] Ignoring nonexistent include dir
+#   Ignoring nonexistent include dir 
+#   '/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include'.
+#   Make sure the directory specified with the '-I <dir>' option is available 
+#   and readable.
+# 
+# if [ -x /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_main_elab ]; then chmod a-x /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_main_elab; fi
+# g++  -o /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_main_elab    -Wl,--whole-archive  -Wl,--no-whole-archive -Wl,-rpath,/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib64 -rdynamic -Wl,-rpath='$ORIGIN'/sc_main_elab.daidir -Wl,-rpath=./sc_main_elab.daidir -Wl,-rpath=/cad/synopsys/vcs/U-2023.03/linux64/lib -L/cad/synopsys/vcs/U-2023.03/linux64/lib -L/cad/synopsys/vcs/U-2023.03/linux64/lib/cosim/sysc233-gcc9 -L/cad/synopsys/vcs/U-2023.03/linux64/lib -rdynamic -Wl,-E   -Wl,-whole-archive     -lvcsucli     -Wl,-no-whole-archive  /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/sysc_globals.o /cad/synopsys/vcs/U-2023.03/linux64/lib/ucli_sysc.o   objs/GdI28_d.o objs/reYIK_d.o amcQwB.o objs/amcQw_d.o    SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o rmar_llvm_0_0.o       /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PE
+# Core.v1/scverify/concat_sim_PECore_v_vcs/sysc/ccs_wrapper/ccs_wrapper.o /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/testbench.o /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/sysc_sim.o  /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/libconcat_sim_PECore_v_vcs_sysc_stubs.a   -lerrorinf -lsnpsmalloc -lvfs -lsysctli -lbfSim -lbfCbug -lsystemc233-gcc9-64 -lvirsim     -lvcsnew -lvcsucli -lsimprofile -luclinative /cad/synopsys/vcs/U-2023.03/linux64/lib/vcs_tls.o          _vcs_pli_stub_.o   /cad/synopsys/vcs/U-2023.03/linux64/lib/vcs_save_restore_new.o /cad/synopsys/verdi/V-2023.12-SP2-4/share/PLI/VCS/LINUX64/pli.a -ldl -lm  -lc -lpthread -ldl 
+# /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_main_elab up to date
+# make[2]: Leaving directory `/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs'
+# CPU time: 1.152 seconds to compile + .428 seconds to elab + 12.933 seconds to link
+# Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+# Please use '-no_save' simv switch to avoid this.
+# ================================
+# SETTING RANDOM SEED = 19650218
+# ================================
+# Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+# Please use '-no_save' simv switch to avoid this.
+# 
+# Warning-[LNX_OS_VERUN] Unsupported Linux version
+#   Linux version 'Rocky Linux release 8.10 (Green Obsidian)' is not supported 
+#   on 'x86_64' officially, assuming linux compatibility by default. Set 
+#   VCS_ARCH_OVERRIDE to linux or suse32 to override.
+#   Please refer to release notes for information on supported platforms.
+# 
+# 
+# Warning-[LINX_KRNL] Unsupported Linux kernel
+#   Linux kernel '6.14.0-37-generic' is not supported.
+#   Supported versions are 2.4* or 2.6*.
+# 
+# 
+# Warning-[LCA_FEATURES_ENABLED] Usage warning
+#   LCA features enabled by '-lca' argument on the command line.  For more 
+#   information regarding list of LCA features please refer to Chapter "LCA 
+#   features" in the VCS Release Notes
+# 
+# Doing common elaboration 
+# 
+# Warning-[LNX_OS_VERUN] Unsupported Linux version
+#   Linux version 'Rocky Linux release 8.10 (Green Obsidian)' is not supported 
+#   on 'x86_64' officially, assuming linux compatibility by default. Set 
+#   VCS_ARCH_OVERRIDE to linux or suse32 to override.
+#   Please refer to release notes for information on supported platforms.
+# 
+# 
+# Warning-[LINX_KRNL] Unsupported Linux kernel
+#   Linux kernel '6.14.0-37-generic' is not supported.
+#   Supported versions are 2.4* or 2.6*.
+# 
+# *** Using c compiler gcc instead of cc ...
+# Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+# Please use '-no_save' simv switch to avoid this.
+#                          Chronologic VCS (TM)
+#          Version U-2023.03_Full64 -- Thu Mar 12 23:35:11 2026
+# 
+#                     Copyright (c) 1991 - 2023 Synopsys, Inc.
+#    This software and the associated documentation are proprietary to Synopsys,
+#  Inc. This software may only be used in accordance with the terms and conditions
+#  of a written license agreement with Synopsys, Inc. All other use, reproduction,
+#    or distribution of this software is strictly prohibited.  Licensed Products
+#      communicate with Synopsys servers for the purpose of providing software
+#     updates, detecting software piracy and verifying that customers are using
+#     Licensed Products in conformity with the applicable License Key for such
+#   Licensed Products. Synopsys will use information gathered in connection with
+#     this process to deliver software updates and pursue software pirates and
+#                                    infringers.
+# 
+#  Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+#             Inclusivity and Diversity" (Refer to article 000036315 at
+#                         https://solvnetplus.synopsys.com)
+# 
+# Top Level Modules:
+#        sc_main
+# TimeScale is 1 ps / 1 ps
+# Starting vcs inline pass...
+# 
+# 42 modules and 0 UDP read.
+# recompiling module sc_main
+# recompiling module sysc$testbench
+# recompiling module sysc$Connections::Combinational<bool,...>
+# recompiling module sysc$Connections::Combinational<bool,...>::DummyPortManager
+# recompiling module sysc$Connections::Combinational<spec::StreamType,...>
+# recompiling module sysc$Connections::Combinational<spec::StreamType,...>::DummyPortManager
+# recompiling module sysc$Connections::Combinational<RVSink<spec::Axi::rvaCfg>::Write,...>
+# recompiling module sysc$Connections::Combinational<RVSink<spec::Axi::rvaCfg>::Write,...>::DummyPortManager
+# recompiling module sysc$Connections::Combinational<RVSink<spec::Axi::rvaCfg>::Read,...>
+# recompiling module sysc$Connections::Combinational<RVSink<spec::Axi::rvaCfg>::Read,...>::DummyPortManager
+# recompiling module sysc$Connections::Combinational<nvhls::nv_scvector<ac_int<32,...>,...>,...>
+# recompiling module sysc$Connections::Combinational<nvhls::nv_scvector<ac_int<32,...>,...>,...>::DummyPortManager
+# recompiling module sysc$CCS_RTL::sysc_sim_wrapper
+# recompiling module PECore_mgc_mul2add1_pipe
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_142_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_143_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_144_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_145_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_146_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_147_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_148_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_149_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_150_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_151_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_152_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_153_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_154_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_155_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_156_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_157_12_128_4096_1_4096_128_1_gen
+# recompiling module PECore_mgc_shift_l_v5
+# recompiling module PECore_mgc_shift_r_v5
+# recompiling module PECore_PECore_PECoreRun_rva_in_PopNB_mioi
+# recompiling module PECore_PECore_PECoreRun_input_port_PopNB_mioi
+# recompiling module PECore_PECore_PECoreRun_wait_dp
+# recompiling module sysc$Source
+# recompiling module sysc$Dest
+# recompiling module sysc$Connections::DirectToMarshalledInPort<bool>
+# recompiling module sysc$Connections::DirectToMarshalledInPort<spec::StreamType>
+# recompiling module sysc$Connections::DirectToMarshalledInPort<RVSink<spec::Axi::rvaCfg>::Write>
+# recompiling module sysc$Connections::MarshalledToDirectOutPort<RVSink<spec::Axi::rvaCfg>::Read>
+# recompiling module sysc$Connections::MarshalledToDirectOutPort<nvhls::nv_scvector<ac_int<32,...>,...>>
+# All of 42 modules done
+# make[2]: Entering directory `/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs'
+# make[2]: Leaving directory `/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs'
+# make[2]: Entering directory `/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs'
+# if [ -x /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_main ]; then chmod a-x /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_main; fi
+# g++  -o /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_main    -Wl,--whole-archive  -Wl,--no-whole-archive -Wl,-rpath,/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib64 -rdynamic -Wl,-rpath='$ORIGIN'/sc_main.daidir -Wl,-rpath=./sc_main.daidir -Wl,-rpath=/cad/synopsys/vcs/U-2023.03/linux64/lib -L/cad/synopsys/vcs/U-2023.03/linux64/lib -L/cad/synopsys/vcs/U-2023.03/linux64/lib/cosim/sysc233-gcc9 -L/cad/synopsys/vcs/U-2023.03/linux64/lib -rdynamic -Wl,-E   -Wl,-whole-archive     -lvcsucli     -Wl,-no-whole-archive  /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/sysc_globals.o /cad/synopsys/vcs/U-2023.03/linux64/lib/ucli_sysc.o   objs/qa2ez_d.o objs/FDHeB_d.o objs/jmrsW_d.o objs/UrwZf_d.o objs/ZgHc3_d.o objs/acrwj_d.o objs/v71SV_d.o objs/CYMgp_d.o objs/gcK4B_d.o objs/xqRtc_d.o objs/GdI28_d.o objs/W7xp7_d.o objs/K1yb7_d.o objs/rnMJf_d.o objs/mZYdt_d.o objs/re
+# YIK_d.o objs/gjf0U_d.o objs/PNPjS_d.o objs/GLuuJ_d.o objs/H9Z7T_d.o objs/G4Ndq_d.o objs/SqtPy_d.o objs/N3qfQ_d.o objs/eny0H_d.o objs/kGCdi_d.o objs/WZyR4_d.o objs/SGzzD_d.o objs/jiHxa_d.o objs/iKtzy_d.o objs/RWt9L_d.o objs/bHZa5_d.o amcQwB.o objs/amcQw_d.o objs/gEPV3_d.o objs/R42QI_d.o objs/kwkS8_d.o objs/CZIWQ_d.o objs/qvewp_d.o objs/bzhn6_d.o objs/F2DhM_d.o objs/bNMwG_d.o objs/u0CQu_d.o objs/ZFFED_d.o objs/EhGrC_d.o objs/B0Hyw_d.o objs/P7Ye5_d.o objs/TkyIx_d.o objs/eLAJP_d.o    SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o rmar_llvm_0_0.o       /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/ccs_wrapper/ccs_wrapper.o /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/testbench.o /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/sysc_sim.o  /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/
+# Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/libconcat_sim_PECore_v_vcs_sysc_stubs.a   -lerrorinf -lsnpsmalloc -lvfs -lsysctli -lbfSim -lbfCbug -lsystemc233-gcc9-64 -lvirsim     -lvcsnew -lvcsucli -lsimprofile -lreader_common /cad/synopsys/vcs/U-2023.03/linux64/lib/libBA.a -luclinative /cad/synopsys/vcs/U-2023.03/linux64/lib/vcs_tls.o          _vcs_pli_stub_.o   /cad/synopsys/vcs/U-2023.03/linux64/lib/vcs_save_restore_new.o /cad/synopsys/verdi/V-2023.12-SP2-4/share/PLI/VCS/LINUX64/pli.a -ldl -lm  -lc -lpthread -ldl 
+# /home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_main up to date
+# make[2]: Leaving directory `/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs'
+# CPU time: 18.426 seconds to compile + 1.189 seconds to elab + 3.353 seconds to link
+# 
+# Note-[SC-UFE-1] Elaborating KDB
+#   The simulation contains SystemC. VCS will now try elaborating KDB, because 
+#   '-kdb=sysc_elab' is specified.
+#   To disable this step, please stop adding '-kdb=sysc_elab' switch.
+# 
+# Verdi KDB elaboration done and the database successfully generated: 0 error(s), 0 warning(s)
+# make[1]: Leaving directory `/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1'
+#     /cad/mentor/2024.2_1/Mgc_home/bin/make -f ./scverify/Verify_concat_sim_PECore_v_vcs.mk SIMTOOL=vcs sim (BASIC-14)
+# make[1]: Entering directory `/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1'
+# Warning: /cad/mentor/2024.2_1/Mgc_home/shared/include/mkfiles/ccs_vcs.mk:277: Warning: Applying the gcc option for the C++11 language standard
+# ============================================
+# Simulating design entity: sc_main
+# SYNOPSYS_SIM_SETUP: ./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/synopsys_sim.setup
+# cd ../..; ./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_main -systemcrun   -verilogrun -cm assert -ucli -ucli2Proc -i ./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/scverify_vcs_wave.tcl -l ./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sim.log 
+# Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+# Please use '-no_save' simv switch to avoid this.
+# ================================
+# SETTING RANDOM SEED = 19650218
+# ================================
+# Chronologic VCS simulator copyright 1991-2023
+# Contains Synopsys proprietary information.
+# Compiler version U-2023.03_Full64; Runtime version U-2023.03_Full64;  Mar 12 23:35 2026
+# Connections Clock: tb.clk Period: 1 ns
+# ucli% # Source static function file
+# ucli% global env
+# ucli% # Source the common TCL file (that also reads the wave database file)
+# ucli% source $env(MGC_HOME)/pkgs/sif/userware/En_na/flows/vcs_funcs.tcl
+# ucli% read_ccs_wave ./Catapult/PECore.v1/scverify/ccs_wave_signals.dat
+# Reading SCVerify waveform database './Catapult/PECore.v1/scverify/ccs_wave_signals.dat'
+# ucli% setup_vcd_file ./Catapult/PECore.v1/.dut_inst_info.tcl
+# ucli% populate_wave_window
+# ucli% if { ("0" != {}) && [file exists "0"] } {
+#    source "0"
+# }
+# ucli% # If not running in GUI mode, run the entire simulation
+# ucli% if { ![gui_is_active] } {
+#    do_simulation_run
+# }
+# Full simulation run
+# run -all
+# @2 ns Asserting reset
+# @4 ns De-Asserting reset
+# ActPort Computed value = 1205 and expected value = 18744
+# ActPort Computed value = 87193 and expected value = 23306
+# ActPort Computed value = 22745 and expected value = 14304
+# ActPort Computed value = -1822 and expected value = 17704
+# ActPort Computed value = 2381 and expected value = 10906
+# ActPort Computed value = 10395 and expected value = 21127
+# ActPort Computed value = 1757 and expected value = 13729
+# ActPort Computed value = 11624 and expected value = 18417
+# ActPort Computed value = 282 and expected value = 20347
+# ActPort Computed value = 11716 and expected value = 18523
+# ActPort Computed value = 46331 and expected value = 19444
+# ActPort Computed value = -3333 and expected value = 13179
+# ActPort Computed value = 25985 and expected value = 18419
+# ActPort Computed value = 2240 and expected value = 18746
+# ActPort Computed value = -94059 and expected value = 15181
+# ActPort Computed value = 367 and expected value = 16450
+# Dest: Difference observed in compute Act and expected value 133.466%
+# TESTBENCH PASS
+# "concat_sim_PECore.v", 43418: sc_main.tb.dut.ccs_rtl.dut_inst.PECore_PECoreRun_inst.PECore_PECoreRun_mem_array_h_ln146_assert_bank_sel_lt_NumBanks_and_bankindexoutofbounds_3: Antecedent of the implication never satisfied.
+# "concat_sim_PECore.v", 43424: sc_main.tb.dut.ccs_rtl.dut_inst.PECore_PECoreRun_inst.PECore_PECoreRun_mem_array_h_ln147_assert_idx_lt_NumEntriesPerBank_and_localindexoutofbounds_3: Antecedent of the implication never satisfied.
+# "concat_sim_PECore.v", 43429: sc_main.tb.dut.ccs_rtl.dut_inst.PECore_PECoreRun_inst.PECore_PECoreRun_ArbitratedScratchpadDP_h_ln196_assert_bankread_req_validOS_bank_CS_eq_false_and_Bankreadandwritevalidcannotbetruesimultaneouslyforsingle_m_portRAM_3: Antecedent of the implication never satisfied.
+# Simulation complete, time is 328000 ps.
+# sysc_skeleton.v, 390 : (*vcs_systemc_2,vcs_systemc_skel*) module sc_main;
+#            V C S   S i m u l a t i o n   R e p o r t 
+# Time: 328000 ps
+# CPU Time:      0.720 seconds;       Data structure size:  13.0Mb
+# Thu Mar 12 23:35:43 2026
+# make[1]: Leaving directory `/home/users/dadkins/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1'
+# > exit
+// Finish time Thu Mar 12 23:35:55 2026, time elapsed 2:49, peak memory 1.71GB, exit status 0

@@ -26,5 +26,14 @@ echo "***USER SETTINGS***"
                 set $var ""
             }
         }
+
+if { [info exist env(VG_GNU_PACKAGE)] } {
+    solution options set /Flows/VCS/VG_GNU_PACKAGE $env(VG_GNU_PACKAGE)
+} else {
+    solution options set /Flows/VCS/VG_GNU_PACKAGE $env(VCS_HOME)/gnu/linux
+}
+solution options set /Flows/VCS/VG_ENV64_SCRIPT source_me.csh
+solution options set /Flows/VCS/SYSC_VERSION 2.3.3
+
 flow run /SCVerify/launch_make ./scverify/Verify_concat_sim_${TOP_NAME}_v_vcs.mk SIMTOOL=vcs sim
 exit
