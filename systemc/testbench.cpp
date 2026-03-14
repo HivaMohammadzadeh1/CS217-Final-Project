@@ -148,22 +148,23 @@ int main() {
     std::cout << "1) Quantize/dequantize sanity check\n";
     const auto sample = RandomVector(16, rng);
 
-    // MXFP8 check deferred — validating MXFP4 path first.
-    // const auto fp8_qdq = mx::QuantizeDequantizeVector(sample, mx::MXFP8Spec(), 8);
+    const auto fp8_qdq = mx::QuantizeDequantizeVector(sample, mx::MXFP8Spec(), 8);
     const auto fp4_qdq = mx::QuantizeDequantizeVector(sample, mx::MXFP4Spec(), 8);
 
-    // float fp8_mae = 0.0f;
+    float fp8_mae = 0.0f;
     float fp4_mae = 0.0f;
     for (std::size_t i = 0; i < sample.size(); ++i) {
-      // fp8_mae += std::fabs(sample[i] - fp8_qdq[i]);
+      fp8_mae += std::fabs(sample[i] - fp8_qdq[i]);
       fp4_mae += std::fabs(sample[i] - fp4_qdq[i]);
     }
-    // fp8_mae /= static_cast<float>(sample.size());
+    fp8_mae /= static_cast<float>(sample.size());
     fp4_mae /= static_cast<float>(sample.size());
 
-    // std::cout << "  FP8 mean abs reconstruction error: " << fp8_mae << "\n";
+    std::cout << "  FP8 mean abs reconstruction error: " << fp8_mae << "\n";
     std::cout << "  FP4 mean abs reconstruction error: " << fp4_mae << "\n\n";
-    // if (!CheckLEQ("FP8 reconstruction MAE", fp8_mae, 0.10f)) { ++failures; }
+    if (!CheckLEQ("FP8 reconstruction MAE", fp8_mae, 0.10f)) {
+      ++failures;
+    }
     if (!CheckLEQ("FP4 reconstruction MAE", fp4_mae, 0.35f)) {
       ++failures;
     }
@@ -171,14 +172,15 @@ int main() {
 
   {
     std::cout << "\n2) MAC accuracy checks\n";
-    // MXFP8 check deferred — validating MXFP4 path first.
-    // const auto fp8_err = EvaluateMacError(mx::PrecisionMode::MXFP8, 8, 300, rng);
+    const auto fp8_err = EvaluateMacError(mx::PrecisionMode::MXFP8, 8, 300, rng);
     const auto fp4_err = EvaluateMacError(mx::PrecisionMode::MXFP4, 8, 300, rng);
 
-    // std::cout << "  FP8 normalized error mean/max: " << fp8_err.mean << " / " << fp8_err.max << "\n";
+    std::cout << "  FP8 normalized error mean/max: " << fp8_err.mean << " / " << fp8_err.max << "\n";
     std::cout << "  FP4 normalized error mean/max: " << fp4_err.mean << " / " << fp4_err.max << "\n\n";
 
-    // if (!CheckLEQ("FP8 MAC mean normalized error", fp8_err.mean, 0.08f)) { ++failures; }
+    if (!CheckLEQ("FP8 MAC mean normalized error", fp8_err.mean, 0.08f)) {
+      ++failures;
+    }
     if (!CheckLEQ("FP4 MAC mean normalized error", fp4_err.mean, 0.25f)) {
       ++failures;
     }
@@ -186,14 +188,15 @@ int main() {
 
   {
     std::cout << "\n3) GEMM accuracy checks (16x16)\n";
-    // MXFP8 check deferred — validating MXFP4 path first.
-    // const auto fp8_err = EvaluateGemmError(mx::PrecisionMode::MXFP8, 8, 20, rng);
+    const auto fp8_err = EvaluateGemmError(mx::PrecisionMode::MXFP8, 8, 20, rng);
     const auto fp4_err = EvaluateGemmError(mx::PrecisionMode::MXFP4, 8, 20, rng);
 
-    // std::cout << "  FP8 GEMM abs error mean/max: " << fp8_err.mean << " / " << fp8_err.max << "\n";
+    std::cout << "  FP8 GEMM abs error mean/max: " << fp8_err.mean << " / " << fp8_err.max << "\n";
     std::cout << "  FP4 GEMM abs error mean/max: " << fp4_err.mean << " / " << fp4_err.max << "\n\n";
 
-    // if (!CheckLEQ("FP8 GEMM mean abs error", fp8_err.mean, 0.25f)) { ++failures; }
+    if (!CheckLEQ("FP8 GEMM mean abs error", fp8_err.mean, 0.25f)) {
+      ++failures;
+    }
     if (!CheckLEQ("FP4 GEMM mean abs error", fp4_err.mean, 0.85f)) {
       ++failures;
     }
@@ -231,16 +234,15 @@ int main() {
   }
 
   {
-    std::cout << "\n5) Group size comparison (quality trend) — MXFP4\n";
-    // MXFP8 group-size comparison deferred; running MXFP4 equivalent instead.
-    const auto fp4_g8 = EvaluateMacError(mx::PrecisionMode::MXFP4, 8, 200, rng);
-    const auto fp4_g16 = EvaluateMacError(mx::PrecisionMode::MXFP4, 16, 200, rng);
-    std::cout << "  FP4 mean normalized error: group8=" << fp4_g8.mean
-              << " group16=" << fp4_g16.mean << "\n";
+    std::cout << "\n5) Group size comparison (quality trend)\n";
+    const auto fp8_g8 = EvaluateMacError(mx::PrecisionMode::MXFP8, 8, 200, rng);
+    const auto fp8_g16 = EvaluateMacError(mx::PrecisionMode::MXFP8, 16, 200, rng);
+    std::cout << "  FP8 mean normalized error: group8=" << fp8_g8.mean
+              << " group16=" << fp8_g16.mean << "\n";
 
     // Not a hard mathematical guarantee, but group_size=8 should usually be
     // at least as accurate as group_size=16 for this workload.
-    const bool trend_ok = fp4_g8.mean <= (fp4_g16.mean + 0.03f);
+    const bool trend_ok = fp8_g8.mean <= (fp8_g16.mean + 0.03f);
     if (!CheckTrue("Group size 8 is not worse than group size 16 (within margin)", trend_ok)) {
       ++failures;
     }

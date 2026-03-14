@@ -261,8 +261,7 @@ SC_MODULE(testbench)
     rva_write_tmp.data.set_slc(24, NVUINTW(1)(1));
     rva_write_tmp.data.set_slc(32, NVUINTW(4)(1));
     rva_write_tmp.data.set_slc(40, NVUINTW(8)(1));
-    // MXFP8 deferred — validating MXFP4 path first.
-    rva_write_tmp.data.set_slc(48, NVUINTW(2)(spec::kPrecisionMXFP4));
+    rva_write_tmp.data.set_slc(48, NVUINTW(2)(spec::kPrecisionMXFP8));
     rva_write_tmp.data.set_slc(56, NVUINTW(1)(spec::kMXGroupSize16));
     rva_write_tmp.addr = set_bytes<3>("40_00_10"); // correct local_index
     peconfig_written = rva_write_tmp.data;
@@ -298,7 +297,7 @@ SC_MODULE(testbench)
     manager1_cfg_written = rva_write_tmp.data;
     source.src_vec.push_back(rva_write_tmp);
 
-    // Expected Act Vector — MXFP4 path: decode E2M1, multiply in fixed-point,
+    // Expected Act Vector — MXFP8 path: decode E4M3, multiply in fixed-point,
     // accumulate, right-shift by 8 to remove fractional bits, then clamp.
     // (MX path in RunScale() skips the INT8 ÷12.25 scale factor.)
     spec::ActVectorType act_vector;
@@ -309,17 +308,20 @@ SC_MODULE(testbench)
       {
         unsigned char w_byte = (unsigned char)((weight_written[i] >> spec::kIntWordWidth*j) & 0xFF);
         unsigned char i_byte = (unsigned char)((input_written    >> spec::kIntWordWidth*j) & 0xFF);
-        // E2M1 decode: sign=bit3, exp=bits[2:1], mant=bit0
-        auto decode_e2m1 = [](unsigned char b) -> long long {
-          int sign = (b >> 3) & 1;
-          int exp  = (b >> 1) & 3;
-          int mant =  b       & 1;
-          long long abs_val = 0;
-          if (exp == 0) { abs_val = mant ? 8 : 0; }
-          else          { abs_val = (long long)(2 | mant) << (exp + 2); }
+        // E4M3 decode: sign=bit7, exp=bits[6:3], mant=bits[2:0], bias=7
+        auto decode_e4m3 = [](unsigned char b) -> long long {
+          int sign   = (b >> 7) & 1;
+          int exp_f  = (b >> 3) & 0xF;
+          int mant   =  b       & 0x7;
+          if (exp_f == 0) return 0; // zero / subnormal treated as 0
+          if (exp_f == 15 && mant == 7) return 0; // NaN
+          long long full_mant = 8 | mant; // implicit leading 1
+          long long abs_val;
+          if (exp_f >= 6)      abs_val = full_mant << (exp_f - 6);
+          else                 abs_val = full_mant >> (6 - exp_f);
           return sign ? -abs_val : abs_val;
         };
-        acc += decode_e2m1(w_byte) * decode_e2m1(i_byte);
+        acc += decode_e4m3(w_byte) * decode_e4m3(i_byte);
       }
       long long scaled = acc >> 8; // remove 8 fractional bits (4+4)
       if (scaled >  spec::kActWordMax) scaled =  spec::kActWordMax;
