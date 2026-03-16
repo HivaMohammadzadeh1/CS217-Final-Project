@@ -15,6 +15,11 @@
 source $env(HLS_SCRIPTS)/nvhls_exec.tcl
 
 namespace eval nvhls {
-
+  # Remove clock overhead margin so the scheduler can use the full clock period.
+  # Needed to resolve feedback timing violation in ArbitratedScratchpadDP arbiter.
+  proc usercmd_post_assembly {} {
+    directive set -CLOCK_OVERHEAD 0
+  }
 }
+
 nvhls::run
