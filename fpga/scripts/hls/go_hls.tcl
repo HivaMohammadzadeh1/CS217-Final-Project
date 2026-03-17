@@ -15,23 +15,9 @@
 source $env(HLS_SCRIPTS)/nvhls_exec.tcl
 
 namespace eval nvhls {
-  # Pre-compile: set directives that must be applied before 'libraries' stage.
-  proc usercmd_pre_compile {} {
-    # --- Memory: force arrays to BRAM, not registers ---
-    directive set -REGISTER_THRESHOLD 256
-    directive set -MEM_MAP_THRESHOLD 256
-
-    # --- Scheduling: conservative area-focused goal ---
-    directive set -DESIGN_GOAL area
-
-    # --- Components: allow slower but easier-to-place components ---
-    directive set -COMPGRADE slow
-  }
-
-  # Post-assembly: only directives known to be safe at this stage.
+  # Post-assembly: remove clock overhead margin for arbiter feedback paths.
+  # CLOCK_PERIOD is set to 5ns via Makefile CLK_PERIOD.
   proc usercmd_post_assembly {} {
-    # --- Timing: remove clock overhead margin for arbiter feedback paths ---
-    # CLOCK_PERIOD is set to 5ns via Makefile CLK_PERIOD.
     directive set -CLOCK_OVERHEAD 0
   }
 }
