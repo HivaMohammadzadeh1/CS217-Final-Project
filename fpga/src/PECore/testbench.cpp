@@ -253,7 +253,22 @@ SC_MODULE(testbench)
     NVUINTW(spec::VectorType::width) input_written = 0;
 
     // ---------------------------
-    // 1) WRITE PEConfig (region 0x4, local_index = 0x0001)
+    // 1a) WRITE PEConfig with MXFP4 first (exercises precision_mode=2 path
+    //     so Catapult does not constant-propagate it away)
+    // ---------------------------
+    rva_write_tmp.rw = 1;
+    rva_write_tmp.data = 0;
+    rva_write_tmp.data.set_slc(0,  NVUINTW(1)(1));
+    rva_write_tmp.data.set_slc(24, NVUINTW(1)(1));
+    rva_write_tmp.data.set_slc(32, NVUINTW(4)(1));
+    rva_write_tmp.data.set_slc(40, NVUINTW(8)(1));
+    rva_write_tmp.data.set_slc(48, NVUINTW(2)(spec::kPrecisionMXFP4));
+    rva_write_tmp.data.set_slc(56, NVUINTW(1)(spec::kMXGroupSize8));
+    rva_write_tmp.addr = set_bytes<3>("40_00_10");
+    source.src_vec.push_back(rva_write_tmp);
+
+    // ---------------------------
+    // 1b) WRITE PEConfig with MXFP8 (actual test mode, overwrites 1a)
     // ---------------------------
     rva_write_tmp.rw = 1;
     rva_write_tmp.data = 0;
