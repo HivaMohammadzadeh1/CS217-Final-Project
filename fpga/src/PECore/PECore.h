@@ -655,7 +655,7 @@ if (is_output_end) {
   {
     Reset();
 
-#pragma hls_pipeline_init_interval 2
+#pragma hls_pipeline_init_interval 4
     while (1) {
       Initialize();
 
