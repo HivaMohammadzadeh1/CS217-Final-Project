@@ -28,8 +28,10 @@
 // ---- MX Minifloat Fixed-Point Decode (4 fractional bits) ----
 
 // E4M3 (MXFP8): 1 sign + 4 exponent + 3 mantissa, bias=7
-// Returns signed 16-bit fixed-point with 4 fractional bits.
-// Max magnitude: 15 << 8 = 3840 (for exp=14, mant=7), fits in NVINT13.
+// Returns signed 16-bit fixed-point with 4 fractional bits (Q4.4).
+// abs_val = (8|mant) * 2^(exp_f - 6).  Max: 15<<8 = 3840 (exp=14, mant=7).
+// Uses explicit per-exponent fixed shifts to avoid synthesis issues
+// with conditional variable-direction barrel shifts.
 inline NVINTW(16) DecodeE4M3Fixed(NVUINTW(8) code) {
   NVUINTW(1) sign_bit = nvhls::get_slc<1>(code, 7);
   NVUINTW(4) exp_f    = nvhls::get_slc<4>(code, 3);
@@ -38,16 +40,23 @@ inline NVINTW(16) DecodeE4M3Fixed(NVUINTW(8) code) {
   NVUINTW(16) abs_val = 0;
   NVUINTW(16) full_mant = 8 | (NVUINTW(16))mant;
 
-  if (exp_f == 0) {
-    abs_val = 0;
-  } else if (exp_f == 15 && mant == 7) {
-    abs_val = 0;
-  } else if (exp_f >= 6) {
-    NVUINTW(4) shift_l = exp_f - 6;
-    abs_val = full_mant << shift_l;
-  } else {
-    NVUINTW(4) shift_r = 6 - exp_f;
-    abs_val = full_mant >> shift_r;
+  switch (exp_f) {
+    case  0: abs_val = 0;                break; // zero/subnormal → 0
+    case  1: abs_val = full_mant >> 5;   break; // 2^(1-6)  = /32
+    case  2: abs_val = full_mant >> 4;   break; // 2^(2-6)  = /16
+    case  3: abs_val = full_mant >> 3;   break; // 2^(3-6)  = /8
+    case  4: abs_val = full_mant >> 2;   break; // 2^(4-6)  = /4
+    case  5: abs_val = full_mant >> 1;   break; // 2^(5-6)  = /2
+    case  6: abs_val = full_mant;        break; // 2^(6-6)  = 1
+    case  7: abs_val = full_mant << 1;   break; // 2^(7-6)  = 2
+    case  8: abs_val = full_mant << 2;   break; // 2^(8-6)  = 4
+    case  9: abs_val = full_mant << 3;   break; // 2^(9-6)  = 8
+    case 10: abs_val = full_mant << 4;   break; // 2^(10-6) = 16
+    case 11: abs_val = full_mant << 5;   break; // 2^(11-6) = 32
+    case 12: abs_val = full_mant << 6;   break; // 2^(12-6) = 64
+    case 13: abs_val = full_mant << 7;   break; // 2^(13-6) = 128
+    case 14: abs_val = full_mant << 8;   break; // 2^(14-6) = 256
+    default: abs_val = (mant == 7) ? (NVUINTW(16))0 : full_mant << 9; break; // exp=15: NaN→0, else 2^9=512
   }
 
   NVINTW(16) result = (NVINTW(16))abs_val;
@@ -57,20 +66,23 @@ inline NVINTW(16) DecodeE4M3Fixed(NVUINTW(8) code) {
 
 // E2M1 (MXFP4): 1 sign + 2 exponent + 1 mantissa, bias=1
 // Lower 4 bits of the byte are used; upper 4 are ignored.
-// Max magnitude: 3 << 5 = 96 (for exp=3, mant=1), fits easily.
+// Returns signed 16-bit fixed-point with 4 fractional bits.
+// Uses explicit per-exponent fixed shifts to avoid synthesis issues
+// with variable-direction barrel shifts.
 inline NVINTW(16) DecodeE2M1Fixed(NVUINTW(8) code) {
   NVUINTW(1) sign_bit = nvhls::get_slc<1>(code, 3);
   NVUINTW(2) exp_f    = nvhls::get_slc<2>(code, 1);
   NVUINTW(1) mant     = nvhls::get_slc<1>(code, 0);
 
   NVUINTW(16) abs_val = 0;
+  NVUINTW(16) full_mant = 2 | (NVUINTW(16))mant;
 
-  if (exp_f == 0) {
-    abs_val = mant ? (NVUINTW(16))8 : (NVUINTW(16))0;
-  } else {
-    NVUINTW(16) full_mant = 2 | (NVUINTW(16))mant;
-    NVUINTW(3) shift_l = (NVUINTW(3))exp_f + 2;
-    abs_val = full_mant << shift_l;
+  switch (exp_f) {
+    case 0: abs_val = mant ? (NVUINTW(16))8 : (NVUINTW(16))0; break; // subnormal
+    case 1: abs_val = full_mant << 3; break; // 2^(1+2) = 8
+    case 2: abs_val = full_mant << 4; break; // 2^(2+2) = 16
+    case 3: abs_val = full_mant << 5; break; // 2^(3+2) = 32
+    default: abs_val = 0; break;
   }
 
   NVINTW(16) result = (NVINTW(16))abs_val;
