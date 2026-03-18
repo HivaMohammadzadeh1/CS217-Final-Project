@@ -71,9 +71,10 @@ solution options set Architectural/DefaultResetClearsAllRegs yes
 directive set -DESIGN_GOAL latency
 directive set -SPECULATE true
 directive set -MERGEABLE true
-# originally 256, 32
-directive set -REGISTER_THRESHOLD 2048
-directive set -MEM_MAP_THRESHOLD 2048
+# Keep Catapult mapping heuristics at TA-recommended defaults
+# so SRAM inference is not blocked by aggressive register mapping.
+directive set -REGISTER_THRESHOLD 256
+directive set -MEM_MAP_THRESHOLD 32
 directive set -FSM_ENCODING binary
 directive set -REG_MAX_FANOUT 0
 directive set -NO_X_ASSIGNMENTS true
