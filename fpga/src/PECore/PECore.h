@@ -499,7 +499,9 @@ public:
   {
     if (state == SCALE)
     {
-      spec::AccumVectorType accum_vector_out;
+      // Use ActVectorType (32-bit signed) instead of AccumVectorType (31-bit)
+      // to ensure proper sign extension when HLS generates RTL output packing
+      spec::ActVectorType accum_vector_out;
 
       if (pe_config.precision_mode != spec::kPrecisionINT8) {
         // MX path: accumulator already holds the integer-scale result
