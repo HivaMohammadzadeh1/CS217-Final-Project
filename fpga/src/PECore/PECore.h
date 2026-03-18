@@ -41,6 +41,9 @@
 // and complete the TODO sections.
 class PECore : public match::Module {
   static const int kDebugLevel = 4;
+  static const int kNumMacReadChunks =
+      (spec::kNumVectorLanes + spec::PE::Weight::kNumReadPorts - 1) /
+      spec::PE::Weight::kNumReadPorts;
   SC_HAS_PROCESS(PECore);
 
 public:
@@ -72,6 +75,7 @@ public:
   // accumulator regs
   spec::AccumVectorType accum_vector;
   spec::ActVectorType act_port_reg;
+  NVUINT4 mac_read_chunk;
 
   // Indicate the Computation part is activated
   bool is_start;
@@ -178,6 +182,7 @@ public:
   void Reset() {
     state    = IDLE; // reset state
     is_start = 0;    // reset start signal
+    mac_read_chunk = 0;
     for (unsigned i = 0; i < spec::PE::kNumPEManagers; i++) {
       pe_manager[i].Reset(); // reset PE manager counters
     }
@@ -402,12 +407,14 @@ public:
       NVUINT4 m_index = pe_config.ManagerIndex();
       // Do MAC (Datapath)
       // set weight SRAM read
-      spec::PE::Weight::Address weight_base;      
-        weight_base = pe_manager[m_index].GetWeightAddr(pe_config.InputIndex(), pe_config.OutputIndex(), 0);
+      spec::PE::Weight::Address weight_base;
+      const int lane_base = mac_read_chunk * spec::PE::Weight::kNumReadPorts;
+      weight_base =
+          pe_manager[m_index].GetWeightAddr(pe_config.InputIndex(), pe_config.OutputIndex(), 0);
 #pragma hls_unroll yes
-        for (int i = 0; i < spec::kNumVectorLanes; i++)
+        for (int i = 0; i < spec::PE::Weight::kNumReadPorts; i++)
         {
-          weight_read_addrs[i] = weight_base + i;
+          weight_read_addrs[i] = weight_base + lane_base + i;
           weight_read_req_valid[i] = 1;
           weight_read_ready[i] = 1;
         }
@@ -466,32 +473,24 @@ public:
   {
     if (state == MAC)
     {
-      spec::VectorType dp_in0[spec::kNumVectorLanes]; // weight lanes
       spec::VectorType dp_in1; // input vector
-      spec::AccumVectorType dp_out; // Datapath output
+      const int lane_base = mac_read_chunk * spec::PE::Weight::kNumReadPorts;
 
-      // TODO 3: 
-      // 1. Implement the operation that gets the weight vector lanes and input vector from the SRAM read outputs
-      // 2. Call the Datapath function to compute the product sum between the weight vector lanes and input vector
-      // 3. Store the result in accum_vector
-      // 4. You can use pragmas to optimize the loop used for getting the weight vector lanes and to store the result in accum_vector
-
-      //////// YOUR CODE STARTS HERE ////////
-// Read weight vectors from SRAM
+      // Read input vector once and compute only the currently fetched lane chunk.
+      dp_in1 = input_port_read_out[0];
 #pragma hls_unroll yes
-for (int i = 0; i < spec::kNumVectorLanes; i++) {
-  dp_in0[i] = weight_port_read_out[i];
-}
-
-// Read input vector from SRAM  
-dp_in1 = input_port_read_out[0];
-
-// Call Datapath to compute product sum
-Datapath(dp_in0, dp_in1, pe_config.precision_mode, pe_config.mx_group_size_is_16, dp_out);
-
-// Store result in accumulator
-accum_vector = dp_out;
-      //////// YOUR CODE ENDS HERE ////////
+      for (int i = 0; i < spec::PE::Weight::kNumReadPorts; i++) {
+        const int lane = lane_base + i;
+        if (lane < spec::kNumVectorLanes) {
+          spec::AccumScalarType out = 0;
+          if (pe_config.precision_mode == spec::kPrecisionINT8) {
+            ProductSum(weight_port_read_out[i], dp_in1, out);
+          } else {
+            ProductSumMX(weight_port_read_out[i], dp_in1, pe_config.precision_mode, out);
+          }
+          accum_vector[lane] = out;
+        }
+      }
     }
       
   }
@@ -582,6 +581,7 @@ accum_vector = dp_out;
     case PRE:
     {
       ResetAccum();
+      mac_read_chunk = 0;
       NVUINT4 m_index = pe_config.ManagerIndex();
       if (pe_manager[m_index].zero_active && pe_config.is_zero_first)
       {
@@ -597,16 +597,23 @@ accum_vector = dp_out;
 
     case MAC:
     {
-      NVUINT4 m_index = pe_config.ManagerIndex();
-      bool is_input_end = 0;
-      pe_config.UpdateInputCounter(pe_manager[m_index].num_input, is_input_end);
-      if (is_input_end)
-      {
-        next_state = SCALE;
-      }
-      else
-      {
+      const bool is_last_chunk = (mac_read_chunk == (kNumMacReadChunks - 1));
+      if (!is_last_chunk) {
+        mac_read_chunk += 1;
         next_state = MAC;
+      } else {
+        NVUINT4 m_index = pe_config.ManagerIndex();
+        bool is_input_end = 0;
+        mac_read_chunk = 0;
+        pe_config.UpdateInputCounter(pe_manager[m_index].num_input, is_input_end);
+        if (is_input_end)
+        {
+          next_state = SCALE;
+        }
+        else
+        {
+          next_state = MAC;
+        }
       }
       break;
     }
@@ -648,7 +655,7 @@ if (is_output_end) {
   {
     Reset();
 
-#pragma hls_pipeline_init_interval 1
+#pragma hls_pipeline_init_interval 2
     while (1) {
       Initialize();
 

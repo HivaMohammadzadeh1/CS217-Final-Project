@@ -116,16 +116,13 @@ systemc/*.dSYM/
 !docs/*.pdf
 !report/README.md
 
-# Results (keep directory structure but ignore data)
-results/*.csv
-results/*.json
-results/*.txt
+# Results (keep directory structure but ignore large model weights)
+results/fpga_run*/
+results/fpga_final/
+results/fpga_final-full/
+results/sanity_check/
 results/plots/*.png
 results/plots/*.pdf
-results/policy_sweep/
-results/policy_sweep_smoke*/
-results/profiling_smoke*/
-results/smoke_*/
 !results/README.md
 
 # Temporary files

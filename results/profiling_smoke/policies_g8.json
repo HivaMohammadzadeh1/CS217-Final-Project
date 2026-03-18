@@ -1,0 +1,50 @@
+{
+  "A": {
+    "name": "A - Conservative",
+    "description": "MXFP8 all layers for rollout/reward, FP16 for gradients",
+    "group_size": 8,
+    "layers": {
+      "lm_head": {
+        "rollout": "MXFP8",
+        "reward": "MXFP8",
+        "gradient": "FP16"
+      }
+    }
+  },
+  "B": {
+    "name": "B - Balanced",
+    "description": "MXFP4 for tolerant layers, MXFP8 otherwise, FP16 for gradients",
+    "group_size": 8,
+    "layers": {
+      "lm_head": {
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "FP16"
+      }
+    }
+  },
+  "C": {
+    "name": "C - Aggressive",
+    "description": "MXFP4 everywhere possible, MXFP8 fallback for sensitive gradients",
+    "group_size": 8,
+    "layers": {
+      "lm_head": {
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
+      }
+    }
+  },
+  "D": {
+    "name": "D - Phase-Adaptive",
+    "description": "MXFP4-biased rollout, MXFP8-biased reward, FP16-safe gradients",
+    "group_size": 8,
+    "layers": {
+      "lm_head": {
+        "rollout": "MXFP4",
+        "reward": "MXFP8",
+        "gradient": "MXFP8"
+      }
+    }
+  }
+}

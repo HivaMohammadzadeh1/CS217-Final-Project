@@ -29,7 +29,7 @@ namespace spec {
   namespace PE {
     namespace Weight {  
       typedef VectorType WordType;
-      const int kNumReadPorts = kNumVectorLanes; // spec::kNumVectorLanes = 16
+      const int kNumReadPorts = 4; // Reduced from 16 to ease timing/port pressure
       const int kNumWritePorts = 1;
       const int kNumBanks = kNumVectorLanes;
       const int kEntriesPerBank = 4096;       // need to configure

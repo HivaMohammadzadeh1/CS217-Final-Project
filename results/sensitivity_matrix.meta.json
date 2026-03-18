@@ -1,0 +1,34 @@
+{
+  "baseline_perplexity": 13.323129653930664,
+  "combinations": [
+    {
+      "precision": "MXFP4",
+      "group_size": 8
+    },
+    {
+      "precision": "MXFP4",
+      "group_size": 16
+    },
+    {
+      "precision": "MXFP8",
+      "group_size": 8
+    },
+    {
+      "precision": "MXFP8",
+      "group_size": 16
+    }
+  ],
+  "config": {
+    "model_name": "Qwen/Qwen2.5-0.5B-Instruct",
+    "dataset": "hivamoh/cs217-rlhf-dataset",
+    "dataset_split": "train",
+    "dataset_config": null,
+    "text_field": "chosen",
+    "num_examples": 16,
+    "max_seq_len": 256,
+    "max_layers": null,
+    "tolerance_pct": 2.0,
+    "device": "cpu"
+  },
+  "num_layers_profiled": 169
+}

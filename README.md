@@ -46,6 +46,32 @@ A full 50-step RLHF training run with real FPGA offload was completed on an AWS 
 - Total matmuls offloaded: 65,013,760
 - Total tiles processed: 65,013,760
 
+### FPGA Energy Baseline
+
+Hardware power estimated via Xilinx Power Estimator (XPE). Cycle counts measured on the Lab 1 bitstream (16x16 INT8 matmul).
+
+| Parameter | Value |
+| --- | --- |
+| FPGA power | 35 W |
+| Cycles per 16x16 matmul | 148,656 (15 compute + 148,641 PCIe transfer) |
+| Energy per matmul | 20,811.84 μJ |
+| Total energy for 50 PPO steps | 2,830.41 J (0.786 Wh) |
+
+Data transfer accounts for 99.99% of per-matmul cycles; computation is just 15 cycles (0.01%). This PCIe bottleneck is the dominant cost and the primary target for MX-format compression.
+
+### Phase-Level Energy Breakdown
+
+FPGA power is constant at 35 W, so energy per phase = power × runtime. Phase runtimes from the actual 50-step RLHF run (`results/milestone_report/phase_timing.json`):
+
+| Phase | Runtime (s) | FPGA Energy (J) | % of Total |
+| --- | --- | --- | --- |
+| Rollout | 140.3 | 4,911 | 32.5% |
+| Reward | 112.3 | 3,931 | 26.0% |
+| Gradient | 178.6 | 6,251 | 41.4% |
+| **Total** | **431.2** | **15,092** | **100%** |
+
+This is the "before" baseline. MX precision policies target the compute portion of energy, though PCIe transfer dominates in the current Lab 1 setup.
+
 ### Post-Training Evaluation (50 held-out examples)
 
 | Metric | Policy (FPGA) | Reference | Delta |
@@ -87,41 +113,73 @@ All five test categories passed via `make -C systemc clean all run`:
 | Mode switching | MAC succeeds after flush | — | — | PASS |
 | Group size comparison | Group 8 not worse than group 16 | within margin | — | PASS |
 
-### Sensitivity Profiling
+### Sensitivity Profiling (Qwen2.5-0.5B-Instruct, 169 layers)
 
-Layer sensitivity was profiled on `sshleifer/tiny-gpt2` using the `hivamoh/cs217-rlhf-dataset`:
+Per-layer quantization sensitivity on `Qwen/Qwen2.5-0.5B-Instruct`, baseline perplexity **13.3231**, tolerance threshold 2%. MXFP4 g8 perplexity delta by block (attention vs MLP):
 
-```bash
-python pytorch_profiling/sensitivity_profiler.py \
-  --model sshleifer/tiny-gpt2 \
-  --dataset hivamoh/cs217-rlhf-dataset \
-  --text-field chosen \
-  --num-examples 4 \
-  --max-seq-len 96 \
-  --max-layers 4 \
-  --device cpu \
-  --output results/profiling_smoke/sensitivity_matrix.csv
+```
+         ── MXFP4 g8 ──────────────────────────────────    ── MXFP8 g8 ──────────────
+Block   Attn (q/k/v/o avg)   MLP (gate/up/down avg)       Attn avg     MLP avg
+  0        -0.01%                +0.53%                     +0.04%       +0.02%
+  1        +0.12%                +0.15%                     -0.01%       -0.02%
+  2        +0.23%                +2.27%  ← sensitive        +0.01%       +0.07%
+  3        +0.32%                +3.26%  ← sensitive        -0.02%       -0.03%
+  4        +0.02%                +0.21%                     -0.07%       -0.03%
+  5        +0.07%                +0.25%                     -0.04%       +0.01%
+  6        +0.53%                -0.13%                     -0.00%       -0.06%
+  7        +0.32%                +0.37%                     -0.04%       -0.03%
+  8        -0.06%                +0.22%                     -0.00%       -0.04%
+  9        +0.19%                -0.63%                     -0.01%       +0.01%
+ 10        -0.07%                +0.02%                     +0.02%       +0.01%
+ 11        -0.10%                +0.49%                     +0.01%       -0.05%
+ 12        -0.34%                +0.68%                     -0.09%       +0.00%
+ 13        -0.11%                +0.22%                     +0.01%       -0.00%
+ 14        +0.00%                +0.43%                     +0.03%       +0.03%
+ 15        -0.13%                +0.19%                     -0.01%       -0.03%
+ 16        +0.21%                +0.24%                     +0.02%       +0.01%
+ 17        +0.63%  ← o_proj!    +0.42%                     -0.03%       +0.03%
+ 18        +0.00%                +0.34%                     +0.01%       -0.02%
+ 19        +0.06%                +0.64%                     +0.01%       -0.01%
+ 20        +0.54%                +0.06%                     +0.03%       -0.02%
+ 21        +0.58%  ← o_proj!    +6.58%  ← sensitive        -0.00%       +0.16%
+ 22        +0.16%                +0.76%                     +0.06%       -0.04%
+ 23        +0.76%                +5.05%  ← sensitive        +0.01%       -0.01%
+ lm_head  +60.49%  ← MXFP4 catastrophic           —              +0.47%        —
 ```
 
-Baseline perplexity: 50278.3945. All layers were profiled across MXFP4/MXFP8 at group sizes 8 and 16, with all precision modes marked as tolerant (delta within threshold).
+**169/169 layers complete.** Overall avg delta: MXFP4 g8 +0.85%, MXFP8 g8 +0.00%.
+
+MXFP4 g8 summary:
+- **Tolerant**: 158/169 layers (93.5%) — safe for MXFP4
+- **Intolerant**: 11/169 layers (6.5%) — need MXFP8 fallback
+- Sensitive hotspots: blocks 2–3 MLP, block 17 `o_proj`, blocks 21+23 MLP, `lm_head`
+- Worst layer: `lm_head` at +60.49% (g8) / +93.20% (g16)
+- Worst hidden layer: `layers.23.mlp.down_proj` at +9.29% (g8) / +14.39% (g16)
+
+MXFP8 g8 summary:
+- **Tolerant**: 169/169 layers (100%) — safe everywhere
+- Max per-layer delta: +0.47% (`lm_head`)
+- Max hidden-layer delta: +0.42% (`layers.21.mlp.gate_proj`)
+- All block-level averages stay within ±0.16%, well below the 2% threshold
+- MXFP8 is a reliable fallback for every layer that fails MXFP4 tolerance
 
 ### Policy Generation
 
 Four precision policies (A–D) were generated from the sensitivity matrix:
 
 ```bash
-python pytorch_profiling/define_policies.py \
-  --sensitivity results/profiling_smoke/sensitivity_matrix.csv \
+python3 pytorch_profiling/define_policies.py \
+  --sensitivity results/sensitivity_matrix.csv \
   --group-size 8 \
-  --output results/profiling_smoke/policies_g8.json
+  --output results/policies.json
 ```
 
-| Policy | Strategy | Description |
-| --- | --- | --- |
-| A | Conservative | Keeps layers at highest precision unless strongly tolerant |
-| B | Balanced | Mixes MXFP8/MXFP4 based on per-layer sensitivity |
-| C | Aggressive | Pushes as many layers as possible to MXFP4 |
-| D | Phase-Adaptive | Varies precision by training phase (rollout, reward, gradient) |
+| Policy | Strategy | Rollout | Reward | Gradient |
+| --- | --- | --- | --- | --- |
+| A | Conservative | MXFP8 169 (100%) | MXFP8 169 (100%) | FP16 169 (100%) |
+| B | Balanced | MXFP4 158 / MXFP8 11 | MXFP4 158 / MXFP8 11 | FP16 169 (100%) |
+| C | Aggressive | MXFP4 169 (100%) | MXFP4 169 (100%) | MXFP4 158 / MXFP8 11 |
+| D | Phase-Adaptive | MXFP4 158 / MXFP8 11 | MXFP8 169 (100%) | MXFP8 158 / FP16 11 |
 
 ### How to reproduce
 
@@ -129,22 +187,21 @@ python pytorch_profiling/define_policies.py \
 # 1. SystemC datapath tests
 make -C systemc clean all run
 
-# 2. Sensitivity profiling (smoke run)
-python pytorch_profiling/sensitivity_profiler.py \
-  --model sshleifer/tiny-gpt2 \
+# 2. Sensitivity profiling on Qwen2.5-0.5B-Instruct
+python3 pytorch_profiling/sensitivity_profiler.py \
+  --model Qwen/Qwen2.5-0.5B-Instruct \
   --dataset hivamoh/cs217-rlhf-dataset \
   --text-field chosen \
-  --num-examples 4 \
-  --max-seq-len 96 \
-  --max-layers 4 \
+  --num-examples 16 \
+  --max-seq-len 256 \
   --device cpu \
-  --output results/profiling_smoke/sensitivity_matrix.csv
+  --output results/sensitivity_matrix.csv
 
 # 3. Policy generation
-python pytorch_profiling/define_policies.py \
-  --sensitivity results/profiling_smoke/sensitivity_matrix.csv \
+python3 pytorch_profiling/define_policies.py \
+  --sensitivity results/sensitivity_matrix.csv \
   --group-size 8 \
-  --output results/profiling_smoke/policies_g8.json
+  --output results/policies.json
 ```
 
 ---

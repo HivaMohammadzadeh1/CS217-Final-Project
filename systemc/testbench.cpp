@@ -4,6 +4,7 @@
 #include <iostream>
 #include <random>
 #include <stdexcept>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -17,6 +18,43 @@ struct ErrorStats {
   float mean = 0.0f;
   float max = 0.0f;
 };
+
+struct RuntimeConfig {
+  unsigned int seed = 42;
+  std::size_t mac_trials = 300;
+  std::size_t gemm_trials = 20;
+  std::size_t group_trend_trials = 200;
+};
+
+RuntimeConfig ParseArgs(int argc, char* argv[]) {
+  RuntimeConfig cfg;
+  for (int i = 1; i < argc; ++i) {
+    const std::string arg = argv[i];
+    auto require_value = [&](const std::string& name) {
+      if (i + 1 >= argc) {
+        throw std::invalid_argument("Missing value for " + name);
+      }
+      return std::string(argv[++i]);
+    };
+
+    if (arg == "--seed") {
+      cfg.seed = static_cast<unsigned int>(std::stoul(require_value(arg)));
+    } else if (arg == "--mac-trials") {
+      cfg.mac_trials = static_cast<std::size_t>(std::stoul(require_value(arg)));
+    } else if (arg == "--gemm-trials") {
+      cfg.gemm_trials = static_cast<std::size_t>(std::stoul(require_value(arg)));
+    } else if (arg == "--group-trials") {
+      cfg.group_trend_trials = static_cast<std::size_t>(std::stoul(require_value(arg)));
+    } else if (arg == "--help" || arg == "-h") {
+      std::cout << "Usage: mx_datapath_tb [--seed N] [--mac-trials N] "
+                   "[--gemm-trials N] [--group-trials N]\n";
+      std::exit(0);
+    } else {
+      throw std::invalid_argument("Unknown argument: " + arg);
+    }
+  }
+  return cfg;
+}
 
 std::vector<float> RandomVector(std::size_t n,
                                 std::mt19937& rng,
@@ -136,12 +174,16 @@ bool CheckTrue(const std::string& label, bool condition) {
 
 }  // namespace
 
-int main() {
-  std::mt19937 rng(42);
+int main(int argc, char* argv[]) {
+  const RuntimeConfig cfg = ParseArgs(argc, argv);
+  std::mt19937 rng(cfg.seed);
   int failures = 0;
 
   std::cout << "============================================================\n";
   std::cout << "Milestone 3 Testbench: Dual-Precision MX Datapath\n";
+  std::cout << "Config: seed=" << cfg.seed << " mac_trials=" << cfg.mac_trials
+            << " gemm_trials=" << cfg.gemm_trials
+            << " group_trials=" << cfg.group_trend_trials << "\n";
   std::cout << "============================================================\n\n";
 
   {
@@ -172,8 +214,8 @@ int main() {
 
   {
     std::cout << "\n2) MAC accuracy checks\n";
-    const auto fp8_err = EvaluateMacError(mx::PrecisionMode::MXFP8, 8, 300, rng);
-    const auto fp4_err = EvaluateMacError(mx::PrecisionMode::MXFP4, 8, 300, rng);
+    const auto fp8_err = EvaluateMacError(mx::PrecisionMode::MXFP8, 8, cfg.mac_trials, rng);
+    const auto fp4_err = EvaluateMacError(mx::PrecisionMode::MXFP4, 8, cfg.mac_trials, rng);
 
     std::cout << "  FP8 normalized error mean/max: " << fp8_err.mean << " / " << fp8_err.max << "\n";
     std::cout << "  FP4 normalized error mean/max: " << fp4_err.mean << " / " << fp4_err.max << "\n\n";
@@ -188,8 +230,8 @@ int main() {
 
   {
     std::cout << "\n3) GEMM accuracy checks (16x16)\n";
-    const auto fp8_err = EvaluateGemmError(mx::PrecisionMode::MXFP8, 8, 20, rng);
-    const auto fp4_err = EvaluateGemmError(mx::PrecisionMode::MXFP4, 8, 20, rng);
+    const auto fp8_err = EvaluateGemmError(mx::PrecisionMode::MXFP8, 8, cfg.gemm_trials, rng);
+    const auto fp4_err = EvaluateGemmError(mx::PrecisionMode::MXFP4, 8, cfg.gemm_trials, rng);
 
     std::cout << "  FP8 GEMM abs error mean/max: " << fp8_err.mean << " / " << fp8_err.max << "\n";
     std::cout << "  FP4 GEMM abs error mean/max: " << fp4_err.mean << " / " << fp4_err.max << "\n\n";
@@ -235,8 +277,8 @@ int main() {
 
   {
     std::cout << "\n5) Group size comparison (quality trend)\n";
-    const auto fp8_g8 = EvaluateMacError(mx::PrecisionMode::MXFP8, 8, 200, rng);
-    const auto fp8_g16 = EvaluateMacError(mx::PrecisionMode::MXFP8, 16, 200, rng);
+    const auto fp8_g8 = EvaluateMacError(mx::PrecisionMode::MXFP8, 8, cfg.group_trend_trials, rng);
+    const auto fp8_g16 = EvaluateMacError(mx::PrecisionMode::MXFP8, 16, cfg.group_trend_trials, rng);
     std::cout << "  FP8 mean normalized error: group8=" << fp8_g8.mean
               << " group16=" << fp8_g16.mean << "\n";
 
