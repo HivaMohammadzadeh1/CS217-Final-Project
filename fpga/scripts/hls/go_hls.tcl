@@ -19,7 +19,6 @@ namespace eval nvhls {
   # CLOCK_PERIOD is set to 5ns via Makefile CLK_PERIOD.
   proc usercmd_post_assembly {} {
     directive set -CLOCK_OVERHEAD 0
-    directive set /PECore/PECoreRun -PIPELINE_INIT_INTERVAL 4
   }
 }
 
