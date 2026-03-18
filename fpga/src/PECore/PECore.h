@@ -76,6 +76,13 @@ public:
   // Indicate the Computation part is activated
   bool is_start;
 
+  // MAC batch counter for serialized weight reads (4 ports x 4 batches = 16 lanes)
+  NVUINT3 mac_batch;
+  // Temporary storage for weight reads across batches
+  spec::VectorType weight_read_buf[spec::kNumVectorLanes];
+  // Cached input vector (read once on batch 0, reused on batches 1-3)
+  spec::VectorType input_read_cache;
+
   // while loop control signal (including SRAM I/O)
   // True if need to push out AXI response
   bool w_axi_rsp;
@@ -178,6 +185,11 @@ public:
   void Reset() {
     state    = IDLE; // reset state
     is_start = 0;    // reset start signal
+    mac_batch = 0;   // reset MAC batch counter
+    input_read_cache = 0;
+    for (unsigned i = 0; i < spec::kNumVectorLanes; i++) {
+      weight_read_buf[i] = 0;
+    }
     for (unsigned i = 0; i < spec::PE::kNumPEManagers; i++) {
       pe_manager[i].Reset(); // reset PE manager counters
     }
@@ -401,21 +413,23 @@ public:
     {
       NVUINT4 m_index = pe_config.ManagerIndex();
       // Do MAC (Datapath)
-      // set weight SRAM read
-      spec::PE::Weight::Address weight_base;      
+      // Serialized weight reads: 4 ports x 4 batches = 16 lanes
+      spec::PE::Weight::Address weight_base;
         weight_base = pe_manager[m_index].GetWeightAddr(pe_config.InputIndex(), pe_config.OutputIndex(), 0);
 #pragma hls_unroll yes
-        for (int i = 0; i < spec::kNumVectorLanes; i++)
+        for (int i = 0; i < spec::PE::Weight::kNumReadPorts; i++)
         {
-          weight_read_addrs[i] = weight_base + i;
+          weight_read_addrs[i] = weight_base + mac_batch * spec::PE::Weight::kNumReadPorts + i;
           weight_read_req_valid[i] = 1;
           weight_read_ready[i] = 1;
         }
-      
-      // set input SRAM read
-      input_read_ready[0] = 1;
-      input_read_addrs[0] = pe_manager[m_index].GetInputAddr(pe_config.InputIndex());
-      input_read_req_valid[0] = 1;
+
+      // set input SRAM read (only on first batch)
+      if (mac_batch == 0) {
+        input_read_ready[0] = 1;
+        input_read_addrs[0] = pe_manager[m_index].GetInputAddr(pe_config.InputIndex());
+        input_read_req_valid[0] = 1;
+      }
 
       break;
     }
@@ -477,20 +491,30 @@ public:
       // 4. You can use pragmas to optimize the loop used for getting the weight vector lanes and to store the result in accum_vector
 
       //////// YOUR CODE STARTS HERE ////////
-// Read weight vectors from SRAM
+// Store this batch's weight reads into buffer
 #pragma hls_unroll yes
-for (int i = 0; i < spec::kNumVectorLanes; i++) {
-  dp_in0[i] = weight_port_read_out[i];
+for (int i = 0; i < spec::PE::Weight::kNumReadPorts; i++) {
+  weight_read_buf[mac_batch * spec::PE::Weight::kNumReadPorts + i] = weight_port_read_out[i];
 }
 
-// Read input vector from SRAM  
-dp_in1 = input_port_read_out[0];
+// Cache input vector on first batch (Initialize() clears read signals each cycle)
+if (mac_batch == 0) {
+  input_read_cache = input_port_read_out[0];
+}
+dp_in1 = input_read_cache;
 
-// Call Datapath to compute product sum
-Datapath(dp_in0, dp_in1, pe_config.precision_mode, pe_config.mx_group_size_is_16, dp_out);
-
-// Store result in accumulator
-accum_vector = dp_out;
+if (mac_batch == (spec::kNumVectorLanes / spec::PE::Weight::kNumReadPorts) - 1) {
+  // All 16 lanes loaded — run Datapath
+#pragma hls_unroll yes
+  for (int i = 0; i < spec::kNumVectorLanes; i++) {
+    dp_in0[i] = weight_read_buf[i];
+  }
+  Datapath(dp_in0, dp_in1, pe_config.precision_mode, pe_config.mx_group_size_is_16, dp_out);
+  accum_vector = dp_out;
+  mac_batch = 0;
+} else {
+  mac_batch = mac_batch + 1;
+}
       //////// YOUR CODE ENDS HERE ////////
     }
       
@@ -597,16 +621,21 @@ accum_vector = dp_out;
 
     case MAC:
     {
-      NVUINT4 m_index = pe_config.ManagerIndex();
-      bool is_input_end = 0;
-      pe_config.UpdateInputCounter(pe_manager[m_index].num_input, is_input_end);
-      if (is_input_end)
-      {
-        next_state = SCALE;
-      }
-      else
-      {
-        next_state = MAC;
+      // Only advance FSM after all weight batches are read (mac_batch wraps to 0)
+      if (mac_batch == 0) {
+        NVUINT4 m_index = pe_config.ManagerIndex();
+        bool is_input_end = 0;
+        pe_config.UpdateInputCounter(pe_manager[m_index].num_input, is_input_end);
+        if (is_input_end)
+        {
+          next_state = SCALE;
+        }
+        else
+        {
+          next_state = MAC;
+        }
+      } else {
+        next_state = MAC; // stay in MAC until all batches read
       }
       break;
     }
@@ -648,7 +677,7 @@ if (is_output_end) {
   {
     Reset();
 
-#pragma hls_pipeline_init_interval 1
+#pragma hls_pipeline_init_interval 4
     while (1) {
       Initialize();
 

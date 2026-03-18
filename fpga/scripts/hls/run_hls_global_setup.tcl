@@ -71,9 +71,9 @@ solution options set Architectural/DefaultResetClearsAllRegs yes
 directive set -DESIGN_GOAL latency
 directive set -SPECULATE true
 directive set -MERGEABLE true
-# originally 256, 32
-directive set -REGISTER_THRESHOLD 2048
-directive set -MEM_MAP_THRESHOLD 2048
+# Restored to original values (was 2048/2048 which caused memories to map as registers)
+directive set -REGISTER_THRESHOLD 256
+directive set -MEM_MAP_THRESHOLD 32
 directive set -FSM_ENCODING binary
 directive set -REG_MAX_FANOUT 0
 directive set -NO_X_ASSIGNMENTS true

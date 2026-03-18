@@ -27,12 +27,12 @@
 
 namespace spec {
   namespace PE {
-    namespace Weight {  
+    namespace Weight {
       typedef VectorType WordType;
-      const int kNumReadPorts = kNumVectorLanes; // spec::kNumVectorLanes = 16
+      const int kNumReadPorts = 4; // Reduced from 16 to simplify arbiter (was kNumVectorLanes)
       const int kNumWritePorts = 1;
-      const int kNumBanks = kNumVectorLanes;
-      const int kEntriesPerBank = 4096;       // need to configure
+      const int kNumBanks = 4; // Reduced from 16 to match read ports
+      const int kEntriesPerBank = 16384;     // 4x original to maintain total capacity (was 4096 x 16 banks)
       const unsigned int kAddressWidth = nvhls::index_width<kNumBanks * kEntriesPerBank>::val;
       const unsigned int kBankIndexSize = nvhls::index_width<kNumBanks>::val;
       const unsigned int kLocalIndexSize = nvhls::index_width<kEntriesPerBank>::val;
