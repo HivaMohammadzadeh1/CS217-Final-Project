@@ -1,0 +1,6 @@
+In file included from /home/users/hiva/CS217-Final-Project/fpga/src/include/AxiSpec.h:29,
+                 from PECore.h:33,
+                 from testbench.cpp:35:
+/home/users/hiva/CS217-Final-Project/fpga/src/include/Spec.h:66:52: warning: integer overflow in expression of type ‘int’ results in ‘2147483647’ [-Woverflow]
+   66 |   const int kActWordMax = (1 << (kActWordWidth-1)) -1;
+      |                           ~~~~~~~~~~~~~~~~~~~~~~~~~^~

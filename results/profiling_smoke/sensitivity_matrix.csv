@@ -1,0 +1,2 @@
+layer,layer_type,mxfp4_g8_ppl,mxfp4_g8_delta_pct,mxfp4_g8_tolerant,mxfp4_g16_ppl,mxfp4_g16_delta_pct,mxfp4_g16_tolerant,mxfp8_g8_ppl,mxfp8_g8_delta_pct,mxfp8_g8_tolerant,mxfp8_g16_ppl,mxfp8_g16_delta_pct,mxfp8_g16_tolerant,mxfp4_tolerant,mxfp8_tolerant,best_precision,best_group_size,best_delta_pct
+lm_head,lm_head,50301.17578125,0.04531021766385272,True,50301.17578125,0.04531021766385272,True,50280.50390625,0.004195390524430808,True,50280.50390625,0.004195390524430808,True,True,True,MXFP8,8,0.004195390524430808
