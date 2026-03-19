@@ -29,7 +29,7 @@ import tb_type_defines_pkg::*;
   localparam int PE_CONFIG_GROUP_SIZE_16_BIT  = 56;
 
   // Test configuration: change these to test different MX modes
-  int test_precision_mode = PE_PRECISION_MXFP8;
+  int test_precision_mode = PE_PRECISION_INT8;
   int test_group_size     = 8;
 
   function automatic [63:0] build_pe_config_word(input int precision_mode, input int group_size);
