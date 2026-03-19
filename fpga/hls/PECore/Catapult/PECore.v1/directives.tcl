@@ -5,7 +5,7 @@
 //             CONFIDENTIAL AND PROPRIETARY INFORMATION WHICH IS THE
 //                   PROPERTY OF SIEMENS EDA OR ITS LICENSORS.
 //  
-//  Running on Linux hiva@iron-03:1858732 6.14.0-37-generic x86_64 aol
+//  Running on Linux hiva@iron-04:825496 6.14.0-37-generic x86_64 aol
 //  
 //  Package information: SIFLIBS v27.2_1.0, HLS_PKGS v27.2_1.0, 
 //                       SIF_TOOLKITS v27.2_1.0, SIF_XILINX v27.2_1.0, 
@@ -46,6 +46,8 @@ directive set -ON_THE_FLY_PROTOTYPING false
 directive set -CLUSTER_ADDTREE_IN_COUNT_THRESHOLD 0
 directive set -SPECULATE true
 directive set -MERGEABLE true
+directive set -REGISTER_THRESHOLD 256
+directive set -MEM_MAP_THRESHOLD 32
 directive set -REG_MAX_FANOUT 0
 directive set -NO_X_ASSIGNMENTS true
 directive set -SAFE_FSM false
@@ -74,8 +76,6 @@ directive set -CLUSTER_TYPE combinational
 directive set -PIPELINE_RAMP_UP true
 go new
 directive set -DESIGN_GOAL latency
-directive set -REGISTER_THRESHOLD 2048
-directive set -MEM_MAP_THRESHOLD 2048
 directive set -FSM_ENCODING binary
 directive set -REGISTER_IDLE_SIGNAL false
 directive set -RESET_CLEARS_ALL_REGS yes
@@ -88,13 +88,13 @@ directive set -DSP_EXTRACTION yes
 directive set -DSP_EXTRACTION_UNFOLD_MAC true
 go analyze
 solution design set PECore -top
-directive set -CLOCKS {clk {-CLOCK_PERIOD 4.0 -CLOCK_EDGE rising -CLOCK_UNCERTAINTY 0.0 -CLOCK_HIGH_TIME 2.0 -RESET_SYNC_NAME rst -RESET_ASYNC_NAME arst_n -RESET_KIND sync -RESET_SYNC_ACTIVE high -RESET_ASYNC_ACTIVE low -ENABLE_ACTIVE high}}
+directive set -CLOCKS {clk {-CLOCK_PERIOD 6.0 -CLOCK_EDGE rising -CLOCK_UNCERTAINTY 0.0 -CLOCK_HIGH_TIME 3.0 -RESET_SYNC_NAME rst -RESET_ASYNC_NAME arst_n -RESET_KIND sync -RESET_SYNC_ACTIVE high -RESET_ASYNC_ACTIVE low -ENABLE_ACTIVE high}}
 go compile
-directive set -CLOCKS {clk {-CLOCK_PERIOD 4.0 -CLOCK_UNCERTAINTY 0.0 -CLOCK_HIGH_TIME 2.0}}
+directive set -CLOCKS {clk {-CLOCK_PERIOD 6.0 -CLOCK_UNCERTAINTY 0.0 -CLOCK_HIGH_TIME 3.0}}
 solution library add mgc_Xilinx-VIRTEX-uplus-2_beh -- -rtlsyntool Vivado -manufacturer Xilinx -family VIRTEX-uplus -speed -2 -part xcvu9p-flgb2104-2-e
 solution library add Xilinx_RAMS
 solution library add Xilinx_ROMS
 solution library add Xilinx_FIFO
 solution library add ccs_fpga_hic
 go libraries
-go dpfsm
+go extract

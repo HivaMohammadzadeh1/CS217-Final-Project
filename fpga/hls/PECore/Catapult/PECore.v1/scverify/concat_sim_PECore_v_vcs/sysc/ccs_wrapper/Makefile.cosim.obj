@@ -1,0 +1,29 @@
+##
+## Top-level Makefile for DKI connect SystemC side code (SystemC master, HDL slave)
+##
+SHELL = /bin/sh
+BASE_DIR = $(shell pwd)
+COSIM_VCS_HOME = $(VCS_HOME)
+
+COSIM_VCS_CMD = vcs
+
+SIMNAME = vcs
+SYSTEMC_SUBDIR = /home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/ccs_wrapper
+HDL_SUBDIR = /home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/ccs_wrapper
+
+MODEL = ccs_wrapper
+IMODEL = ccs_wrapper
+-include Makefile.cosim.user
+SC_IF_SRC = $(SYSTEMC_SUBDIR)/ccs_wrapper.cpp
+
+SC_IF_UCLI_SRC = 
+SC_SRCS = $(SC_IF_SRC) $(USER_SC_SRCS)
+
+$(SYSTEMC_SUBDIR)/ccs_wrapper_ifc_ucli.o:	$(SYSTEMC_SUBDIR)/ccs_wrapper_ifc_ucli.cpp
+	$(CCC) $(CC_OPTIONS) $(USER_SC_FLAGS) -g -c $< $(DKI_INCLUDES) -o $@
+
+include  $(COSIM_VCS_HOME)/include/cosim/bf/Makefile.dki_osci.common
+
+-include $(WORKSPACE).make
+-include $(CCSS_SIM_DIR)/$(TEST_SIM)/Makefile
+-include Makefile.vera

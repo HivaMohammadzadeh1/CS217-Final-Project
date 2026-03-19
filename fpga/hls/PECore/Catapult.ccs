@@ -1,0 +1,24 @@
+//  Catapult Ultra Synthesis 2024.2_1/1143609 (Production Release) Wed Nov 13 18:57:31 PST 2024
+//  
+//          Copyright (c) Siemens EDA, 1996-2024, All Rights Reserved.
+//                        UNPUBLISHED, LICENSED SOFTWARE.
+//             CONFIDENTIAL AND PROPRIETARY INFORMATION WHICH IS THE
+//                   PROPERTY OF SIEMENS EDA OR ITS LICENSORS.
+//  
+//  Running on Linux hiva@iron-04:825496 6.14.0-37-generic x86_64 aol
+//  
+//  Package information: SIFLIBS v27.2_1.0, HLS_PKGS v27.2_1.0, 
+//                       SIF_TOOLKITS v27.2_1.0, SIF_XILINX v27.2_1.0, 
+//                       SIF_ALTERA v27.2_1.0, CCS_LIBS v27.2_1.0, 
+//                       CDS_PPRO v2024.1_3, CDS_DesignChecker v2024.2_1, 
+//                       CDS_OASYS v21.1_3.1, CDS_PSR v24.1_0.20, 
+//                       DesignPad v2.78_1.0, DesignAnalyzer 2024.2/1130210
+//  
+if {[info script] != {} && [file isdirectory [file rootname [info script]]]} {
+  project load [file rootname [info script]] 2024.2
+} elseif { [file isdirectory /home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult] } {
+  project load /home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult 2024.2
+} else {
+  error {unable to locate project directory 'Catapult'}
+}
+

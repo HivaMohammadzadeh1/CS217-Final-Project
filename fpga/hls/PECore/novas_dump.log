@@ -1,0 +1,828 @@
+#######################################################################################
+# log primitive debug message of FSDB dumping                                         #
+# This is for R&D to analyze when there are issues happening when FSDB dump           #
+#######################################################################################
+ANF: vcsd_get_serial_mode_status('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_get_serial_mode_status')
+ANF: vcsd_enable_sva_success_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_enable_sva_success_callback')
+ANF: vcsd_disable_sva_success_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_disable_sva_success_callback')
+ANF: vcsd_sync_passive('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_sync_passive')
+ANF: vcsd_get_rtvs_control_signal_name('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_get_rtvs_control_signal_name')
+ANF: vcsd_get_power_scope_name('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_get_power_scope_name')
+ANF: vcsd_dump_var_vpdg('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_dump_var_vpdg')
+ANF: vcsd_begin_no_value_var_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_begin_no_value_var_info')
+ANF: vcsd_end_no_value_var_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_end_no_value_var_info')
+ANF: vcsd_remove_xprop_merge_mode_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_remove_xprop_merge_mode_callback')
+ANF: vcsd_node_get_passive_id('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_node_get_passive_id')
+ANF: vcsd_set_passive_simtime_cb('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_set_passive_simtime_cb')
+ANF: vcsd_set_passive_state_cbk('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_set_passive_state_cbk')
+ANF: vcsd_get_extra_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vcsd_get_extra_info')
+ANF: vhpi_get_cb_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhpi_get_cb_info')
+ANF: vhpi_free_handle('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhpi_free_handle')
+ANF: vhpi_fetch_vcsd_handle('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhpi_fetch_vcsd_handle')
+ANF: vhpi_fetch_vpi_handle('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhpi_fetch_vpi_handle')
+ANF: vhpi_has_verilog_parent('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhpi_has_verilog_parent')
+ANF: vhpi_is_verilog_scope('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhpi_is_verilog_scope')
+ANF: scsd_xprop_is_enabled('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_xprop_is_enabled')
+ANF: scsd_xprop_sig_is_promoted('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_xprop_sig_is_promoted')
+ANF: scsd_xprop_int_xvalue('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_xprop_int_xvalue')
+ANF: scsd_xprop_bool_xvalue('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_xprop_bool_xvalue')
+ANF: scsd_xprop_enum_xvalue('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_xprop_enum_xvalue')
+ANF: scsd_xprop_register_merge_mode_cb('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_xprop_register_merge_mode_cb')
+ANF: scsd_xprop_delete_merge_mode_cb('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_xprop_delete_merge_mode_cb')
+ANF: scsd_xprop_get_merge_mode('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_xprop_get_merge_mode')
+ANF: scsd_thread_get_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_thread_get_info')
+ANF: scsd_thread_vc_init('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_thread_vc_init')
+ANF: scsd_master_set_delta_sync_cbk('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_master_set_delta_sync_cbk')
+ANF: scsd_fgp_get_fsdb_cores('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_fgp_get_fsdb_cores')
+ANF: scsd_fgp_get_is_cpu_affinity_disabled('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: scsd_fgp_get_is_cpu_affinity_disabled')
+ANF: vdi_dt_get_vlog_variant_size_array_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_dt_get_vlog_variant_size_array_info')
+ANF: vdi_ist_get_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_ist_get_info')
+ANF: vdi_flat_node_get_total_bit_size('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_flat_node_get_total_bit_size')
+ANF: vdi_fn_get_elem_root_node_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_fn_get_elem_root_node_info')
+ANF: vdi_root_node_get_total_bit_size('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_root_node_get_total_bit_size')
+ANF: vdi_fn_create_vcsd_node_from_rn('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_fn_create_vcsd_node_from_rn')
+ANF: vdi_dump_var_vpdg_vcsd('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_dump_var_vpdg_vcsd')
+ANF: vdi_parallel_begin('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_parallel_begin')
+ANF: vdi_parallel_end('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_parallel_end')
+ANF: vdi_fn_get_passive_id('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_fn_get_passive_id')
+ANF: vdi_is_applylearn_flow('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_is_applylearn_flow')
+ANF: vdi_register_scalarclock_periodic('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_register_scalarclock_periodic')
+ANF: vhdi_dt_get_type('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_dt_get_type')
+ANF: vhdi_dt_get_key('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_dt_get_key')
+ANF: vhdi_dt_get_vhdl_enum_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_dt_get_vhdl_enum_info')
+ANF: vhdi_dt_get_vhdl_physical_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_dt_get_vhdl_physical_info')
+ANF: vhdi_dt_get_vhdl_array_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_dt_get_vhdl_array_info')
+ANF: vhdi_dt_get_vhdl_record_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_dt_get_vhdl_record_info')
+ANF: vhdi_dt_get_vhdl_integer_range_info('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_dt_get_vhdl_integer_range_info')
+ANF: vhdi_def_traverse_module('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_def_traverse_module')
+ANF: vhdi_def_traverse_scope('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_def_traverse_scope')
+ANF: vhdi_def_traverse_variable('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_def_traverse_variable')
+ANF: vhdi_def_get_module_id_by_vhpi('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_def_get_module_id_by_vhpi')
+ANF: vhdi_def_get_handle_by_module_id('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_def_get_handle_by_module_id')
+ANF: vhdi_def_get_variable_info_by_vhpi('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_def_get_variable_info_by_vhpi')
+ANF: vhdi_def_free('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_def_free')
+ANF: vhdi_ist_traverse_scope('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_traverse_scope')
+ANF: vhdi_ist_traverse_variable('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_traverse_variable')
+ANF: vhdi_ist_convert_by_vhpi('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_convert_by_vhpi')
+ANF: vhdi_ist_clone('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_clone')
+ANF: vhdi_ist_free('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_free')
+ANF: vhdi_ist_hash_key('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_hash_key')
+ANF: vhdi_ist_compare('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_compare')
+ANF: vhdi_ist_get_value_addr('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_get_value_addr')
+ANF: vhdi_set_scsd_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_set_scsd_callback')
+ANF: vhdi_cbk_set_force_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_cbk_set_force_callback')
+ANF: vhdi_trigger_init_force('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_trigger_init_force')
+ANF: vhdi_ist_check_scsd_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_check_scsd_callback')
+ANF: vhdi_ist_add_scsd_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_add_scsd_callback')
+ANF: vhdi_ist_remove_scsd_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_remove_scsd_callback')
+ANF: vhdi_ist_get_scsd_user_data('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_get_scsd_user_data')
+ANF: vhdi_add_time_change_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_add_time_change_callback')
+ANF: vhdi_get_real_value_by_value_addr('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_get_real_value_by_value_addr')
+ANF: vhdi_get_64_value_by_value_addr('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_get_64_value_by_value_addr')
+ANF: vhdi_xprop_inst_is_promoted('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_xprop_inst_is_promoted')
+ANF: vdi_ist_convert_by_vhdi('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vdi_ist_convert_by_vhdi')
+ANF: vhdi_ist_get_module_id('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_ist_get_module_id')
+ANF: vhdi_refine_foreign_scope_type('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_refine_foreign_scope_type')
+ANF: vhdi_flush_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_flush_callback')
+ANF: vhdi_set_orig_name('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_set_orig_name')
+ANF: vhdi_set_dump_pt('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_set_dump_pt')
+ANF: vhdi_set_int_subtype('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_set_int_subtype')
+ANF: vhdi_set_fixed_point('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_set_fixed_point')
+ANF: vhdi_get_fsdb_option('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_get_fsdb_option')
+ANF: vhdi_fgp_get_mode('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_fgp_get_mode')
+ANF: vhdi_node_register_composite_var('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_node_register_composite_var')
+ANF: vhdi_node_analysis('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_node_analysis')
+ANF: vhdi_node_id('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_node_id')
+ANF: vhdi_node_ist_check_scsd_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_node_ist_check_scsd_callback')
+ANF: vhdi_node_ist_add_scsd_callback('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_node_ist_add_scsd_callback')
+ANF: vhdi_node_ist_get_value_addr('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_node_ist_get_value_addr')
+ANF: vhdi_enc_def_traverse_module('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_enc_def_traverse_module')
+ANF: vhdi_enc_def_traverse_scope('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_enc_def_traverse_scope')
+ANF: vhdi_enc_def_traverse_variable('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_enc_def_traverse_variable')
+ANF: vhdi_enc_ist_traverse_scope('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_enc_ist_traverse_scope')
+ANF: vhdi_enc_ist_traverse_variable('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_enc_ist_traverse_variable')
+ANF: vhdi_enc_ist_get_module_id('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_enc_ist_get_module_id')
+ANF: vhdi_enc_def_get_handle_by_module_id('./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr: undefined symbol: vhdi_enc_def_get_handle_by_module_id')
+VCS compile option:
+ option[0]: ./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr
+ option[1]: -cm
+ option[2]: assert
+ option[3]: -ucli
+ option[4]: -ucli2Proc
+ option[5]: -i
+ option[6]: ./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/scverify_vcs_wave.tcl
+ option[7]: -l
+ option[8]: ./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sim.log
+ option[9]: /cad/synopsys/vcs/U-2023.03/linux64/bin/vcs1
+ option[10]: -Mcc=gcc
+ option[11]: -Mcplusplus=g++
+ option[12]: -Masflags=
+ option[13]: -Mcfl= -pipe -O -I/cad/synopsys/vcs/U-2023.03/include 
+ option[14]: -Mxllcflags=
+ option[15]: -Mxcflags= -pipe -I/cad/synopsys/vcs/U-2023.03/include
+ option[16]: -Mldflags= -rdynamic 
+ option[17]: -Mout=scverify/concat_sim_PECore_v_vcs/sc_mainpwr
+ option[18]: -Mamsrun=
+ option[19]: -Mvcsaceobjs=
+ option[20]: -Mobjects= /cad/synopsys/vcs/U-2023.03/linux64/lib/liberrorinf.so /cad/synopsys/vcs/U-2023.03/linux64/lib/libsnpsmalloc.so /cad/synopsys/vcs/U-2023.03/linux64/lib/libvfs.so 
+ option[21]: -Mexternalobj=
+ option[22]: -Msaverestoreobj=/cad/synopsys/vcs/U-2023.03/linux64/lib/vcs_save_restore_new.o
+ option[23]: -Mcrt0=
+ option[24]: -Mcrtn=
+ option[25]: -Mcsrc=
+ option[26]: -Mdir=scverify/concat_sim_PECore_v_vcs
+ option[27]: -Mdir=scverify/concat_sim_PECore_v_vcs
+ option[28]: -Msyslibs=/cad/synopsys/verdi/V-2023.12-SP2-4/share/PLI/VCS/LINUX64/pli.a -ldl -lm 
+ option[29]: -l
+ option[30]: scverify/concat_sim_PECore_v_vcs/elab.log
+ option[31]: -uum
+ option[32]: sc_main
+ option[33]: -mxunielab
+ option[34]: -uni_make
+ option[35]: -Xhdlxmropt
+ option[36]: -full64
+ option[37]: +libverbose
+ option[38]: -lca
+ option[39]: -psl
+ option[40]: 
+ option[41]: 
+ option[42]: -timescale=1ps/1ps
+ option[43]: -debug_acc+all
+ option[44]: +vpi
+ option[45]: +vcsd1
+ option[46]: +itf+/cad/synopsys/vcs/U-2023.03/linux64/lib/vcsdp_lite.tab
+ option[47]: -debug_region+cell+encrypt
+ option[48]: -load
+ option[49]: libnovas.so:FSDBDumpCmd
+ option[50]: +vcsd
+ option[51]: +memcbk
+ option[52]: -kdb=sysc_elab
+ option[53]: -Xufe=2steps
+ option[54]: +vcs+simv+slave
+ option[55]: -e
+ option[56]: SimvMain
+ option[57]: -P
+ option[58]: scverify/concat_sim_PECore_v_vcs/sysc/scverifyconcat_sim_PECore_v_vcssc_mainpwr/top.tab
+ option[59]: -P
+ option[60]: scverify/concat_sim_PECore_v_vcs/sysc/scverifyconcat_sim_PECore_v_vcssc_mainpwr/top.tab
+ option[61]: -cm
+ option[62]: assert
+ option[63]: -o
+ option[64]: scverify/concat_sim_PECore_v_vcs/sc_mainpwr
+ option[65]: -P
+ option[66]: scverify/concat_sim_PECore_v_vcs/sysc/ccs_wrapper/ccs_wrapper.tab
+ option[67]: -uum
+ option[68]: -elaboration_options=/tmp/vcs_20260319055320_832634/elaboptfile_837167
+ option[69]: -full64
+ option[70]: -P
+ option[71]: /cad/synopsys/verdi/V-2023.12-SP2-4/share/PLI/VCS/LINUX64/verdi.tab
+ option[72]: -fsdb
+ option[73]: -VHDLelab=-mxunielab -uni_make -nc -Xhdlxmropt -lca -kdb -e SimvMain -cm assert -exe scverify/concat_sim_PECore_v_vcs/sc_mainpwr -uum -elaboration_options /tmp/vcs_20260319055320_832634/elaboptfile_837167 -fsdb -mdirectory scverify/concat_sim_PECore_v_vcs -debug_acc_options all -debug_region_options +cell+encrypt 
+ option[74]: -gen_obj
+ option[75]: -f
+ option[76]: scverify/concat_sim_PECore_v_vcs/sc_mainpwr.daidir/mxopt.db
+ option[77]: -load
+ option[78]: /cad/synopsys/verdi/V-2023.12-SP2-4/share/PLI/VCS/LINUX64/libnovas.so:FSDBDumpCmd
+ option[79]: timescale=1ps/1ps
+Chronologic Simulation VCS Release U-2023.03_Full64
+Linux 6.14.0-37-generic #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 20 10:25:38 UTC 2 x86_64
+CPU cores: 48
+Limit information:
+======================================
+cputime		unlimited
+filesize		unlimited
+datasize		unlimited
+stacksize		8196 kbytes
+coredumpsize		0 kbytes
+memoryuse		unlimited
+vmemoryuse		unlimited
+descriptors		1048576
+memorylocked		24755316 kbytes
+maxproc		773092
+======================================
+(Special)Runtime environment variables:
+
+Runtime environment variables:
+SCVerify_USE_OSCI=false
+LowPower_OBS_THRESHOLD=0.0
+CDesignChecker_CHECK_APT=Enable
+RUN_SCVERIFY=0
+VCS_TARGET_ARCH=linux64
+CDesignChecker_GLOBAL_OPTIONS=
+CCS_VCD_FILE=./default.fsdb
+SCVerify_KEEP_UNUSED_TRANSACTION_CTRLS=true
+LD_LIBRARY_PATH=/cad/mentor/2024.2_1/Mgc_home/lib:/cad/mentor/2024.2_1/Mgc_home/shared/lib::/cad/synopsys/verdi/V-2023.12-SP2-4/share/PLI/VCS/LINUX64:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib64:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib:/cad/mentor/2024.2_1/Mgc_home/lib:/cad/mentor/2024.2_1/Mgc_home/shared/lib::/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib64:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib:/home/users/hiva/cs217-lab-1-hiva/lab1/hls/cmod/include:/home/users/hiva/cs217-lab-1-hiva/include/boost/lib:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib64:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib:/home/users/hiva/cs217-lab-0/lab1/hls/cmod/include:/home/users/hiva/cs217-lab-0/include/boost/lib:/cad/mentor/2024.2_1/Mgc_home/shared/lib:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux:/.singularity.d/libs:/cad/common/Linux/x86_64/lib:/cad/synopsys/syn/T-2022.03-SP4/lib
+LS_COLORS=rs=0:di=38;5;33:ln=38;5;51:mh=00:pi=40;38;5;11:so=38;5;13:do=38;5;5:bd=48;5;232;38;5;11:cd=48;5;232;38;5;3:or=48;5;232;38;5;9:mi=01;05;37;41:su=48;5;196;38;5;15:sg=48;5;11;38;5;16:ca=48;5;196;38;5;226:tw=48;5;10;38;5;16:ow=48;5;10;38;5;21:st=48;5;21;38;5;15:ex=38;5;40:*.tar=38;5;9:*.tgz=38;5;9:*.arc=38;5;9:*.arj=38;5;9:*.taz=38;5;9:*.lha=38;5;9:*.lz4=38;5;9:*.lzh=38;5;9:*.lzma=38;5;9:*.tlz=38;5;9:*.txz=38;5;9:*.tzo=38;5;9:*.t7z=38;5;9:*.zip=38;5;9:*.z=38;5;9:*.dz=38;5;9:*.gz=38;5;9:*.lrz=38;5;9:*.lz=38;5;9:*.lzo=38;5;9:*.xz=38;5;9:*.zst=38;5;9:*.tzst=38;5;9:*.bz2=38;5;9:*.bz=38;5;9:*.tbz=38;5;9:*.tbz2=38;5;9:*.tz=38;5;9:*.deb=38;5;9:*.rpm=38;5;9:*.jar=38;5;9:*.war=38;5;9:*.ear=38;5;9:*.sar=38;5;9:*.rar=38;5;9:*.alz=38;5;9:*.ace=38;5;9:*.zoo=38;5;9:*.cpio=38;5;9:*.7z=38;5;9:*.rz=38;5;9:*.cab=38;5;9:*.wim=38;5;9:*.swm=38;5;9:*.dwm=38;5;9:*.esd=38;5;9:*.jpg=38;5;13:*.jpeg=38;5;13:*.mjpg=38;5;13:*.mjpeg=38;5;13:*.gif=38;5;13:*.bmp=38;5;13:*.pbm=38;5;13:*.pgm=38;5;13:*.ppm=38;5;13:*.tga=38;5;13:*.xbm=38;5;13:*.xpm=38;5;13:*.tif=38;5;13:*.tiff=38;5;13:*.png=38;5;13:*.svg=38;5;13:*.svgz=38;5;13:*.mng=38;5;13:*.pcx=38;5;13:*.mov=38;5;13:*.mpg=38;5;13:*.mpeg=38;5;13:*.m2v=38;5;13:*.mkv=38;5;13:*.webm=38;5;13:*.ogm=38;5;13:*.mp4=38;5;13:*.m4v=38;5;13:*.mp4v=38;5;13:*.vob=38;5;13:*.qt=38;5;13:*.nuv=38;5;13:*.wmv=38;5;13:*.asf=38;5;13:*.rm=38;5;13:*.rmvb=38;5;13:*.flc=38;5;13:*.avi=38;5;13:*.fli=38;5;13:*.flv=38;5;13:*.gl=38;5;13:*.dl=38;5;13:*.xcf=38;5;13:*.xwd=38;5;13:*.yuv=38;5;13:*.cgm=38;5;13:*.emf=38;5;13:*.ogv=38;5;13:*.ogx=38;5;13:*.aac=38;5;45:*.au=38;5;45:*.flac=38;5;45:*.m4a=38;5;45:*.mid=38;5;45:*.midi=38;5;45:*.mka=38;5;45:*.mp3=38;5;45:*.mpc=38;5;45:*.ogg=38;5;45:*.ra=38;5;45:*.wav=38;5;45:*.oga=38;5;45:*.opus=38;5;45:*.spx=38;5;45:*.xspf=38;5;45:
+HOSTTYPE=x86_64-linux
+CDesignChecker_CHECK_LRC=Enable
+NCSim_NCSC_OPTS=
+CDesignChecker_CHECK_OVL=Enable
+CDesignChecker_PROPERTY_ISE=false
+OSCI_SYSTEMC_LIB=$(MGC_HOME)/shared/lib/$(CXX_OS)/$(CXX_TYPE)$(CXX_STYPE)
+CDesignChecker_CHECK_PDD=Enable
+CDesignChecker_CHECK_CWB=Enable
+LowPower_NO_VECTORS=false
+Vivado_ImplementationStrategy=Default
+QuestaSIM_EXEC_VLOG=
+CDesignChecker_CHECK_OSL=Disable
+MGLS_LICENSE_FILE=1717@cadlic0.stanford.edu
+QuestaSIM_ENABLE_VOPT=true
+SSH_CONNECTION=10.203.0.203 58300 10.203.0.74 22
+ARCH=linux64
+MGC_ENV_ORIG_PATH=/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/bin:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/binutils-2.33.1_64/bin:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/bin:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/binutils-2.33.1_64/bin:/cad/synopsys/syn/T-2022.03-SP4/amd64/syn/bin/:/cad/synopsys/vcs/U-2023.03//bin:/cad/synopsys/vcs/U-2023.03//gui/dve/bin:/cad/synopsys/verdi/V-2023.12-SP2-4/bin:/cad/synopsys/verdi/V-2023.12-SP2-4/gui/dve/bin:/cad/mentor/2021.4/questasim/bin:/cad/mentor/2024.2_1/Mgc_home/bin:/usr/share/Modules/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/cad/common/Linux/x86_64/bin
+CDesignChecker_CHECK_OSA=Enable
+VCS_VCS_GCC_VER=4.2.2
+SCVerify_USE_QUESTASIM=false
+LESSCLOSE=/usr/bin/lesspipe %s %s
+LowPower_CLOCK_TREE_FANOUT=16
+Novas_NOVAS_INST_DIR=/cad/synopsys/verdi/V-2023.12-SP2-4
+OSCI_SYSTEMC_NAME=systemc
+OSCI_LCOVDIR=
+NCSim_NCSIM_GCCVERSION=
+TK_LIBRARY=/cad/synopsys/vcs/U-2023.03/etc/auxx/tcllib/tk8.4/library
+Vivado_SIMLIBS_VHD=
+LowPower_CLOCK_TREE_FINAL_BUFFER=
+CDesignChecker_CHECK_RRT=Enable
+CDesignChecker_CHECK_CIA=Enable
+SPRINGSOFT_LICENSE=5219@cadlic0.stanford.edu
+NETLIST_LEAF=concat_sim_PECore
+SCVerify_GEN_INTERCEPT_IN_CPP=false
+QuestaSIM_RADIX=hex
+SCVerify_LINK_LIBNAMES=
+QuestaSIM_COVERCHECK_TCL=
+CDesignChecker_CHECK_FXD=Enable
+Option_CppStandard=c++11
+Vivado_TimingReportingMode=p2p
+CDesignChecker_CHECK_CNS=Enable
+OSCI_AC_FIXED_VRA_OPTS=
+LANG=C.UTF-8
+LowPower_INSERT_STB_S=true
+LowPower_USE_SLECPRO_MAP_FILE=false
+LowPower_GLOBAL_OPTIONS=
+LowPower_STB_C_EFFORT_LEVEL=high
+CDesignChecker_PROPERTY_ASC=false
+LowPower_INSERT_STB_C=true
+SCVerify_AUTOWAIT_OUTPUT_CYCLES=5
+SCVerify_GATE_SIM_CLK_SKEW=
+SCVerify_IDLE_SYNCHRONIZATION_MODE=false
+LowPower_NUMERICAL_SOLVERS=false
+APPTAINER_COMMAND=exec
+OLDPWD=/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1
+Vivado_ShellExe=vivado
+SCVerify_USE_NCSIM=false
+CDesignChecker_FORMAL_RPT_FNAME=Design_Check
+SCVerify_IOSYNC_PAUSE_ON_STALL=false
+SCVerify_SYNC_NAMES_TO_REPLACE=
+PRECISION_EXE=
+APPTAINER_CONTAINER=/home/classes/ee/admin/software/containers/rocky8.sif-latest
+CXX_OS=Linux
+PATH_modshare=/usr/bin:1:/cad/synopsys/vcs/U-2023.03//gui/dve/bin:1:/usr/share/Modules/bin:1:/usr/local/bin:1:/cad/synopsys/verdi/V-2023.12-SP2-4/bin:1:/bin:1:/cad/mentor/2024.2_1/Mgc_home/bin:1:/cad/synopsys/vcs/U-2023.03//bin:1:/sbin:1:/cad/common/Linux/x86_64/bin:1:/cad/mentor/2021.4/questasim/bin:1:/usr/sbin:1:/cad/synopsys/syn/T-2022.03-SP4/amd64/syn/bin/:1:/usr/local/sbin:1:/cad/synopsys/verdi/V-2023.12-SP2-4/gui/dve/bin:1
+SCVerify_STALL_REP_COUNT=10
+OSCI_USE_32BIT_COMPILER=false
+QuestaSIM_MSIM_DOFILE=
+LowPower_ENABLE_SLECPRO=disabled
+QuestaSIM_GATE_VSIM_OPTS=+notimingchecks -sdfnoerror -noglitch
+LOADEDMODULES_modshare=/home/users/hiva/cs217-lab-1-hiva/scripts/hls/catapult.module:1:vcs/latest:1:base/1.0:1:catapult/2024.2_1:1:questa/2021.4:1:dc_shell/T-2022.03-SP4:1:verdi/latest:1:/home/users/hiva/cs217-lab-0/scripts/hls/catapult.module:1
+QuestaSIM_VOPT_ARGS=+acc=anpr
+CDesignChecker_CHECK_FVI=Enable
+VCO=aol
+SCVerify_REPLACE_SYNC_SIGNALS=false
+OSCI_AC_CHANNEL_READ_FAIL_TB=false
+FPATH=/software/spack/opt/spack/linux-x86_64_v3/lmod-8.7.55-t66x7ubuz6emgqyh7qhtog6zu3krajlx/lmod/lmod/init/ksh_funcs
+CDesignChecker_CHECK_SAT=Enable
+SCVerify_IO_SYNC_OVERRIDES=
+IN_CCS_FLOW=true
+CDesignChecker_CHECK_AIC=Enable
+REPO_TOP=/home/users/hiva/CS217-Final-Project/fpga
+Vivado_ENABLE_SYNTH_DEBUG=false
+SNPSLMD_LICENSE_FILE=27000@cadlic0.stanford.edu
+LowPower_ENABLE_FPGA_ANALYSIS=false
+LINK_LIBNAMES=
+MODULES_LMNOTUASKED_modshare=vcs/latest:1:dc_shell/T-2022.03-SP4:1:base/1.0:1:catapult/2024.2_1:1:questa/2021.4:1:verdi/latest:1
+CDesignChecker_CHECK_ABW=Enable
+COMPILER_FLAGS=HLS_ALGORITHMICC CONNECTIONS_ACCURATE_SIM SC_INCLUDE_DYNAMIC_PROCESSES
+Vivado_FlowSuffix=xv
+CDesignChecker_CHECK_ABR=Enable
+CDesignChecker_CHECK_RIU=Enable
+VENDOR=unknown
+SYSTEMC_DESIGN=1
+MACHTYPE=x86_64
+QuestaSIM_Flags=
+CDesignChecker_CHECK_CAS=Enable
+NCSim_NCSIM_DOFILE=
+CDesignChecker_CHECK_NCO=Enable
+QUESTA_HOME=/cad/mentor/2021.4/questasim
+QuestaSIM_WITNESS_WAVEFORM=false
+MODULES_REL=6.14.0-37-generic
+MODULES_USE_COMPAT_VERSION=0
+HLS_HOME=/home/users/hiva/cs217-lab-1-hiva/hls
+SYNOPSYS_SIM_SETUP=./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/synopsys_sim.setup
+MFLAGS=-w
+CCS_VCD_TIMES=0,ns,end,ns
+VG_GNU_PACKAGE=/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux
+LowPower_DEBUG=false
+LowPower_STB_C_THRESHOLD=0.0
+CDesignChecker_CHECK_AOB=Enable
+CDesignChecker_CHECK_UMR=Enable
+OSTYPE=linux
+LD_LIBRARY_PATH_modshare=/home/users/hiva/cs217-lab-1-hiva/lab1/hls/cmod/include:1:/cad/mentor/2024.2_1/Mgc_home/shared/lib:2:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux:2:/cad/synopsys/syn/T-2022.03-SP4/lib:1:/home/users/hiva/cs217-lab-1-hiva/include/boost/lib:1:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib64:1:/home/users/hiva/cs217-lab-0/lab1/hls/cmod/include:1:/cad/common/Linux/x86_64/lib:1:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib:1:/home/users/hiva/cs217-lab-0/include/boost/lib:1:/.singularity.d/libs:1
+LowPower_OBS_EFFORT_LEVEL=high
+CDesignChecker_MAX_SIM_TRANS_COUNT=500
+WORK2SOLN=.
+MGLS_LICENSE_FILE_modshare=1717@cadlic0.stanford.edu:1
+CDesignChecker_PROPERTY_DBZ=false
+TOP_NAME=PECore
+LowPower_STARTUP_SCRIPT_PATH=
+LowPower_CLOCK_TREE_BUFFER=
+MODULES_CMD=/usr/share/Modules/libexec/modulecmd.tcl
+QuestaSIM_VOPT_COVER_ARG=+cover=sbceft
+SCVerify_USE_MSIM=false
+USER_PATH=/software/spack/opt/apptainer/bin:/software/spack/opt/apptainer/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+USER=hiva
+MODULES_LMPREREQ=verdi/latest&base:vcs/latest&base:dc_shell/T-2022.03-SP4&base:/home/users/hiva/cs217-lab-0/scripts/hls/catapult.module&base/1.0&catapult/2024.2_1&questa/2021.4&verdi/latest&vcs/latest&dc_shell/T-2022.03-SP4:/home/users/hiva/cs217-lab-1-hiva/scripts/hls/catapult.module&base/1.0&catapult/2024.2_1&questa/2021.4&verdi/latest&vcs/latest&dc_shell/T-2022.03-SP4
+HLS_SCRIPTS=/home/users/hiva/CS217-Final-Project/fpga/scripts/hls
+Vivado_max_dsp=-1
+CDesignChecker_CHECK_SUD=Enable
+SCVerify_GEN_SVA_BIND=false
+MODULES_MACH=x86_64
+LowPower_EFFORT_LEVEL=high
+OSCI_AC_INT_VRA_OPTS=
+ROOT=../..
+SCVerify_ABSTRACT_SIM_STAGE=none
+SCVerify_INIT_OUT_MEMORY_TRANSACTIONS=false
+Vivado_ALLOW_MCP=false
+SINGULARITY_CONTAINER=/home/classes/ee/admin/software/containers/rocky8.sif-latest
+Vivado_CCS_IP_REPO=
+MGC_ENV_ORIG_LD_LIBRARY_PATH=/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib64:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib:/home/users/hiva/cs217-lab-1-hiva/lab1/hls/cmod/include:/home/users/hiva/cs217-lab-1-hiva/include/boost/lib:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib64:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/lib:/home/users/hiva/cs217-lab-0/lab1/hls/cmod/include:/home/users/hiva/cs217-lab-0/include/boost/lib:/cad/mentor/2024.2_1/Mgc_home/shared/lib:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux:/.singularity.d/libs:/cad/common/Linux/x86_64/lib:/cad/synopsys/syn/T-2022.03-SP4/lib
+CDesignChecker_DBG_LAUNCH_MODE=BG
+AWS_HOME=/home/users/hiva/cs217-lab-1-hiva/design_top
+COVERIOHANDSHAKE=false
+CDesignChecker_CHECK_CMC=Enable
+SCVerify_GEN_CCS_BLOCK_DEBUG=false
+VCS_VG_ENV32_SCRIPT=source_me_32.csh
+PROJ2SOLN=./Catapult/PECore.v1
+SCVerify_REPLAY_ARGS=
+Vivado_IP_Taxonomy=/Catapult
+GROUP=operator
+NCSim_EXEC_NCSIM=
+QuestaSIM_VSIM_OPTS=-t ps
+CDesignChecker_ENABLE_INC_MGC_HOME=false
+PWD=/home/users/hiva/CS217-Final-Project/fpga/hls/PECore
+VCS_FORCE_32BIT=
+Novas_VERDI_VERSION=T-2022.06
+SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass
+SCVerify_MAX_ERROR_CNT=0
+HOME=/home/users/hiva
+QuestaSIM_SUPPRESS_WAVEFORMS=false
+COMPILERFLAGS=-D_SYNTHESIS_ -DHLS_CATAPULT -DHLS_ALGORITHMICC -DCONNECTIONS_ACCURATE_SIM -DSC_INCLUDE_DYNAMIC_PROCESSES 
+LowPower_CLOCK_TREE_ROOT_BUFFER_FANOUT=8
+APPTAINER_BIND=/cad,/farmshare,/farmshare/home,/run
+LM_LICENSE_FILE_modshare=1717@cadlic0.stanford.edu:1
+TERM_PROGRAM=tmux
+HOST=iron-04
+CDesignChecker_CHECK_CCC=Enable
+QuestaSIM_QUESTA_VISUALIZER=
+SSH_CLIENT=10.203.0.203 33504 22
+TERM_PROGRAM_VERSION=3.4
+LMOD_VERSION=8.7.55
+HLD_CONSTRAINT_FNAME=top_gate_constraints.cpp
+TCL_LIBRARY=/cad/mentor/2024.2_1/Mgc_home/lib/tcl8.5
+SCVerify_WAVE_PROBES=false
+LowPower_GENERATE_X_AWARE_ENABLE=yes
+FSDB_VCS_RD_SC_VALPTR_PROTECT=1
+TMUX=/tmp/tmux-468699/default,368823,1
+OSCI_ENABLE_AC_FIXED_VRA=false
+SCVerify_TB_STACKSIZE=64000000
+NCSim_NCSIM_OPTS=
+CDesignChecker_WAVE_FORMAT=qwave
+VCS_VHDLAN_OPTS=
+VCS_CC=gcc
+QuestaSIM_EXEC_VCOV=
+LowPower_CLOCK_TREE_FINAL_BUFFER_FANOUT=32
+MGC_HOME=/cad/mentor/2024.2_1/Mgc_home
+QuestaSIM_EXEC_VCOM=
+BASH_ENV=/software/spack/opt/spack/linux-x86_64_v3/lmod-8.7.55-t66x7ubuz6emgqyh7qhtog6zu3krajlx/lmod/lmod/init/bash
+SCVerify_MAX_DEADLOCK_TIMER=0
+XDG_DATA_DIRS=/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop
+QuestaSIM_ENABLE_VISUALIZER=false
+QuestaSIM_ENABLE_QWAVE=false
+SYNOPSYS_LICENSE=27000@cadlic0.stanford.edu
+SCVerify_QUESTASIM_DEBUG=false
+SCVerify_OPTIMIZE_WRAPPERS=false
+NCSim_EXEC_NCVHDL=
+CADENCE_LICENSE=5280@cadlic0.stanford.edu
+SCVerify_DEADLOCK_DETECTION=true
+QuestaSIM_Path=/cad/mentor/2021.4/questasim/bin
+_LMFILES__modshare=/home/users/hiva/cs217-lab-1-hiva/scripts/hls/catapult.module:1:/etc/modulefiles/verdi/latest:1:/etc/modulefiles/vcs/latest:1:/home/users/hiva/cs217-lab-0/scripts/hls/catapult.module:1:/etc/modulefiles/base/1.0:1:/etc/modulefiles/catapult/2024.2_1:1:/etc/modulefiles/questa/2021.4:1:/etc/modulefiles/dc_shell/T-2022.03-SP4:1
+CDesignChecker_CHECK_DBZ=Enable
+CAD_COMMON=/cad/common/Linux/x86_64
+SCVerify_MISMATCHED_OUTPUTS_ONLY=true
+OSCI_GDBGUI=ddd
+NOVAS_INST_DIR=/cad/synopsys/verdi/V-2023.12-SP2-4
+CDesignChecker_WAIVER_FILE=
+NCSim_FORCE_32BIT=
+LowPower_GLBL__wrtl_lint_clean_rtl=true
+OSCI_ASAN_OPTIONS=symbolize=1:detect_leaks=1:log_path=asan.log:abort_on_error=1
+Vivado_BITGEN=false
+Vivado_XILINX_VIVADO=
+MODULES_LMALTNAME=vcs/latest&vcs/default&vcs
+QuestaSIM_SHOW_LIST=false
+VCS_COMP_FLAGS=-g -Wall -Wno-unknown-pragmas
+CXX_VCO=aol
+LowPower_CLOCK_GATING_MIN_WIDTH=0
+LowPower_SLECPRO_QUEUELIC_LIMIT=0s
+APPTAINER_NAME=rocky8.sif-latest
+QuestaSIM_SYSC_VERSION=2.3
+Valgrind_VALGRIND=/usr/opt/bin/valgrind
+MGC_EXENAME=catapult
+CDesignChecker_CHECK_MXS=Enable
+STAGE=rtl
+CCS_SIM_MODE=batch
+MODULES_LMNOTUASKED=base/1.0:catapult/2024.2_1:questa/2021.4:verdi/latest:vcs/latest:dc_shell/T-2022.03-SP4
+NCSim_NCSIM_SAIF_OPTIONS=-verbose -overwrite -internal -hierarchy
+VCSMX_HOME=/cad/synopsys/vcs/U-2023.03
+SCVerify_MSIM_DEBUG=false
+Vivado_PCL_CACHE=
+LIBRARY_PATH=/usr/lib64:IBRARY_PATH
+LowPower_SWITCHING_ACTIVITY_TYPE=fsdb
+SCVerify_GENERATE_STAGES=compile assembly loops memories architect schedule extract switching power
+LMOD_sys=Linux
+SCVerify_GEN_TEMPLATE_ARGS=true
+NCSim_NCVLOG_OPTS=-linedebug
+DesignAnalyzer_lddDebug=false
+OSCI_LDFLAGS=
+LowPower_CG_OVERRIDE=
+LOADEDMODULES=base/1.0:catapult/2024.2_1:questa/2021.4:verdi/latest:vcs/latest:dc_shell/T-2022.03-SP4:/home/users/hiva/cs217-lab-0/scripts/hls/catapult.module:/home/users/hiva/cs217-lab-1-hiva/scripts/hls/catapult.module
+QuestaSIM_VCD_SIZE_LIMIT=2000
+VCS_LIC_QUEUE=false
+OSCI_AC_FIXED_VRA_FILE_NAME=ac_fixed_vra.csv
+CXX_STYPE=-10.3.0-64
+NCSim_GCC_HOME=
+SIMTOOL=vcs
+MODULES_OS=Linux
+VCS_EXEC_VLOGAN=
+SCVerify_USE_CCS_BLOCK=false
+VCS_EXEC_SYSCAN=
+QuestaSIM_SCCOM_OPTS=-g -x c++ -Wall -Wno-unused-label -Wno-unknown-pragmas
+QTI_HOME=/cad/mentor/2021.4/questasim
+LMOD_ROOT=/software/spack/opt/spack/linux-x86_64_v3/lmod-8.7.55-t66x7ubuz6emgqyh7qhtog6zu3krajlx/lmod
+NCSim_NCSIM_TIMESCALE=1 ns / 1 ps
+CDesignChecker_FULL_REPORT=false
+SRC_HOME=/home/users/hiva/cs217-lab-1-hiva/src
+NCSim_NCELAB_OPTS=
+CXX_TYPE=gcc
+SSH_TTY=/dev/pts/3
+SCVerify_MAX_SIM_TIME=0
+LowPower_INSERT_OBS=true
+INLINED_PROPERTY_CHECKS=true
+SCVerify_INCL_DIRS=
+SCVerify_ENABLE_STALL_TOGGLE=true
+CDesignChecker_MAX_VIOLATIONS=20
+CDesignChecker_XTERM_CMD=xterm
+MAIL=/var/spool/mail/hiva
+NCSim_EXEC_NCELAB=
+RUN_CDESIGN_CHECKER=0
+SINGULARITY_ENVIRONMENT=/.singularity.d/env/91-environment.sh
+SYNOPSYS=/cad/synopsys/syn/T-2022.03-SP4
+LowPower_GLBL__wrtl_clk_lint_clean=true
+SCVerify_USE_VCS=true
+LowPower_USE_BIND_TO_TECH_CELL=true
+VERDI_TARGET_ARCH=linux64
+NCSim_EXEC_NCVLOG=
+Vivado_RUN_PNR=false
+SCVerify_GATE_SIM_NO_SDF=false
+QuestaSIM_DEF_MODELSIM_INI=
+CDesignChecker_VERIFICATION_MODE=Custom
+PROJ2WORK=./Catapult/PECore.v1
+VCS_SYSC_VERSION=2.3.3
+CDesignChecker_CHECK_MDB=Enable
+LowPower_SPEF_FILE=
+Vivado_ShellPrefix=
+TERM=tmux-256color
+SCVerify_STALL_HOLD_COUNT=5
+SHELL=/bin/bash
+Vivado_VivadoMode=Non-project
+CDesignChecker_USE_64BIT=false
+OSCI_SYSTEMC_INCLUDE=$(MGC_HOME)/shared/include
+LowPower_ITERATIVE_WRITE_RTL=true
+MAKEOVERRIDES=${-*-command-variables-*-}
+SCVerify_ENABLE_CPP_SCVERIFY_TOP=true
+SINGULARITY_NAME=rocky8.sif-latest
+OSCI_ENABLE_ASAN=false
+CXX_HOME=/cad/mentor/2024.2_1/Mgc_home/pkgs/dcs_gcc/usr
+OSCI_ASAN_FLAGS=-fsanitize=address -fno-omit-frame-pointer
+NCSim_NC_ROOT=
+NETLIST=v
+QuestaSIM_EXEC_VSIM=
+SCVerify_AUTOWAIT=0
+LM_LICENSE_FILE=1717@cadlic0.stanford.edu
+QuestaSIM_ALLOW_DUP_SYMS=false
+QuestaSIM_VCOM_OPTS=
+MANPATH_modshare=/cad/synopsys/verdi/V-2023.12-SP2-4/doc/man:1::1:/cad/synopsys/syn/T-2022.03-SP4/doc/snps_gui/man:1:/cad/synopsys/vcs/U-2023.03//doc/man:1:/usr/share/man:1:/software/spack/opt/spack/linux-x86_64_v3/lmod-8.7.55-t66x7ubuz6emgqyh7qhtog6zu3krajlx/lmod/lmod/share/man:1:/cad/synopsys/syn/T-2022.03-SP4/doc/snps_tcl/man:1:/cad/synopsys/syn/T-2022.03-SP4/doc/syn/man:1
+LowPower_STB_S_THRESHOLD=0.0
+Vivado_addio=false
+MODULES_LMALTNAME_modshare=vcs/latest&vcs/default&vcs:1
+VCS_VCS_DOFILE=
+CDesignChecker_CHECK_STF=Enable
+CATAPULT_ROOT=/cad/mentor/2024.2_1/Mgc_home
+OSCI_COMP_FLAGS=-Wall -Wno-unknown-pragmas -Wno-unused-label
+SCVerify_DISABLE_EMPTY_INPUTS=false
+OSCI_AC_INT_VRA_FILE_NAME=ac_int_vra.csv
+INLINEDPROPERTYLANG=psl
+WORK2PROJ=../..
+QuestaSIM_ENABLE_OLD_MSIM_FLOW=false
+SOLUTION_DIR=/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1
+SCVerify_RAND_SEED_USES_TIME=false
+SCVerify_LINK_LIBPATHS=
+NCSim_NCSC_CXX_OPTS=-x c++ -Wall -Wno-unknown-pragmas -Wno-deprecated
+INCL_DIRS=. ../.. /cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib/cmod/include /cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include /cad/mentor/2024.2_1/Mgc_home/shared/include /cad/xilinx/vitis/2020.1/Vitis/2020.1/cardano/tps/boost_1_64_0 /home/users/hiva/CS217-Final-Project/fpga/src/include ./scverify . ../.. /cad/mentor/2024.2_1/Mgc_home/shared/include
+MAKELEVEL=2
+CDesignChecker_ENA_DEBUG_FLOW=false
+QuestaSIM_QHOME=
+VCS_VCSSIM_OPTS=
+APPTAINER_APPNAME=
+VERDI_HOME=/cad/synopsys/verdi/V-2023.12-SP2-4
+LowPower_SYNCHRONOUS_RESET_AWARENESS=true
+SRC_PATH=../../src/
+TMUX_PANE=%1
+Valgrind_VALGRIND_OPTS=--demangle=yes --leak-check=no --undef-value-errors=yes
+SYN_DIR=gate_synthesis_xv
+SHLVL=6
+LowPower_ENHANCED_POWER_ANALYSIS=false
+SCVerify_RESET_CYCLES=2
+HLS_CATAPULT=1
+Vivado_SIMLIBS_V=
+Vivado_BoardPart=
+QuestaSIM_MSIM_AC_TYPES=true
+QuestaSIM_EXEC_VOPT=
+PROMPT_COMMAND=PS1="Apptainer> "; unset PROMPT_COMMAND
+LowPower_STB_S_EFFORT_LEVEL=high
+Vivado_Force_DSP48=false
+Vivado_CascadeDsp=auto
+MANPATH=/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/man:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/binutils-2.33.1_64/man:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/man:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/binutils-2.33.1_64/man:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/man:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/binutils-2.33.1_64/man:/cad/synopsys/syn/T-2022.03-SP4/doc/snps_gui/man:/cad/synopsys/syn/T-2022.03-SP4/doc/snps_tcl/man:/cad/synopsys/syn/T-2022.03-SP4/doc/syn/man:/cad/synopsys/vcs/U-2023.03//doc/man:/cad/synopsys/verdi/V-2023.12-SP2-4/doc/man:/usr/share/man:/software/spack/opt/spack/linux-x86_64_v3/lmod-8.7.55-t66x7ubuz6emgqyh7qhtog6zu3krajlx/lmod/lmod/share/man::/cad/synopsys/vcs/U-2023.03/doc/man:/cad/synopsys/vcs/U-2023.03/doc/snps_tcl/man
+CDesignChecker_CHECK_CBU=Enable
+SCVLIBS=./Catapult/PECore.v1
+CDesignChecker_RPT_UNDECIDED_PROPS=true
+SCVerify_AUTOWAIT_INPUT_CYCLES=5
+QuestaSIM_COVERCHECK_TIMEOUT=
+CDesignChecker_SLEC_HOME=
+SCVerify_INVOKE_ARGS=
+QuestaSIM_SHOW_COVERAGE_EXCLUSIONS=false
+CDesignChecker_VERIFICATION_EFFORT=medium
+VCS_EXEC_VHDLAN=
+SCVerify_SYNC_ALL_RESETS=true
+VCS_VCSELAB_OPTS=-timescale=1ps/1ps -sysc=blocksync
+LowPower_CLOCK_TREE_ROOT_BUFFER=
+NCSim_EXEC_NCSDFC=
+CDesignChecker_SOFT_RUNTIME_LIMIT=0
+VCS_ENABLE_CODE_COVERAGE=false
+CDesignChecker_ADD_WAVES=false
+CDesignChecker_CHECK_ACC=Enable
+VCS_VG_GNU_PACKAGE=/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux
+NCSim_NCVHDL_OPTS=-v93 -linedebug
+QuestaSIM_EXEC_SCCOM=
+MODULEPATH=/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles
+CDesignChecker_CHECK_CGR=Enable
+CDesignChecker_CHECK_ACS=Enable
+LowPower_QWAVE_VIS_LIBDDI=
+LOGNAME=hiva
+TARGET=scverify/concat_sim_PECore_v_vcs
+MODULES_LMPREREQ_modshare=/home/users/hiva/cs217-lab-0/scripts/hls/catapult.module&base/1.0&catapult/2024.2_1&questa/2021.4&verdi/latest&vcs/latest&dc_shell/T-2022.03-SP4:1:vcs/latest&base:1:/home/users/hiva/cs217-lab-1-hiva/scripts/hls/catapult.module&base/1.0&catapult/2024.2_1&questa/2021.4&verdi/latest&vcs/latest&dc_shell/T-2022.03-SP4:1:dc_shell/T-2022.03-SP4&base:1:verdi/latest&base:1
+SEARCH_PATH=/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib/cmod/include /cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include /cad/mentor/2024.2_1/Mgc_home/shared/include /cad/xilinx/vitis/2020.1/Vitis/2020.1/cardano/tps/boost_1_64_0 /home/users/hiva/CS217-Final-Project/fpga/src/include
+CDesignChecker_TIME_LIMIT_INCREASE_DELTA=0
+VCS_VCS_HOME=/cad/synopsys/vcs/U-2023.03
+CDesignChecker_PROPERTY_ABR=false
+Vivado_Flags=
+QuestaSIM_VLOG_OPTS=
+SCVerify_ENABLE_RESET_TOGGLE=false
+MODULEPATH_modshare=/usr/share/Modules/modulefiles:2:/etc/modulefiles:2:/usr/share/modulefiles:2
+VCS_VG_ENV64_SCRIPT=source_me.csh
+CDesignChecker_PROPERTY_ABW=false
+CDesignChecker_CHECK_ALS=Enable
+MODULEPATH_ROOT=/software/spack/opt/spack/linux-x86_64_v3/lmod-8.7.55-t66x7ubuz6emgqyh7qhtog6zu3krajlx/modulefiles
+TCLSH_CMD=/cad/mentor/2024.2_1/Mgc_home/bin/tclsh8.5
+LINK_LIBPATHS=
+SCVerify_USE_RESOLVED_TYPES=false
+CDesignChecker_STATIC_RPT_FNAME=static_design_check
+CDesignChecker_PROPERTY_UMR=false
+LowPower_NO_LIBERTY=false
+CDesignChecker_TIME_LIMIT_INCREASE_FACTOR=2.0
+SCVerify_ENABLE_REPLAY_VERIFICATION=false
+SCVerify_USE_VISTA=false
+PATH=/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/bin:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/binutils-2.33.1_64/bin:/cad/synopsys/vcs/U-2023.03/bin:/cad/mentor/2024.2_1/Mgc_home/bin:/cad/mentor/2024.2_1/Mgc_home/lib:/cad/mentor/2024.2_1/Mgc_home/pkgs/sif/.lib:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/bin:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/binutils-2.33.1_64/bin:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/bin:/cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/binutils-2.33.1_64/bin:/cad/synopsys/syn/T-2022.03-SP4/amd64/syn/bin/:/cad/synopsys/vcs/U-2023.03//bin:/cad/synopsys/vcs/U-2023.03//gui/dve/bin:/cad/synopsys/verdi/V-2023.12-SP2-4/bin:/cad/synopsys/verdi/V-2023.12-SP2-4/gui/dve/bin:/cad/mentor/2021.4/questasim/bin:/cad/mentor/2024.2_1/Mgc_home/bin:/usr/share/Modules/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/cad/common/Linux/x86_64/bin
+APPTAINER_ENVIRONMENT=/.singularity.d/env/91-environment.sh
+SLURM_JOB_ID=1498826
+_LMFILES_=/etc/modulefiles/base/1.0:/etc/modulefiles/catapult/2024.2_1:/etc/modulefiles/questa/2021.4:/etc/modulefiles/verdi/latest:/etc/modulefiles/vcs/latest:/etc/modulefiles/dc_shell/T-2022.03-SP4:/home/users/hiva/cs217-lab-0/scripts/hls/catapult.module:/home/users/hiva/cs217-lab-1-hiva/scripts/hls/catapult.module
+VCS_HOME=/cad/synopsys/vcs/U-2023.03
+Vivado_SynthesisFlowType=fpga
+LowPower_WIRELOAD_MODE=top
+LowPower_WIRELOAD_MODEL=
+VCS_VLOGAN_OPTS=+v2k
+DEBUGINFOD_URLS=https://debuginfod.ubuntu.com 
+CDesignChecker_DBG_HIERARHY_ENA=false
+MODULESHOME=/software/spack/opt/spack/linux-x86_64_v3/lmod-8.7.55-t66x7ubuz6emgqyh7qhtog6zu3krajlx/lmod/lmod
+LMOD_SETTARG_FULL_SUPPORT=no
+Vivado_Path=
+QuestaSIM_FORCE_32BIT=
+CLK_PERIOD=6.0 
+VCS_EXEC_VCS=
+DesignAnalyzer_Exe=
+USE_FSDB=true
+SCVerify_ABSTRACT_SIM_INTERNAL_TEST=false
+MAKEFLAGS=w
+LMOD_PKG=/software/spack/opt/spack/linux-x86_64_v3/lmod-8.7.55-t66x7ubuz6emgqyh7qhtog6zu3krajlx/lmod/lmod
+INVOKE_ARGS=
+QuestaSIM_ENABLE_CODE_COVERAGE=false
+OSCI_GCOV=false
+TOP_HDL_ENTITY=PECore
+LowPower_DEBUG_LEVEL=0
+CDesignChecker_CHECK_ISE=Enable
+Vivado_retiming=false
+WORK_DIR=/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1
+CDesignChecker_SYMBOLIC_MEMSIZE_THRESHOLD=256
+CDesignChecker_CHECK_AWE=Enable
+CDesignChecker_PROPERTY_CAS=false
+OSCI_ENABLE_AC_INT_VRA=false
+SINGULARITY_BIND=/cad,/farmshare,/farmshare/home,/run
+LMOD_CMD=/software/spack/opt/spack/linux-x86_64_v3/lmod-8.7.55-t66x7ubuz6emgqyh7qhtog6zu3krajlx/lmod/lmod/libexec/lmod
+Vivado_MAX_BRAM_CASCADE_HEIGHT=-1
+CDesignChecker_MEMORY_LIMIT=0
+CDesignChecker_PER_PROBLEM_TIME_LIMIT=1
+LESSOPEN=| /usr/bin/lesspipe %s
+CDesignChecker_CHECK_DIU=Enable
+CDesignChecker_SIM_TIME_LIMIT=900
+LMOD_DIR=/software/spack/opt/spack/linux-x86_64_v3/lmod-8.7.55-t66x7ubuz6emgqyh7qhtog6zu3krajlx/lmod/lmod/libexec
+BASH_FUNC_module%%=() {  if [ -z "${LMOD_SH_DBG_ON+x}" ]; then
+ case "$-" in 
+ *v*x*)
+ __lmod_sh_dbg='vx'
+ ;;
+ *v*)
+ __lmod_sh_dbg='v'
+ ;;
+ *x*)
+ __lmod_sh_dbg='x'
+ ;;
+ esac;
+ fi;
+ if [ -n "${__lmod_sh_dbg:-}" ]; then
+ set +$__lmod_sh_dbg;
+ echo "Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output" 1>&2;
+ fi;
+ eval "$($LMOD_CMD shell "$@")" && eval "$(${LMOD_SETTARG_CMD:-:} -s sh)";
+ __lmod_my_status=$?;
+ if [ -n "${__lmod_sh_dbg:-}" ]; then
+ echo "Shell debugging restarted" 1>&2;
+ set -$__lmod_sh_dbg;
+ fi;
+ unset __lmod_sh_dbg;
+ return $__lmod_my_status
+}
+BASH_FUNC_ml%%=() {  eval "$($LMOD_DIR/ml_cmd "$@")"
+}
+_=./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr
+LC_ALL=C
+VCS_PATHMAP_PRELOAD_DONE=1
+VCS_EXEC_DONE=1
+DVE_SIM_SELECT_LOOP=on
+FLEXLM_BORROWFILE=/home/users/hiva/.iron-04-borrow.txt
+Runtime command line arguments:
+argv[0]=./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr
+argv[1]=-systemcrun
+argv[2]=-verilogrun
+argv[3]=-cm
+argv[4]=assert
+argv[5]=-ucli
+argv[6]=-ucli2Proc
+argv[7]=-i
+argv[8]=./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/scverify_vcs_wave.tcl
+argv[9]=-l
+argv[10]=./Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sim.log
+674 profile - 100
+          CPU/Mem usage: 0.050 sys,  0.190 user,  364.91M mem
+675 Elapsed time:    0:00:01    Wed Mar 18 22:53:52 2026
+676 User CPU time used: 0 seconds
+677 System CPU time used: 0 seconds
+678 pliAppInit
+679 *Verdi* : Loading SystemC dumping library libsscore_vcs202303_sc233_gcc920.so.
+680 SystemC design type: vhdl_mix=0 sc_top=1 sc_only=0 sc_multitop=0 sc_uni_phase=3(SCTop)
+681 vdsc_init B.
+682 [SC]Page size=4096
+683 *Verdi* : Env. FSDB_VCS_RD_SC_VALPTR_PROTECT=1(1) was set.
+684 [SC]Total registerSystemCObj=39
+685 vdsc_init E.(ret=1)
+686 [SC]Init: MemoryConsumed=17.01MB ElapsedTime=0hour 0min. 0sec.
+687 FSDB_GATE is set.
+688 FSDB_RTL is set.
+689 FSDB_PACKED_MODE is enabled.
+690 FSDB_GATE_PACKED is enabled.
+691 FSDB_ALIAS_ARRAY_ELEM is set to 4294967295.
+692 Enable Parallel Dumping.
+693 pliAppMiscSet: New Sim Round
+694 pliEntryInit
+695 LIBSSCORE=found /cad/synopsys/verdi/V-2023.12-SP2-4/share/PLI/lib/LINUXAMD64/libsscore_vcs202303.so through $NOVAS_HOME setting.
+696 FSDB Dumper for VCS, Release Verdi_V-2023.12-SP2-4, Linux x86_64/64bit, 11/18/2024
+697 (C) 1996 - 2024 by Synopsys, Inc.
+698 sps_tcl_fsdbDumpfile_main at 0
+699 argv[0]: ./default.fsdb
+700 *Verdi* : Create FSDB file './default.fsdb'
+701 [spi_vcs_vd_ppi_create_root]: no upf option
+702 compile option from '/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sc_mainpwr.daidir/vcs_rebuild'.
+703   "vcs '-full64' '+libverbose' '-lca' '-psl' '-cm' 'assert' '-assert' 'enable_diag' '-Mdir=scverify/concat_sim_PECore_v_vcs' '-timescale=1ps/1ps' '-sysc=blocksync' '-debug_acc+all' '-debug_region+cell+encrypt' '-load' 'libnovas.so:FSDBDumpCmd' '+vcsd' '+memcbk' '-sysc=show_sc_main' '-sysc=233' 'sc_main' '-kdb=sysc_elab' '-o' 'scverify/concat_sim_PECore_v_vcs/sc_mainpwr' '-LDFLAGS' '' '-l' 'scverify/concat_sim_PECore_v_vcs/elab.log' "-Xrebuild" "-makedepends=Makefile.Msimdepends""
+704   "gmake -f Makefile.Msimdepends"
+705   "vcs '-full64' '+libverbose' '-lca' '-psl' '-cm' 'assert' '-assert' 'enable_diag' '-Mdir=scverify/concat_sim_PECore_v_vcs' '-timescale=1ps/1ps' '-sysc=blocksync' '-debug_acc+all' '-debug_region+cell+encrypt' '-load' 'libnovas.so:FSDBDumpCmd' '+vcsd' '+memcbk' '-sysc=show_sc_main' '-sysc=233' 'sc_main' '-kdb=sysc_elab' '-o' 'scverify/concat_sim_PECore_v_vcs/sc_mainpwr' '-LDFLAGS' '' '-l' 'scverify/concat_sim_PECore_v_vcs/elab.log' 2>&1"
+706 DVDI_is_vir_unload_enabled is enable
+707 FSDB_VCS_ENABLE_NATIVE_VC is enable
+708 sps_tcl_fsdbDumpvars_vd_main
+709 argv[0]: 0
+710 *Verdi* : Begin traversing the scopes, layer (0).
+711 *Verdi* : End of traversing.
+712 pliAppHDL_DumpVarComplete traverse var: profile - 
+          CPU/Mem usage: 0.060 sys,  0.300 user,  498.59M mem
+                   incr: 0.000 sys,  0.030 user,  26.23M mem
+                   accu: 0.000 sys,  0.030 user,  26.23M mem
+              accu incr: 0.000 sys,  0.030 user,  26.23M mem
+
+          Count usage: 3263 var,  2849 idcode,  1502 callback
+                 incr: 3263 var,  2849 idcode,  1502 callback
+                 accu: 3263 var,  2849 idcode,  1502 callback
+            accu incr: 3263 var,  2849 idcode,  1502 callback
+713 Elapsed time:    0:00:01    Wed Mar 18 22:53:52 2026
+714 User CPU time used: 0 seconds
+715 System CPU time used: 0 seconds
+716 pliAppHDL_DumpVarComplete: profile - 
+          CPU/Mem usage: 0.060 sys,  0.300 user,  499.65M mem
+                   incr: 0.000 sys,  0.000 user,  1.05M mem
+                   accu: 0.000 sys,  0.030 user,  27.28M mem
+              accu incr: 0.000 sys,  0.000 user,  1.05M mem
+
+          Count usage: 3263 var,  2849 idcode,  1502 callback
+                 incr: 0 var,  0 idcode,  0 callback
+                 accu: 3263 var,  2849 idcode,  1502 callback
+            accu incr: 0 var,  0 idcode,  0 callback
+717 Elapsed time:    0:00:01    Wed Mar 18 22:53:52 2026
+718 User CPU time used: 0 seconds
+719 System CPU time used: 0 seconds
+720 sps_tcl_fsdbDumpvars_vd_main
+721 argv[0]: 0
+722 argv[1]: sc_main.tb.dut.ccs_rtl.dut_inst
+723 *Verdi* : Begin traversing the scope (sc_main.tb.dut.ccs_rtl.dut_inst), layer (0).
+724 *Verdi* : End of traversing.
+725 pliAppHDL_DumpVarComplete traverse var: profile - 
+          CPU/Mem usage: 0.060 sys,  0.300 user,  499.81M mem
+                   incr: 0.000 sys,  0.000 user,  0.16M mem
+                   accu: 0.000 sys,  0.000 user,  0.16M mem
+              accu incr: 0.000 sys,  0.000 user,  0.16M mem
+
+          Count usage: 6508 var,  2849 idcode,  1502 callback
+                 incr: 3245 var,  0 idcode,  0 callback
+                 accu: 3245 var,  0 idcode,  0 callback
+            accu incr: 3245 var,  0 idcode,  0 callback
+726 Elapsed time:    0:00:01    Wed Mar 18 22:53:52 2026
+727 User CPU time used: 0 seconds
+728 System CPU time used: 0 seconds
+729 pliAppHDL_DumpVarComplete: profile - 
+          CPU/Mem usage: 0.060 sys,  0.300 user,  499.81M mem
+                   incr: 0.000 sys,  0.000 user,  0.00M mem
+                   accu: 0.000 sys,  0.000 user,  0.16M mem
+              accu incr: 0.000 sys,  0.000 user,  0.00M mem
+
+          Count usage: 6508 var,  2849 idcode,  1502 callback
+                 incr: 0 var,  0 idcode,  0 callback
+                 accu: 3245 var,  0 idcode,  0 callback
+            accu incr: 0 var,  0 idcode,  0 callback
+730 Elapsed time:    0:00:01    Wed Mar 18 22:53:52 2026
+731 User CPU time used: 0 seconds
+732 System CPU time used: 0 seconds
+733 sps_tcl_fsdbDumpon_vd_main at 0 : N/A(0)
+734 *Verdi* : fsdbDumpon - All FSDB files at 0 ps.
+735 sps_tcl_fsdbDumpFinish_main_vd at 392000
+736 Begin FSDB profile info:
+737 FSDB Writer : bc1(35318) bcn(44744) mtf/stf(0/0)
+FSDB Writer elapsed time : flush(0.013636) io wait(0.000000) theadpool wait(0.000000)
+FSDB Writer cpu time : MT Compression : 0
+738 End FSDB profile info
+739 FSDB closed. Name: ./default.fsdb Size: 116973
+740 *Verdi* : Close all FSDB Files at 392,000 ps.
+741 vdscConfig_EndOfSim received.
+742 End of simulation at 392000
+743 Memory usage: 482.005 M
+744 Maximum resident set size: 182 MB
+745 Hard page faults: 0
+746 Soft page faults: 23247
+747 Elapsed time:    0:00:01    Wed Mar 18 22:53:52 2026
+748 User CPU time used: 0 seconds
+749 System CPU time used: 0 seconds
+750 Parallel profile     - ProducerThread:1 ConsumerThread:1 Buffer:64MB
+751                      - BlockUsed:1 Acquire:0 BufferUsed:1125681
+752                      - Flush:6 Expand:0 ProducerWait:0 ConsumerWait:0
+753                      - MainProducerTime:0.469857335 TotalConsumerTime:0.000000000
+754                      - ElapsedTime:0.221107000
+755 Producer   0 profile - BlockUsed:2 Acquire:0 BufferUsed:1125681
+756 Consumer   0 profile - Affinity:-1 CPUTime:0.000000000 LifeTime:0.000000000 (-nan%)
+757                      - BlockUsed:2 Acquire:0 BufferUsed:1125681
+758 SimExit
+759 Elapsed time:    0:00:01    Wed Mar 18 22:53:52 2026
+760 User CPU time used: 0 seconds
+761 System CPU time used: 0 seconds
+762 Sim process exit

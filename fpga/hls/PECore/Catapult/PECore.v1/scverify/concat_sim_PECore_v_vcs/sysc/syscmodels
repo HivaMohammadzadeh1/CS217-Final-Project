@@ -1,0 +1,4 @@
+MODELS_concat_sim_PECore_v_vcs = \
+	ccs_wrapper/ccs_wrapper \
+	testbench \
+	sysc_sim \

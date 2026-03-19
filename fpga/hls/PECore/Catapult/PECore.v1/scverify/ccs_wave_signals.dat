@@ -1,0 +1,6 @@
+RADIX hex
+CDEBUG 0
+DEBUGVARS {}
+WAVELIST {{Sync_Signals CTRL clk clk {}} {Sync_Signals CTRL rst rst {}} {DUT {} start_vld start_vld {}} {DUT {} start_rdy start_rdy {}} {DUT {} start_dat start_dat {}} {DUT {} input_port_vld input_port_vld {}} {DUT {} input_port_rdy input_port_rdy {}} {DUT {} input_port_dat input_port_dat {}} {DUT {} rva_in_vld rva_in_vld {}} {DUT {} rva_in_rdy rva_in_rdy {}} {DUT {} rva_in_dat rva_in_dat {}} {DUT {} rva_out_vld rva_out_vld {}} {DUT {} rva_out_rdy rva_out_rdy {}} {DUT {} rva_out_dat rva_out_dat {}} {DUT {} act_port_vld act_port_vld {}} {DUT {} act_port_rdy act_port_rdy {}} {DUT {} act_port_dat act_port_dat {}} {DUT {} SC_SRAM_CONFIG SC_SRAM_CONFIG {}} {Active_Processes PECoreRun.wen PECore_PECoreRun_inst PECore_PECoreRun_inst/PECore_PECoreRun_staller_inst/PECoreRun_wen {}}}
+DUTINST PECore
+STALL_CTRLS_ADDED 1

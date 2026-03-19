@@ -1,0 +1,29 @@
+SYSC_MODULE = sysc_sim
+V = @
+CXX = g++
+CXXFLAGS =  -DCCS_DUT_RTL -DCCS_DUT_VERILOG -D_SYNTHESIS_ -DHLS_CATAPULT -DHLS_ALGORITHMICC -DCONNECTIONS_ACCURATE_SIM -DSC_INCLUDE_DYNAMIC_PROCESSES -DSC_INCLUDE_DYNAMIC_PROCESSES -DCCS_SYSC -DSC_USE_STD_STRING -DTOP_HDL_ENTITY=PECore -DDEADLOCK_DETECTION -std=gnu++11 -g -Wall -Wno-unknown-pragmas -I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1 -I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore -I/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib/cmod/include -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/xilinx/vitis/2020.1/Vitis/2020.1/cardano/tps/boost_1_64_0 -I/home/users/hiva/CS217-Final-Project/fpga/src/include -I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify -I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1 -I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/synopsys/vcs/U-2023.03/include/systemc233 -I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1 -I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore -I/cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib/cmod/include -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/xilinx/vitis/2020.1/Vitis/2020.1/cardano/tps/boost_1_64_0 -I/home/users/hiva/CS217-Final-Project/fpga/src/include -I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify -I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1 -I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/mentor/2024.2_1/Mgc_home/shared/include -I/cad/mentor/2024.2_1/Mgc_home/pkgs/hls_pkgs/src -I/cad/mentor/2024.2_1/Mgc_home/pkgs/siflibs -I/cad/mentor/2024.2_1/Mgc_home/pkgs/hls_pkgs/mgc_comps_src -DSC_USE_STD_STRING -DVCSSYSTEMC=1  -MMD -m64 -fPIC
+INCLUDES = \
+	-I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify \
+	-I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/include \
+	-I/cad/synopsys/vcs/U-2023.03/include/systemc233 \
+	-I/cad/synopsys/vcs/U-2023.03/include/systemc233 \
+	-Iinclude \
+	-I$(VCS_HOME)/lib \
+	-I$(VCS_HOME)/include \
+	-I$(VCS_HOME)/include/cosim/bf \
+	-I$(SNPS_SIM_OVRD)/include \
+	-I/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1
+
+OBJS = sysc_sim.o
+
+module-sysc_sim:	$(OBJS)
+sysc_sim.o:
+	@rm -f sysc_sim.o
+	@$(MAKE) -f Makefile_shared clean
+	$(V) $(CXX) $(INCLUDES) $(CXXFLAGS) -c /home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/sysc_sim.cpp -o $@ 
+
+clean:
+	$(V) rm -f sysc_sim.o
+
+-include sysc_sim.d
+

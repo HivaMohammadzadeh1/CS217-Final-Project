@@ -1074,6 +1074,114 @@ ifeq "$(CDesignChecker_ENA_DEBUG_FLOW)" ""
 CDesignChecker_ENA_DEBUG_FLOW                       := false
 export CDesignChecker_ENA_DEBUG_FLOW
 endif
+ifeq "$(Vivado_SynthesisFlowType)" ""
+Vivado_SynthesisFlowType                            := fpga
+export Vivado_SynthesisFlowType
+endif
+ifeq "$(Vivado_FlowSuffix)" ""
+Vivado_FlowSuffix                                   := xv
+export Vivado_FlowSuffix
+endif
+ifeq "$(Vivado_XILINX_VIVADO)" ""
+Vivado_XILINX_VIVADO                                := $(XILINX_VIVADO)
+export Vivado_XILINX_VIVADO
+endif
+ifeq "$(Vivado_Flags)" ""
+Vivado_Flags                                        := 
+export Vivado_Flags
+endif
+ifeq "$(Vivado_addio)" ""
+Vivado_addio                                        := false
+export Vivado_addio
+endif
+ifeq "$(Vivado_max_dsp)" ""
+Vivado_max_dsp                                      := -1
+export Vivado_max_dsp
+endif
+ifeq "$(Vivado_RUN_PNR)" ""
+Vivado_RUN_PNR                                      := false
+export Vivado_RUN_PNR
+endif
+ifeq "$(Vivado_BITGEN)" ""
+Vivado_BITGEN                                       := false
+export Vivado_BITGEN
+endif
+ifeq "$(Vivado_retiming)" ""
+Vivado_retiming                                     := false
+export Vivado_retiming
+endif
+ifeq "$(Vivado_TimingReportingMode)" ""
+Vivado_TimingReportingMode                          := p2p
+export Vivado_TimingReportingMode
+endif
+ifeq "$(Vivado_VivadoMode)" ""
+Vivado_VivadoMode                                   := Non-project
+export Vivado_VivadoMode
+endif
+ifeq "$(Vivado_CascadeDsp)" ""
+Vivado_CascadeDsp                                   := auto
+export Vivado_CascadeDsp
+endif
+ifeq "$(Vivado_ImplementationStrategy)" ""
+Vivado_ImplementationStrategy                       := Default
+export Vivado_ImplementationStrategy
+endif
+ifeq "$(Vivado_PCL_CACHE)" ""
+Vivado_PCL_CACHE                                    := 
+export Vivado_PCL_CACHE
+endif
+ifeq "$(Vivado_SIMLIBS_V)" ""
+Vivado_SIMLIBS_V                                    := 
+export Vivado_SIMLIBS_V
+endif
+ifeq "$(Vivado_SIMLIBS_VHD)" ""
+Vivado_SIMLIBS_VHD                                  := 
+export Vivado_SIMLIBS_VHD
+endif
+ifeq "$(Vivado_ALLOW_MCP)" ""
+Vivado_ALLOW_MCP                                    := false
+export Vivado_ALLOW_MCP
+endif
+ifeq "$(Vivado_ENABLE_SYNTH_DEBUG)" ""
+Vivado_ENABLE_SYNTH_DEBUG                           := false
+export Vivado_ENABLE_SYNTH_DEBUG
+endif
+ifeq "$(Vivado_BoardPart)" ""
+Vivado_BoardPart                                    := 
+export Vivado_BoardPart
+endif
+ifeq "$(Vivado_CCS_IP_REPO)" ""
+Vivado_CCS_IP_REPO                                  := 
+export Vivado_CCS_IP_REPO
+endif
+ifeq "$(Vivado_IP_Taxonomy)" ""
+Vivado_IP_Taxonomy                                  := /Catapult
+export Vivado_IP_Taxonomy
+endif
+ifeq "$(Vivado_Force_DSP48)" ""
+Vivado_Force_DSP48                                  := false
+export Vivado_Force_DSP48
+endif
+ifeq "$(Vivado_MAX_BRAM_CASCADE_HEIGHT)" ""
+Vivado_MAX_BRAM_CASCADE_HEIGHT                      := -1
+export Vivado_MAX_BRAM_CASCADE_HEIGHT
+endif
+ifeq "$(Vivado_Path)" ""
+Vivado_Path                                         := 
+export Vivado_Path
+endif
+ifeq "$(Vivado_ShellPrefix)" ""
+Vivado_ShellPrefix                                  := 
+export Vivado_ShellPrefix
+endif
+ifeq "$(Vivado_ShellExe)" ""
+Vivado_ShellExe                                     := vivado
+export Vivado_ShellExe
+endif
+ifeq "$(INLINED_PROPERTY_CHECKS)" ""
+INLINED_PROPERTY_CHECKS                             := true
+export INLINED_PROPERTY_CHECKS
+endif
 ifeq "$(INLINEDPROPERTYLANG)" ""
 INLINEDPROPERTYLANG                                 := psl
 export INLINEDPROPERTYLANG

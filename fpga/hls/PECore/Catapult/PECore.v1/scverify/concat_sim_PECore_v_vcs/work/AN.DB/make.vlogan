@@ -1,0 +1,12 @@
+
+VLOGAN	= vlogan
+VLOGAN_OPT	= -kdb -full64 +v2k -full64
+
+all :		_VCSgd_hKWkx_1.db \
+
+
+
+_VCSgd_hKWkx_1.db :	scverify/ccs_wrapper_PECore.v 
+		${VLOGAN}  ${VLOGAN_OPT} scverify/ccs_wrapper_PECore.v
+
+
