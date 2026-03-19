@@ -499,10 +499,6 @@ public:
   {
     if (state == SCALE)
     {
-      // Use ActVectorType (32-bit signed) instead of AccumVectorType (31-bit)
-      // to ensure proper sign extension when HLS generates RTL output packing
-      spec::ActVectorType accum_vector_out;
-
       if (pe_config.precision_mode != spec::kPrecisionINT8) {
         // MX path: accumulator already holds the integer-scale result
         // (fractional bits removed in ProductSumMX). Just clamp.
@@ -521,16 +517,12 @@ public:
         for (int i = 0; i < spec::kNumVectorLanes; i++) {
           spec::ActScalarType scaled_val = (accum_vector[i] * scale) >> right_shift;
           if (scaled_val > spec::kActWordMax) {
-            accum_vector_out[i] = spec::kActWordMax;
+            act_port_reg[i] = spec::kActWordMax;
           } else if (scaled_val < spec::kActWordMin) {
-            accum_vector_out[i] = spec::kActWordMin;
+            act_port_reg[i] = spec::kActWordMin;
           } else {
-            accum_vector_out[i] = scaled_val;
+            act_port_reg[i] = scaled_val;
           }
-        }
-#pragma hls_unroll yes
-        for (int i = 0; i < spec::kNumVectorLanes; i++) {
-          act_port_reg[i] = accum_vector_out[i];
         }
       }
     }

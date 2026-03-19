@@ -63,7 +63,7 @@ const int kAccumShift = 11;    // We'll optimize this in Task 2
 
   // Activation unit reg type
   const int kActWordWidth = 32;
-  const int kActWordMax = (1 << (kActWordWidth-1)) -1;
+  const int kActWordMax = (1U << (kActWordWidth-1)) - 1;  // Use 1U to avoid signed overflow UB
   const int kActWordMin = -kActWordMax;
   typedef NVINTW(kActWordWidth) ActScalarType;
   typedef typename nvhls::nv_scvector<ActScalarType, kNumVectorLanes> ActVectorType;
