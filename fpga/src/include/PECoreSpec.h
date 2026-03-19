@@ -31,8 +31,8 @@ namespace spec {
       typedef VectorType WordType;
       const int kNumReadPorts = 4; // Reduced from 16 to ease timing/port pressure
       const int kNumWritePorts = 1;
-      const int kNumBanks = 4; // Reduced from 16 to match read ports and avoid BRAM resource competition (SCHD-4)
-      const int kEntriesPerBank = 16384;     // 4x original to maintain total capacity (4 banks x 16384 = 16 banks x 4096)
+      const int kNumBanks = kNumVectorLanes; // 16 banks — Lab 4 proven config
+      const int kEntriesPerBank = 4096;       // Lab 4 proven config
       const unsigned int kAddressWidth = nvhls::index_width<kNumBanks * kEntriesPerBank>::val;
       const unsigned int kBankIndexSize = nvhls::index_width<kNumBanks>::val;
       const unsigned int kLocalIndexSize = nvhls::index_width<kEntriesPerBank>::val;
