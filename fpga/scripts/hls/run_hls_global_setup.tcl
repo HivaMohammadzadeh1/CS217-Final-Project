@@ -71,10 +71,12 @@ solution options set Architectural/DefaultResetClearsAllRegs yes
 directive set -DESIGN_GOAL latency
 directive set -SPECULATE true
 directive set -MERGEABLE true
-# Keep Catapult mapping heuristics at TA-recommended defaults
-# so SRAM inference is not blocked by aggressive register mapping.
+# REGISTER_THRESHOLD=256: arrays ≤256 bits stay as registers
+# MEM_MAP_THRESHOLD=2048: only arrays >2048 bits get mapped to BRAM
+# The higher MEM_MAP prevents ArbitratedScratchpadDP's small internal
+# routing arrays from consuming all available BRAM instances (SCHD-4).
 directive set -REGISTER_THRESHOLD 256
-directive set -MEM_MAP_THRESHOLD 32
+directive set -MEM_MAP_THRESHOLD 2048
 directive set -FSM_ENCODING binary
 directive set -REG_MAX_FANOUT 0
 directive set -NO_X_ASSIGNMENTS true

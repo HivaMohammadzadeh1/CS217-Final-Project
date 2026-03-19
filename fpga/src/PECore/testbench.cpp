@@ -312,20 +312,36 @@ SC_MODULE(testbench)
     manager1_cfg_written = rva_write_tmp.data;
     source.src_vec.push_back(rva_write_tmp);
 
-    // Expected Act Vector
+    // Expected Act Vector — MXFP8 path: decode E4M3, multiply in fixed-point,
+    // accumulate, right-shift by 8 to remove fractional bits, then clamp.
+    // (MX path in RunScale() skips the INT8 ÷12.25 scale factor.)
     spec::ActVectorType act_vector;
-    spec::AccumScalarType accum ;
     for (int i = 0; i < spec::kNumVectorLanes; i++)
     {
-      accum = 0;
+      long long acc = 0;
       for (int j = 0; j < spec::kVectorSize; j++)
       {
-        spec::ScalarType weight = (weight_written[i] >> spec::kIntWordWidth*j) & ((1 << spec::kIntWordWidth) - 1);
-        spec::ScalarType input = (input_written >> spec::kIntWordWidth*j) & ((1 << spec::kIntWordWidth) - 1);
-        accum += weight * input;
-        //cout << "Weight = " << weight << " Input = " << input << " Partial sum = " << accum << std::endl;
+        unsigned char w_byte = (unsigned char)((weight_written[i] >> spec::kIntWordWidth*j) & 0xFF);
+        unsigned char i_byte = (unsigned char)((input_written    >> spec::kIntWordWidth*j) & 0xFF);
+        // E4M3 decode: sign=bit7, exp=bits[6:3], mant=bits[2:0], bias=7
+        auto decode_e4m3 = [](unsigned char b) -> long long {
+          int sign   = (b >> 7) & 1;
+          int exp_f  = (b >> 3) & 0xF;
+          int mant   =  b       & 0x7;
+          if (exp_f == 0) return 0; // zero / subnormal treated as 0
+          if (exp_f == 15 && mant == 7) return 0; // NaN
+          long long full_mant = 8 | mant; // implicit leading 1
+          long long abs_val;
+          if (exp_f >= 6)      abs_val = full_mant << (exp_f - 6);
+          else                 abs_val = full_mant >> (6 - exp_f);
+          return sign ? -abs_val : abs_val;
+        };
+        acc += decode_e4m3(w_byte) * decode_e4m3(i_byte);
       }
-      act_vector[i] = int(double(accum) /  12.25); // 12.25 is the scale factor
+      long long scaled = acc >> 8; // remove 8 fractional bits (4+4)
+      if (scaled >  spec::kActWordMax) scaled =  spec::kActWordMax;
+      if (scaled <  spec::kActWordMin) scaled =  spec::kActWordMin;
+      act_vector[i] = (int)scaled;
     }
     dest.act_vector = act_vector;
 
