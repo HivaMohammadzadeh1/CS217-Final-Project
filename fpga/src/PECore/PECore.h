@@ -508,10 +508,15 @@ public:
         // (fractional bits removed in ProductSumMX). Just clamp.
 #pragma hls_unroll yes
         for (int i = 0; i < spec::kNumVectorLanes; i++) {
-          spec::ActScalarType val = accum_vector[i];
+          // Explicit sign extension from 31-bit to 32-bit
+          NVINT32 val = (NVINT32)accum_vector[i].to_int64();
           if (val > spec::kActWordMax) val = spec::kActWordMax;
           else if (val < spec::kActWordMin) val = spec::kActWordMin;
-          act_port_reg[i] = val;
+          accum_vector_out[i] = val;
+        }
+#pragma hls_unroll yes
+        for (int i = 0; i < spec::kNumVectorLanes; i++) {
+          act_port_reg[i] = accum_vector_out[i];
         }
       } else {
         // INT8 path: divide by 12.25 via (accum * 167) >> 11
