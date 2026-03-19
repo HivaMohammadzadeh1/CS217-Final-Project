@@ -1,0 +1,2 @@
+/home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/concat_sim_PECore_v_vcs/sysc/libconcat_sim_PECore_v_vcs_sysc.so:
+	$(ACTIVE) (cd /home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1; $(VCS_HOME)/bin/syscan -shared -Mdir=scverify/concat_sim_PECore_v_vcs -full64  )

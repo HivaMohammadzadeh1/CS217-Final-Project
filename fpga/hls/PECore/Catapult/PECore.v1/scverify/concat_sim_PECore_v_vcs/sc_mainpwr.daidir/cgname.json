@@ -1,0 +1,182 @@
+{
+    "std": [
+        "std",
+        "reYIK",
+        "module",
+        1
+    ],
+    "sc_main": [
+        "sc_main",
+        "GdI28",
+        "module",
+        2
+    ],
+    "VCS_SYSC_LIB.sysc$testbench": [
+        "VCS_SYSC_LIB0x2esysc0x24testbench",
+        "SGzzD",
+        "module",
+        4
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::Combinational<bool,...>": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aCombinational0x3cbool0x2c0x2e0x2e0x2e0x3e",
+        "v71SV",
+        "module",
+        5
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::Combinational<bool,...>::DummyPortManager": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aCombinational0x3cbool0x2c0x2e0x2e0x2e0x3e0x3a0x3aDummyPortManager",
+        "jmrsW",
+        "module",
+        6
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::Combinational<spec::StreamType,...>": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aCombinational0x3cspec0x3a0x3aStreamType0x2c0x2e0x2e0x2e0x3e",
+        "R42QI",
+        "module",
+        7
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::Combinational<spec::StreamType,...>::DummyPortManager": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aCombinational0x3cspec0x3a0x3aStreamType0x2c0x2e0x2e0x2e0x3e0x3a0x3aDummyPortManager",
+        "W7xp7",
+        "module",
+        8
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::Combinational<RVSink<spec::Axi::rvaCfg>::Write,...>": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aCombinational0x3cRVSink0x3cspec0x3a0x3aAxi0x3a0x3arvaCfg0x3e0x3a0x3aWrite0x2c0x2e0x2e_x_H9Z7T",
+        "H9Z7T",
+        "module",
+        9
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::Combinational<RVSink<spec::Axi::rvaCfg>::Write,...>::DummyPortManager": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aCombinational0x3cRVSink0x3cspec0x3a0x3aAxi0x3a0x3arvaCfg0x3e0x3a0x3aWrite0x2c0x2e0x2e_x_CYMgp",
+        "CYMgp",
+        "module",
+        10
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::Combinational<RVSink<spec::Axi::rvaCfg>::Read,...>": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aCombinational0x3cRVSink0x3cspec0x3a0x3aAxi0x3a0x3arvaCfg0x3e0x3a0x3aRead0x2c0x2e0x2e0_x_G4Ndq",
+        "G4Ndq",
+        "module",
+        11
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::Combinational<RVSink<spec::Axi::rvaCfg>::Read,...>::DummyPortManager": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aCombinational0x3cRVSink0x3cspec0x3a0x3aAxi0x3a0x3arvaCfg0x3e0x3a0x3aRead0x2c0x2e0x2e0_x_gjf0U",
+        "gjf0U",
+        "module",
+        12
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::Combinational<nvhls::nv_scvector<ac_int<32,...>,...>,...>": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aCombinational0x3cnvhls0x3a0x3anv_scvector0x3cac_int0x3c320x2c0x2e0x2e0x2e0x3e0x2c0x2e_x_UrwZf",
+        "UrwZf",
+        "module",
+        13
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::Combinational<nvhls::nv_scvector<ac_int<32,...>,...>,...>::DummyPortManager": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aCombinational0x3cnvhls0x3a0x3anv_scvector0x3cac_int0x3c320x2c0x2e0x2e0x2e0x3e0x2c0x2e_x_jiHxa",
+        "jiHxa",
+        "module",
+        14
+    ],
+    "VCS_SYSC_LIB.sysc$CCS_RTL::sysc_sim_wrapper": [
+        "VCS_SYSC_LIB0x2esysc0x24CCS_RTL0x3a0x3asysc_sim_wrapper",
+        "K1yb7",
+        "module",
+        15
+    ],
+    "PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_69_8_128_256_1_256_128_1_gen": [
+        "PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_69_8_128_256_1_256_128_1_gen",
+        "qSkwG",
+        "module",
+        16
+    ],
+    "PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_88_12_128_4096_1_4096_128_1_gen": [
+        "PECore_PECore_Xilinx_RAMS_BLOCK_1R1W_RBW_rwport_en_88_12_128_4096_1_4096_128_1_gen",
+        "KSdgH",
+        "module",
+        17
+    ],
+    "PECore_mgc_mul2add1_0000": [
+        "PECore_mgc_mul2add1_0000",
+        "DeUhb",
+        "module",
+        18
+    ],
+    "PECore_mgc_shift_r_v5_0000": [
+        "PECore_mgc_shift_r_v5_0000",
+        "gEPV3",
+        "module",
+        19
+    ],
+    "PECore_mgc_shift_l_v5_0000": [
+        "PECore_mgc_shift_l_v5_0000",
+        "TkyIx",
+        "module",
+        20
+    ],
+    "PECore_PECore_PECoreRun_rva_in_PopNB_mioi": [
+        "PECore_PECore_PECoreRun_rva_in_PopNB_mioi",
+        "ZFFED",
+        "module",
+        21
+    ],
+    "PECore_PECore_PECoreRun_input_port_PopNB_mioi": [
+        "PECore_PECore_PECoreRun_input_port_PopNB_mioi",
+        "kwkS8",
+        "module",
+        22
+    ],
+    "PECore_PECore_PECoreRun_wait_dp": [
+        "PECore_PECore_PECoreRun_wait_dp",
+        "eLAJP",
+        "module",
+        23
+    ],
+    "VCS_SYSC_LIB.sysc$Source": [
+        "VCS_SYSC_LIB0x2esysc0x24Source",
+        "EhGrC",
+        "module",
+        24
+    ],
+    "VCS_SYSC_LIB.sysc$Dest": [
+        "VCS_SYSC_LIB0x2esysc0x24Dest",
+        "qa2ez",
+        "module",
+        25
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::DirectToMarshalledInPort<bool>": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aDirectToMarshalledInPort0x3cbool0x3e",
+        "eny0H",
+        "module",
+        26
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::DirectToMarshalledInPort<spec::StreamType>": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aDirectToMarshalledInPort0x3cspec0x3a0x3aStreamType0x3e",
+        "bNMwG",
+        "module",
+        27
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::DirectToMarshalledInPort<RVSink<spec::Axi::rvaCfg>::Write>": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aDirectToMarshalledInPort0x3cRVSink0x3cspec0x3a0x3aAxi0x3a0x3arvaCfg0x3e0x3a0x3aWrite0x3e",
+        "iKtzy",
+        "module",
+        28
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::MarshalledToDirectOutPort<RVSink<spec::Axi::rvaCfg>::Read>": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aMarshalledToDirectOutPort0x3cRVSink0x3cspec0x3a0x3aAxi0x3a0x3arvaCfg0x3e0x3a0x3aRead0x3e",
+        "rnMJf",
+        "module",
+        29
+    ],
+    "VCS_SYSC_LIB.sysc$Connections::MarshalledToDirectOutPort<nvhls::nv_scvector<ac_int<32,...>,...>>": [
+        "VCS_SYSC_LIB0x2esysc0x24Connections0x3a0x3aMarshalledToDirectOutPort0x3cnvhls0x3a0x3anv_scvector0x3cac_int0x3c320x2c0x2e0x2e0x2e_x_u0CQu",
+        "u0CQu",
+        "module",
+        30
+    ],
+    "...MASTER...": [
+        "SIM",
+        "amcQw",
+        "module",
+        3
+    ]
+}

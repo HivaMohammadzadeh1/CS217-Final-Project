@@ -1,0 +1,12 @@
+
+VLOGAN	= vlogan
+VLOGAN_OPT	= -kdb=sysc_elab -full64 -q -sverilog -work VCS_SYSC_LIB -xoutlib scverify/concat_sim_PECore_v_vcs/sc_mainpwr.daidir/sysclib/AN.DB -full64
+
+all :		_VCSgd_qzZKdc_1.db \
+
+
+
+_VCSgd_qzZKdc_1.db :	scverify/concat_sim_PECore_v_vcs/sysc/scverifyconcat_sim_PECore_v_vcssc_mainpwr/sysc_skeleton.v 
+		${VLOGAN}  ${VLOGAN_OPT} scverify/concat_sim_PECore_v_vcs/sysc/scverifyconcat_sim_PECore_v_vcssc_mainpwr/sysc_skeleton.v
+
+

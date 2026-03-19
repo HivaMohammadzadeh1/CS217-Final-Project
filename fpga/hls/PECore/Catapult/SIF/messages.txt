@@ -12,7 +12,7 @@ namespace eval nvhls {
 nvhls::run
 ***USER SETTINGS***
 TOP_NAME = PECore
-CLK_PERIOD = 4.0 
+CLK_PERIOD = 6.0 
 SRC_PATH = ../../src/
 SEARCH_PATH = /cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib/cmod/include /cad/mentor/2024.2_1/Mgc_home/shared/pkgs/matchlib_connections/include /cad/mentor/2024.2_1/Mgc_home/shared/include /cad/xilinx/vitis/2020.1/Vitis/2020.1/cardano/tps/boost_1_64_0 /home/users/hiva/CS217-Final-Project/fpga/src/include
 HLS_CATAPULT = 1
@@ -35,4 +35,4 @@ Edison Design Group C++/C Front End - Version 6.6 (CIN-1)
 # Warning: unrecognized GCC pragma (CRD-1675)
 # Warning: integer operation result is out of range (CRD-61)
 Source file analysis completed (CIN-68)
-# Info: Completed transformation 'analyze' on solution 'solution.v2': elapsed time 18.60 seconds, memory usage 1462956kB, peak memory usage 1462956kB (SOL-9)
+# Info: Completed transformation 'analyze' on solution 'solution.v2': elapsed time 16.84 seconds, memory usage 1462956kB, peak memory usage 1462956kB (SOL-9)

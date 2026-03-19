@@ -1,0 +1,66 @@
+INTERFACE type none
+TABFILE sysc/ccs_wrapper/ccs_wrapper.tab
+module SYSTEMC VERILOG ccs_wrapper /home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1/scverify/ccs_wrapper_PECore.v IF=none
+ANA vcs_target_arch 64
+VAR sysc_on_top 1
+VAR adjust_time 0
+VAR sysc_use_hdl_timeres 0
+VAR sysc_diag   0
+VAR sysc_version 233
+VAR donut 0
+VAR new_sync 0
+VAR sysc_skeleton 1
+VAR sysc_show_sc_main 1
+VAR compiler_prefix gcc9
+VAR mlib 
+VAR mdir scverify/concat_sim_PECore_v_vcs
+VAR top_module_name sc_main
+VAR sysc_top scverify/concat_sim_PECore_v_vcs/sysc/scverifyconcat_sim_PECore_v_vcssc_mainpwr
+VAR vcs_image 1
+VAR uni_elab_flow 1
+VAR output scverifyconcat_sim_PECore_v_vcssc_mainpwr
+VAR sysc_uni_top scverify/concat_sim_PECore_v_vcs/sysc/scverifyconcat_sim_PECore_v_vcssc_mainpwr
+VAR sysc_slave 
+VAR sysc_processsave 0
+VAR sysc_multi_start 1
+VAR arch linux64
+VAR pwd /home/users/hiva/CS217-Final-Project/fpga/hls/PECore/Catapult/PECore.v1
+VAR cpp g++
+VAR shared 
+VAR dep_lib 
+VAR nodep 
+VAR sysc_uni_phase 3
+VAR sysc_mode 64
+VAR sysc_timeres_set 1
+VAR sysc_dpi_list 
+VAR sysc_uni_only 0
+VAR sysc_q_flag 0
+VAR sdf_annotate 
+VAR sysc_sim_slave 0
+VAR sysc_cpp /cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/gcc-9.2.0_64-shared/bin/g++
+VAR sysc_as /cad/synopsys/vcs_gnu_package/S-2021.09/gnu_9/linux/binutils-2.33.1_64/bin/as
+VAR sysc_uni_stubs_file 
+VAR sysc_innovator 0
+VAR sysc_debug 0
+VAR sysc_inout_opt_if 0
+VAR sysc_tli_f_cpp_stubs_file 
+VAR sysc_uni_test 0
+VAR sysc_uni_use_scv 0
+VAR sysc_uni_scv_version 2.0
+VAR sysc_link_shared 0
+VAR sysc_gcc_version 9.2.0
+VAR sysc_output scverify/concat_sim_PECore_v_vcs/sc_mainpwr
+VAR sysc_uni_multi_top 0
+VAR sysc_purify 0
+VAR sysc_inout_found 0
+VAR sysc_tlm2_found 0
+VAR sysc_cflags 
+VAR sysc_src_files_or_top sc_main 
+VAR sysc_uni_top_found 0
+VAR sysc_has_pli 1
+VAR sysc_has_dpi 0
+VAR sysc_has_dpi_sc2vlog 0
+VAR sysc_has_dpi_sc2vhdl 0
+VAR sysc_has_opt 0
+VAR sysc_debug_option -debug_region+cell+encrypt
+VAR sysc_ams 0
