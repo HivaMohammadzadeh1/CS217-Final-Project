@@ -111,14 +111,16 @@
 
 % ══════════════════════════════════════════════════════════
 \begin{abstract}
-Reinforcement Learning from Human Feedback (RLHF) is increasingly adopted for aligning large language models, yet its three-phase training loop---policy rollouts, reward scoring, and gradient updates---is compute-intensive, with matrix multiplications accounting for $\sim$80--90\% of total compute.
-Current accelerators apply fixed numerical precision uniformly across all operations, missing opportunities to reduce energy in phases that tolerate lower precision.
-We investigate whether \textbf{layer-adaptive Microscaling (MX) format quantization} can reduce the energy consumption of GEMM operations during RLHF training on an FPGA, compared to an INT8 baseline.
-Using Qwen2.5-0.5B trained with PPO on 1,200 Anthropic HH-RLHF preference pairs, we offload all GEMM operations to an AWS F2 FPGA (Xilinx VU9P) via AXI interface.
-Our INT8 baseline measurement reveals that 99.99\% of per-matmul latency is consumed by PCIe data transfer (148,656 cycles) versus only 15 cycles for on-chip computation, directly motivating data compression via MX formats.
-We conduct per-layer sensitivity profiling across all 24 transformer blocks, finding that \textbf{$\sim$80\% of layers tolerate MXFP4} (4-bit) quantization with $<$2\% perplexity increase, while MLP layers in blocks 2, 3, 21, and 23 require MXFP8 fallback.
-We define four quantization policies (Conservative, Balanced, Aggressive, Phase-Adaptive) that assign per-layer, per-phase precision, and implement a dual-precision MXFP4/MXFP8 processing element in SystemC/HLS.
-MXFP4 offers a projected \textbf{50\% bandwidth reduction} for weight transfer, translating to an estimated \textbf{25\% energy reduction} when applied to tolerant layers across the RLHF workload.
+Reinforcement Learning from Human Feedback (RLHF) has become the standard approach for aligning large language models with human preferences, but its iterative training loop remains computationally expensive.
+Unlike inference or supervised fine-tuning, RLHF cycles through three distinct phases---policy rollouts, reward scoring, and PPO gradient updates---each with different numerical precision requirements.
+We observe that current hardware accelerators miss optimization opportunities by applying uniform precision across all operations.
+
+This paper explores layer-adaptive quantization using Microscaling (MX) formats to reduce FPGA energy consumption during RLHF training.
+Working with Qwen2.5-0.5B on the Anthropic HH-RLHF dataset, we first characterize GEMM performance on an AWS F2 FPGA, revealing that 99.99\% of per-operation latency stems from PCIe data transfer rather than computation---a bottleneck that data compression directly addresses.
+We then profile all 169 linear layers under MXFP4 and MXFP8 quantization, finding that approximately 80\% tolerate aggressive 4-bit quantization with negligible quality loss, while sensitive layers concentrate at network boundaries.
+
+Based on these findings, we define four quantization policies ranging from conservative (MXFP8 everywhere) to phase-adaptive (format varies by RLHF phase) and implement a dual-precision processing element in SystemC and HLS.
+Our analysis projects 20--25\% energy savings for bandwidth-dominated FPGA deployments, demonstrating that exploiting the inherent precision heterogeneity of RLHF workloads offers a practical path toward more efficient alignment training.
 \end{abstract}
 
 
