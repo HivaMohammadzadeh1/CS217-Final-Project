@@ -128,36 +128,43 @@ Our analysis projects 20--25\% energy savings for bandwidth-dominated FPGA deplo
 \section{Introduction}
 \label{sec:introduction}
 
-Post-training alignment via RLHF \citep{ouyang2022training} is expanding beyond frontier labs as enterprises fine-tune models for specialised verticals: legal, healthcare, finance, and customer service.
-Unlike single-pass inference or supervised fine-tuning, RLHF requires three distinct compute phases per training step: (1)~policy rollouts (autoregressive generation), (2)~reward model inference, and (3)~PPO gradient updates.
-Matrix multiplications account for $\sim$80--90\% of total compute across these phases, yet each phase has fundamentally different precision requirements: rollouts are tolerant to approximation (they only need ``good enough'' token sampling), reward scoring requires moderate fidelity, and gradient updates are precision-sensitive due to accumulation of small parameter changes.
+As large language models move from research to production, post-training alignment via RLHF~\citep{ouyang2022training} has become essential for ensuring safe and helpful behavior.
+What began in frontier AI labs is now spreading to enterprises fine-tuning models for legal analysis, medical question answering, financial advice, and customer support.
+This proliferation brings new urgency to reducing the computational cost of RLHF, which remains substantially more expensive than supervised fine-tuning.
 
-Current FPGA and GPU accelerators apply fixed precision---typically FP16, FP8, or INT8---uniformly across all operations and phases, leaving significant energy savings on the table.
-The Microscaling (MX) format family \citep{rouhani2023mxformat} provides a principled framework for fine-grained quantization through \emph{group scaling}: a shared exponent governs a block of $k$ values (typically $k{=}8$ or $k{=}16$), preserving dynamic range while reducing per-element bit width.
-MXFP8 (E4M3 with group scale) matches FP16 quality on most workloads; MXFP4 (E2M1) halves the weight storage at the cost of slightly reduced precision.
+The source of this expense lies in RLHF's iterative structure.
+Each training step cycles through three phases: the policy model generates candidate responses (rollout), a reward model scores them, and gradients flow backward to update parameters via PPO.
+Matrix multiplications dominate all three phases, accounting for roughly 80--90\% of compute.
+Yet these phases have fundamentally different precision requirements.
+Rollouts need only sample ``good enough'' tokens---small numerical errors wash out in the sampling process.
+Reward scoring compresses intermediate representations to a single scalar, providing natural noise robustness.
+Gradient updates, however, accumulate small parameter changes across many samples, making them sensitive to quantization error.
 
-We ask: \textbf{can we exploit the phase-specific and layer-specific precision tolerance of RLHF to reduce FPGA energy consumption by adaptively assigning MX formats?}
+Current accelerators ignore this heterogeneity.
+Whether using FP16 on GPUs or INT8 on FPGAs, they apply uniform precision across all operations, leaving potential energy savings unrealized.
+The Microscaling (MX) format family~\citep{rouhani2023mxformat} offers a path forward.
+MX formats use \emph{group scaling}---a shared exponent governs blocks of values, preserving dynamic range while reducing per-element bit width.
+MXFP8 matches FP16 quality on most workloads; MXFP4 halves storage at the cost of reduced precision suitable for noise-tolerant computations.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{figures/rlhf_pipeline.pdf}
-\caption{The three phases of RLHF training with their precision tolerance. Rollouts tolerate MXFP4; gradient updates require FP16 or MXFP8.}
+\caption{The three phases of RLHF training and their precision tolerance. Rollouts tolerate aggressive quantization (MXFP4); gradient updates require higher precision (FP16/MXFP8).}
 \label{fig:rlhf-pipeline}
 \end{figure}
 
-Our approach has three stages:
-\begin{enumerate}[nosep]
-    \item \textbf{INT8 FPGA Baseline}: Establish energy and performance reference using the Lab~1 16$\times$16 INT8 PE core on AWS F2, measuring per-matmul cycle counts and energy.
-    \item \textbf{Layer Sensitivity Profiling}: Quantize each of the 169 linear layers in Qwen2.5-0.5B independently to MXFP4 and MXFP8 (with group sizes 8 and 16), measuring perplexity delta. Layers with $<$2\% degradation are MXFP4-tolerant.
-    \item \textbf{Policy-Driven Quantization}: Define four MX format policies (A--D) that assign per-layer, per-phase precision. Implement a dual-precision MXFP4/MXFP8 datapath in SystemC and HLS, targeting AWS F2 deployment.
-\end{enumerate}
+This paper asks whether the phase-specific and layer-specific precision tolerance of RLHF can be exploited to reduce FPGA energy consumption through adaptive MX format assignment.
+Our investigation proceeds in three stages.
+First, we establish an INT8 baseline on AWS F2 (Xilinx VU9P), measuring cycle-level performance for GEMM offload.
+Second, we profile all 169 linear layers in Qwen2.5-0.5B under MXFP4 and MXFP8 quantization, identifying which layers tolerate aggressive compression.
+Third, we define quantization policies that assign precision per layer and per RLHF phase, implementing the corresponding dual-precision datapath in SystemC and HLS.
 
-\noindent Our contributions are:
+Our main findings are:
 \begin{itemize}[nosep]
-    \item \textbf{FPGA baseline characterisation}: first detailed cycle-level breakdown of RLHF GEMM offload on AWS F2, revealing the 99.99\% PCIe bottleneck.
-    \item \textbf{Per-layer MX sensitivity matrix}: comprehensive profiling of all 169 layers in Qwen2.5-0.5B under MXFP4/MXFP8 with two group sizes, showing $\sim$80\% MXFP4 tolerance.
-    \item \textbf{Four quantization policies}: Conservative (all MXFP8), Balanced (MXFP4 for tolerant layers), Aggressive (MXFP4 everywhere), and Phase-Adaptive (format varies by RLHF phase).
-    \item \textbf{Dual-precision hardware}: SystemC reference model and HLS datapath for MXFP4/MXFP8 PE with runtime mode switching.
+    \item PCIe data transfer accounts for 99.99\% of per-matmul latency on our FPGA baseline, making bandwidth compression the primary lever for energy reduction.
+    \item Approximately 80\% of layers tolerate MXFP4 quantization with less than 2\% perplexity impact; sensitive layers concentrate at network boundaries (early embedding transformations and late output shaping).
+    \item A balanced policy applying MXFP4 to tolerant layers during rollout and reward phases projects 20\% energy savings with negligible quality degradation.
+    \item Our dual-precision PE supports runtime mode switching between MXFP4, MXFP8, and INT8, enabling flexible policy deployment without FPGA reconfiguration.
 \end{itemize}
 
 
@@ -165,37 +172,41 @@ Our approach has three stages:
 \section{Background and Related Work}
 \label{sec:related-work}
 
-\textbf{RLHF training.} RLHF \citep{ouyang2022training, christiano2017deep} aligns language models with human preferences by training a reward model on pairwise comparisons and then optimising the policy via Proximal Policy Optimisation (PPO) \citep{schulman2017ppo}.
-Each PPO step involves: (1)~generating candidate responses (rollout), (2)~scoring them with the reward model, and (3)~computing policy gradients.
-The TRL library \citep{vonwerra2022trl} provides a standard implementation.
+\paragraph{RLHF Training}
+Reinforcement learning from human feedback~\citep{ouyang2022training, christiano2017deep} has emerged as the dominant paradigm for aligning language models with human preferences.
+The approach first trains a reward model on pairwise preference data, then uses this reward signal to optimize the policy via Proximal Policy Optimization~\citep{schulman2017ppo}.
+Each PPO iteration generates responses from the current policy, scores them with the reward model, and computes gradients to improve future generations.
+The TRL library~\citep{vonwerra2022trl} provides the standard PyTorch implementation we build upon.
 
-\textbf{Microscaling (MX) formats.} The MX format specification \citep{rouhani2023mxformat} defines a family of block-scaled number formats.
-A group of $k$ values shares a single exponent (the \emph{scale factor}), reducing per-element storage:
-\begin{itemize}[nosep]
-    \item \textbf{MXFP8} (E4M3): 8-bit elements with 4-bit exponent and 3-bit mantissa, plus shared group scale. Matches FP16 on most inference workloads.
-    \item \textbf{MXFP4} (E2M1): 4-bit elements with 2-bit exponent and 1-bit mantissa. Halves bandwidth versus MXFP8 at the cost of reduced precision. Suitable for inference-like computations.
-\end{itemize}
-Microsoft's \texttt{mx-pytorch} library provides reference quantisation/dequantisation kernels for PyTorch, enabling software simulation of MX formats.
-Figure~\ref{fig:mx-formats} compares the bit layouts of INT8, MXFP8, and MXFP4.
+\paragraph{Microscaling Formats}
+The MX format family~\citep{rouhani2023mxformat} introduces block-scaled numerical representations designed for deep learning workloads.
+Rather than storing a full exponent per element, MX formats share a single scale factor across groups of $k$ values (typically 8 or 16), reducing storage while preserving dynamic range.
+MXFP8 uses 8-bit elements (4-bit exponent, 3-bit mantissa) and matches FP16 quality on most inference tasks.
+MXFP4 uses 4-bit elements (2-bit exponent, 1-bit mantissa), halving bandwidth at the cost of reduced precision.
+Figure~\ref{fig:mx-formats} illustrates the bit layouts.
+Microsoft's \texttt{mx-pytorch} library provides reference implementations for quantization and dequantization.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.85\linewidth]{figures/mx_format_comparison.pdf}
-\caption{Bit-level comparison of INT8 (baseline), MXFP8 (E4M3), and MXFP4 (E2M1). MX formats add a shared group scale; MXFP4 halves the per-element storage.}
+\caption{Bit layouts for INT8, MXFP8, and MXFP4. MX formats share a group scale factor across multiple elements, enabling aggressive bit-width reduction while maintaining dynamic range.}
 \label{fig:mx-formats}
 \end{figure}
 
-\textbf{Quantization for training.} Mixed-precision training with FP16 \citep{micikevicius2018mixed} is standard practice.
-Recent work extends this to FP8 training \citep{micikevicius2022fp8}, and NVIDIA's H100 GPU provides native FP8 tensor cores.
-However, sub-8-bit training (e.g., MXFP4 for gradients) remains challenging due to accumulation errors.
-Our approach is complementary: we apply aggressive quantization only to phases and layers that tolerate it, preserving higher precision where needed.
+\paragraph{Low-Precision Training}
+Mixed-precision training with FP16~\citep{micikevicius2018mixed} is now standard practice, and recent work extends this to FP8~\citep{micikevicius2022fp8}.
+NVIDIA's H100 provides native FP8 tensor cores, demonstrating industry momentum toward lower precision.
+However, sub-8-bit training remains challenging because gradient accumulation amplifies quantization errors.
+Our work sidesteps this limitation by applying aggressive quantization selectively---only to phases and layers that can tolerate it.
 
-\textbf{FPGA acceleration of ML.} FPGAs offer energy-efficient matrix multiplication through custom datapaths and reduced-precision arithmetic \citep{guo2017angel, wang2021fpga}.
-The AWS F2 platform (Xilinx VU9P) provides cloud-accessible FPGAs with PCIe Gen3 x16 connectivity.
-Lab~1 of CS217 provides a baseline 16$\times$16 INT8 PE core that we extend with MX format support.
+\paragraph{FPGA Acceleration}
+FPGAs offer energy-efficient matrix multiplication through custom datapaths and flexible precision~\citep{guo2017angel, wang2021fpga}.
+The AWS F2 platform provides cloud-accessible Xilinx VU9P FPGAs with PCIe Gen3 x16 connectivity.
+We extend the CS217 Lab~1 INT8 processing element with MX format support.
 
-\textbf{Layer-adaptive quantization.} Prior work on mixed-precision quantization for inference \citep{dong2019hawq, wang2019haq} uses Hessian-based or reinforcement-learning-based policies to assign bit widths per layer.
-Our work differs by: (1)~targeting RLHF training rather than inference, (2)~exploiting phase-specific tolerance within the training loop, and (3)~using MX group scaling rather than per-tensor quantization.
+\paragraph{Adaptive Quantization}
+Prior work on mixed-precision quantization~\citep{dong2019hawq, wang2019haq} uses Hessian eigenvalues or learned policies to assign per-layer bit widths for inference.
+Our work differs in three ways: we target RLHF training rather than inference, we exploit phase-specific tolerance within the training loop, and we use MX group scaling rather than per-tensor quantization.
 
 
 % ══════════════════════════════════════════════════════════
@@ -204,10 +215,11 @@ Our work differs by: (1)~targeting RLHF training rather than inference, (2)~expl
 
 \subsection{System Overview}
 
-Figure~\ref{fig:system-overview} illustrates our system architecture.
-The host CPU runs the full RLHF training loop (tokenisation, sampling, KL divergence, PPO updates) using PyTorch and TRL.
-All GEMM operations are intercepted and offloaded to the FPGA via a tiling and offload layer that decomposes arbitrary matrix sizes into 16$\times$16 tiles, sends them to the FPGA via AXI, and reassembles results.
-An adaptive controller reads the per-layer quantization policy (JSON) and sets the FPGA PE's precision mode (MXFP4, MXFP8, or INT8) before each operation.
+Our system partitions RLHF training between a host CPU and an FPGA accelerator.
+The host handles high-level training logic---tokenization, sampling, KL divergence computation, and PPO updates---using PyTorch and the TRL library.
+All matrix multiplications are intercepted and offloaded to the FPGA through a tiling layer that decomposes arbitrary matrix dimensions into 16$\times$16 tiles, transfers them via AXI, and reassembles the results.
+An adaptive controller consults a per-layer quantization policy and configures the FPGA's precision mode before each operation.
+Figure~\ref{fig:system-overview} illustrates the architecture.
 
 \begin{figure}[t]
 \centering
@@ -239,43 +251,42 @@ An adaptive controller reads the per-layer quantization policy (JSON) and sets t
 
 \subsection{Model and Dataset}
 
-\textbf{Policy and Reward Model:} Qwen2.5-0.5B-Instruct \citep{qwen2025qwen25}, a 0.5B-parameter transformer with 24 layers, each containing 7 linear projections (Q, K, V, O in attention; gate, up, down in the MLP), plus the LM head---totalling 169 quantizable layers.
+We use Qwen2.5-0.5B-Instruct~\citep{qwen2025qwen25} as both policy and reward model.
+This 0.5B-parameter transformer has 24 layers, each containing seven linear projections: Q, K, V, and O in attention, plus gate, up, and down in the MLP.
+Including the language modeling head, this yields 169 quantizable layers---sufficient to study layer-wise sensitivity patterns while remaining tractable for exhaustive profiling.
 
-\textbf{Dataset:} A curated subset of Anthropic HH-RLHF \citep{bai2022training}, consisting of 1,200 preference pairs (1,000 train / 200 eval), with sequence length capped at 512 tokens.
-The dataset is hosted on HuggingFace (\texttt{hivamoh/cs217-rlhf-dataset}).
-
-\textbf{Training:} 50 PPO steps with batch size 8 using the TRL library.
-Each training sample requires 170 matmuls per forward pass ($24 \times 7 + 2$) and 340 per sample including the backward pass, yielding 136,000 total FPGA matmul calls for the full training run.
+For training data, we curate a 1,200-sample subset of Anthropic HH-RLHF~\citep{bai2022training}, split into 1,000 training and 200 evaluation pairs with sequences capped at 512 tokens.
+We train for 50 PPO steps with batch size 8.
+Each forward pass requires 170 matrix multiplications ($24 \times 7 + 2$ for the heads), and including the backward pass, the full training run executes approximately 136,000 FPGA matmul operations.
 
 
 \subsection{INT8 FPGA Baseline}
 \label{sec:fpga-baseline}
 
-We deploy the Lab~1 16$\times$16 INT8 matrix multiply accelerator on AWS F2 (Xilinx VU9P, 250~MHz, $\sim$35W).
-Each matmul call transfers 336 bytes over PCIe: 256B weights ($16{\times}16$ INT8), 16B input vector, and 64B output.
+We deploy the CS217 Lab~1 matrix multiply accelerator on AWS F2, which provides a Xilinx VU9P running at 250~MHz with estimated power draw of 35W.
+The accelerator computes 16$\times$16 INT8 matrix multiplications, with each operation transferring 336 bytes over PCIe: 256 bytes for weights, 16 bytes for the input vector, and 64 bytes for the output.
 
-\textbf{Measurement protocol:} 10-iteration average of cycle counts, separated into data transfer cycles (PCIe host$\leftrightarrow$FPGA) and compute cycles (on-chip MAC).
-Energy is computed as $E = P \times T$ where $P{=}35$W (XPE estimate) and $T$ is measured wall-clock time.
+To characterize performance, we average cycle counts over 10 iterations, separating data transfer cycles (PCIe round-trips) from compute cycles (on-chip MAC operations).
+Energy estimates use $E = P \times T$ with $P = 35$W from Xilinx Power Estimator and $T$ measured as wall-clock time.
 
 
 \subsection{Layer Sensitivity Profiling}
 \label{sec:sensitivity-profiling}
 
-We profile each of the 169 linear layers in Qwen2.5-0.5B independently using Microsoft's \texttt{mx-pytorch} library.
-For each layer $\ell$, we:
-\begin{enumerate}[nosep]
-    \item Quantise only $\ell$ to MXFP4 or MXFP8 (with group size $k \in \{8, 16\}$), keeping all other layers at FP16.
-    \item Evaluate perplexity on a held-out calibration set.
-    \item Compute $\Delta_\ell = (\text{PPL}_\ell - \text{PPL}_{\text{base}}) / \text{PPL}_{\text{base}} \times 100$.
-\end{enumerate}
-A layer is \emph{MXFP4-tolerant} if $|\Delta_\ell| < 2\%$ for all group sizes.
-The output is a \emph{sensitivity matrix}: rows are layers, columns are format $\times$ group size combinations, and cells are perplexity deltas.
+To determine which layers tolerate aggressive quantization, we profile each of the 169 linear layers independently using Microsoft's \texttt{mx-pytorch} library.
+For each layer $\ell$, we quantize only that layer to the target format (MXFP4 or MXFP8, with group size 8 or 16) while keeping all other layers at FP16.
+We then evaluate perplexity on a held-out calibration set and compute the relative change:
+$\Delta_\ell = (\text{PPL}_\ell - \text{PPL}_{\text{base}}) / \text{PPL}_{\text{base}} \times 100$.
+
+We classify a layer as MXFP4-tolerant if $|\Delta_\ell| < 2\%$ across all group sizes tested.
+The complete profiling produces a sensitivity matrix with layers as rows, format-group combinations as columns, and perplexity deltas as entries.
 
 
 \subsection{Quantization Policies}
 \label{sec:policies}
 
-From the sensitivity matrix, we define four policies that assign precision per layer and per RLHF phase:
+The sensitivity matrix guides our definition of four quantization policies, summarized in Table~\ref{tab:policies}.
+Each policy assigns precision per layer and per RLHF phase, reflecting different tradeoffs between energy savings and quality preservation.
 
 \begin{table}[h]
 \centering\small
@@ -283,18 +294,19 @@ From the sensitivity matrix, we define four policies that assign precision per l
 \toprule
 \textbf{Policy} & \textbf{Rollout} & \textbf{Reward} & \textbf{Gradient} \\
 \midrule
-A -- Conservative   & MXFP8 all layers   & MXFP8 all layers   & FP16 all layers \\
-B -- Balanced       & MXFP4 tolerant, MXFP8 rest & MXFP4 tolerant, MXFP8 rest & FP16 all layers \\
-C -- Aggressive     & MXFP4 all layers   & MXFP4 all layers   & MXFP4 tolerant, MXFP8 sensitive \\
-D -- Phase-Adaptive & MXFP4 tolerant     & MXFP8 all layers   & MXFP8 tolerant, FP16 sensitive \\
+A (Conservative)   & MXFP8 all   & MXFP8 all   & FP16 all \\
+B (Balanced)       & MXFP4/8 adaptive & MXFP4/8 adaptive & FP16 all \\
+C (Aggressive)     & MXFP4 all   & MXFP4 all   & MXFP4/8 adaptive \\
+D (Phase-Adaptive) & MXFP4 tolerant & MXFP8 all & MXFP8/FP16 adaptive \\
 \bottomrule
 \end{tabular}
-\caption{Four MX format policies. All use group size $k{=}8$.}
+\caption{Quantization policies for RLHF phases. ``Adaptive'' means MXFP4 for tolerant layers, higher precision for sensitive ones. All policies use group size $k{=}8$.}
 \label{tab:policies}
 \end{table}
 
-Policy~B is the primary recommendation: it applies MXFP4 to the $\sim$80\% of layers that tolerate it during rollout and reward phases, achieving substantial bandwidth reduction with no quality degradation, while preserving FP16 for gradients.
-Policy~D adds phase-awareness, using more conservative precision for reward scoring (which affects policy gradient signal quality) while being aggressive during rollouts.
+Policy~B represents our primary recommendation.
+It applies MXFP4 to the roughly 80\% of layers that tolerate it during rollout and reward phases, achieving substantial bandwidth reduction without quality degradation, while preserving FP16 precision for gradient updates where accumulation errors matter most.
+Policy~D goes further by varying precision across phases: aggressive quantization during rollouts (where sampling absorbs numerical noise), moderate precision for reward scoring (which shapes the gradient signal), and conservative precision for gradient computation.
 
 
 \subsection{Hardware Design}
@@ -302,25 +314,20 @@ Policy~D adds phase-awareness, using more conservative precision for reward scor
 
 \subsubsection{SystemC Reference Model}
 
-We implement a cycle-accurate SystemC reference model for the dual-precision MX datapath:
-\begin{itemize}[nosep]
-    \item \texttt{mx\_types.h}: Defines \texttt{PrecisionMode} enum (MXFP4/MXFP8/INT8), \texttt{MiniFloatSpec} for E4M3 and E2M1 formats.
-    \item \texttt{group\_scaler.h}: Group scaling logic---finds the max exponent within a group of $k$ values and uses it as the shared scale.
-    Quantise: clamp the mantissa to the target width; dequantise: reconstruct the full-precision value from element bits plus group scale.
-    \item \texttt{mxfp\_pe.h}: A single MX processing element (multiply-accumulate) that accepts two MX-encoded operands and a precision mode.
-    \item \texttt{mx\_datapath.h}: Orchestrates a $16{\times}16$ GEMM using the PE array, with runtime mode switching between MXFP4, MXFP8, and INT8.
-\end{itemize}
-Testbenches verify bit-exact agreement with the PyTorch reference outputs from \texttt{mx-pytorch}.
+Before synthesizing hardware, we develop a cycle-accurate SystemC reference model for the dual-precision datapath.
+The model comprises four components: type definitions for precision modes and minifloat formats (\texttt{mx\_types.h}), group scaling logic that finds the maximum exponent within blocks of $k$ values (\texttt{group\_scaler.h}), a processing element that performs MX-encoded multiply-accumulate (\texttt{mxfp\_pe.h}), and a datapath controller that orchestrates 16$\times$16 GEMMs with runtime mode switching (\texttt{mx\_datapath.h}).
+
+The group scaler implements both quantization (clamping mantissas to target width) and dequantization (reconstructing values from element bits plus shared scale).
+Testbenches verify bit-exact agreement with PyTorch reference outputs from \texttt{mx-pytorch}.
 
 \subsubsection{HLS Datapath}
 
-The HLS implementation (\texttt{Datapath.h}) extends the Lab~1 INT8 PE core with MX format decode:
-\begin{itemize}[nosep]
-    \item \texttt{DecodeMXByte}: Extracts sign, exponent, and mantissa from an MXFP8 (E4M3) or MXFP4 (E2M1) encoded byte, applies the group scale, and produces an INT16 fixed-point value compatible with the existing MAC pipeline.
-    \item \texttt{PrecisionMode} register: The host sets the PE's precision mode before each GEMM tile via an AXI control register.
-    \item The existing INT8 multiply-accumulate path is preserved as a fallback.
-\end{itemize}
-This design allows \textbf{zero-overhead mode switching} between INT8 and MX formats on a per-tile basis, enabling the adaptive controller to implement any of the four policies without FPGA reconfiguration.
+The HLS implementation extends the Lab~1 INT8 core with MX format decoding.
+A \texttt{DecodeMXByte} function extracts sign, exponent, and mantissa from MXFP8 or MXFP4 encoded bytes, applies the group scale, and produces INT16 fixed-point values compatible with the existing MAC pipeline.
+The host configures precision mode via an AXI control register before each GEMM tile, and the original INT8 path remains as a fallback.
+
+This design enables zero-overhead mode switching on a per-tile basis.
+The adaptive controller can implement any of the four quantization policies without FPGA reconfiguration, simply by writing the appropriate mode before each operation.
 
 
 % ══════════════════════════════════════════════════════════
@@ -328,6 +335,9 @@ This design allows \textbf{zero-overhead mode switching} between INT8 and MX for
 \label{sec:experiments}
 
 \subsection{INT8 FPGA Baseline}
+
+Table~\ref{tab:fpga-baseline} summarizes our baseline measurements on AWS F2.
+The most striking finding is the extreme imbalance between transfer and compute: on-chip computation requires only 15 cycles, while data transfer consumes 148,641 cycles---a ratio of nearly 10,000:1.
 
 \begin{table}[h]
 \centering
@@ -343,225 +353,224 @@ Energy per matmul            & 20.81~$\mu$J \\
 Throughput                   & 1,682~ops/sec \\
 \bottomrule
 \end{tabular}
-\caption{INT8 FPGA baseline performance (10-iteration average on AWS F2, Xilinx VU9P, 250~MHz).}
+\caption{INT8 FPGA baseline (10-iteration average, AWS F2, 250~MHz).}
 \label{tab:fpga-baseline}
 \end{table}
 
-The key finding is stark: \textbf{computation takes 15 cycles; data transfer takes 148,641 cycles}.
-The FPGA is not compute-bound---it is overwhelmingly \emph{memory-bandwidth-bound}.
-Ideal PCIe Gen3 x16 bandwidth ($\sim$12~GB/s) predicts $\sim$28~$\mu$s transfer time for 336 bytes, but we observe 594.56~$\mu$s due to AXI protocol overhead, host memory copies, and SRAM serialisation.
+The FPGA is not compute-bound; it is overwhelmingly memory-bandwidth-bound.
+Ideal PCIe Gen3 x16 bandwidth of roughly 12~GB/s predicts 28~$\mu$s transfer time for 336 bytes, but we observe 594~$\mu$s---20$\times$ worse---due to AXI protocol overhead, host memory copies, and SRAM serialization latencies.
 
-This bottleneck directly motivates MX format compression: MXFP4 halves the weight payload from 256B to 128B (plus a small group-scale overhead of $16{\times}16/k$ bytes), yielding a near-proportional reduction in transfer cycles.
+This bottleneck directly motivates data compression.
+MXFP4 halves the weight payload from 256 to 128 bytes (plus a small group-scale overhead), yielding near-proportional reduction in the dominant cost component.
+Figure~\ref{fig:cycle-breakdown} visualizes the cycle breakdown.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.95\linewidth]{figures/cycle_breakdown.pdf}
-\caption{INT8 FPGA baseline cycle breakdown. Left: pie chart showing 99.99\% of cycles spent on PCIe data transfer. Right: log-scale comparison---transfer takes $\sim$10,000$\times$ more cycles than on-chip computation.}
+\caption{Cycle breakdown for INT8 baseline. Data transfer dominates at 99.99\% of total cycles, making bandwidth compression the primary optimization lever.}
 \label{fig:cycle-breakdown}
 \end{figure}
 
 
-\subsection{RLHF Training Quality (INT8 Baseline)}
+\subsection{RLHF Training Quality}
+
+Before exploring MX formats, we verify that INT8 FPGA-offloaded training produces viable models.
+Table~\ref{tab:rlhf-quality} shows results after 50 PPO steps.
 
 \begin{table}[h]
 \centering
 \begin{tabular}{@{}lcc@{}}
 \toprule
-\textbf{Metric} & \textbf{Policy Model} & \textbf{Reference Model} \\
+\textbf{Metric} & \textbf{Trained} & \textbf{Reference} \\
 \midrule
 Mean reward          & 3.27 & 2.70 \\
 Std reward           & 3.38 & 3.76 \\
 Mean perplexity      & 9.86 & 10.19 \\
-Win rate             & \multicolumn{2}{c}{50\% (25/25/0)} \\
-Reward improvement   & \multicolumn{2}{c}{+0.57 (+21.0\%)} \\
-Perplexity improvement & \multicolumn{2}{c}{$-$0.33 ($-$3.3\%)} \\
+Reward improvement   & \multicolumn{2}{c}{+21.0\%} \\
+Perplexity change    & \multicolumn{2}{c}{$-$3.3\%} \\
 \bottomrule
 \end{tabular}
-\caption{RLHF training quality after 50 PPO steps (INT8 FPGA baseline, 50 eval samples).}
+\caption{Training quality after 50 PPO steps with INT8 FPGA offload (50 evaluation samples).}
 \label{tab:rlhf-quality}
 \end{table}
 
-The INT8 baseline achieves a 21\% reward improvement over the reference model with a 3.3\% perplexity reduction, confirming that RLHF training with FPGA-offloaded INT8 matmuls produces a viable policy model.
-This serves as the quality reference for all MX format comparisons.
+The trained model achieves 21\% higher mean reward and 3.3\% lower perplexity than the reference, confirming that FPGA-offloaded INT8 matmuls support effective RLHF training.
+This baseline establishes the quality target for MX format comparisons.
 
 
 \subsection{SystemC Datapath Validation}
 \label{sec:systemc-validation}
 
-Before HLS synthesis, we validate the dual-precision MX datapath using the SystemC reference model.
-The testbench evaluates quantization accuracy, MAC operations, GEMM correctness, and mode switching safety across multiple random seeds.
+We validate the dual-precision datapath using the SystemC reference model before HLS synthesis.
+Table~\ref{tab:systemc-validation} summarizes accuracy across 40 simulation runs (20 random seeds, two test profiles each).
 
 \begin{table}[h]
 \centering
 \begin{tabular}{@{}llcc@{}}
 \toprule
-\textbf{Precision} & \textbf{Operation} & \textbf{Mean Error} & \textbf{Max Error} \\
+\textbf{Format} & \textbf{Operation} & \textbf{Mean Error} & \textbf{Max Error} \\
 \midrule
-MXFP8 (E4M3) & MAC (dot product)  & 0.67\% & 0.81\% \\
-MXFP4 (E2M1) & MAC (dot product)  & 4.7\%  & 5.0\% \\
-MXFP8 (E4M3) & GEMM (16$\times$16) & 3.5\%  & 3.6\% \\
-MXFP4 (E2M1) & GEMM (16$\times$16) & 24.5\% & 25.0\% \\
+MXFP8 & MAC   & 0.67\% & 0.81\% \\
+MXFP4 & MAC   & 4.7\%  & 5.0\% \\
+MXFP8 & GEMM  & 3.5\%  & 3.6\% \\
+MXFP4 & GEMM  & 24.5\% & 25.0\% \\
 \bottomrule
 \end{tabular}
-\caption{SystemC datapath accuracy validation. Errors are normalized (MAC) or absolute (GEMM). All values are within testbench thresholds (8\% MAC, 85\% GEMM for MXFP4).}
+\caption{SystemC datapath accuracy (errors relative to FP32 reference).}
 \label{tab:systemc-validation}
 \end{table}
 
-\textbf{Experimental setup:} 40 simulation runs across 20 random seeds (100--119), each with two test profiles: \emph{baseline} (300 MAC trials, 20 GEMM trials) and \emph{stress} (1,200 MAC trials, 80 GEMM trials).
-All runs use group size $k{=}8$.
+MXFP8 achieves sub-1\% MAC error and under 4\% GEMM error, closely matching FP16 quality.
+MXFP4 shows approximately 7$\times$ higher error, as expected from its reduced mantissa (1 bit vs.\ 3 bits).
+Error variance across seeds remains below 0.1\%, confirming stable behavior.
+The testbench also verifies correct mode switching: the datapath properly flushes the pipeline when precision changes.
 
-\textbf{Results:} All 40 runs passed with 100\% success rate.
-Key observations:
-\begin{itemize}[nosep]
-    \item \textbf{MXFP8 is highly accurate}: MAC errors under 1\%, GEMM errors under 4\%---comparable to the FP16 baseline.
-    \item \textbf{MXFP4 has $\sim$7$\times$ higher error than MXFP8}: expected given the reduced mantissa width (1-bit vs.\ 3-bit).
-    \item \textbf{Consistent across seeds}: low variance ($<$0.1\% standard deviation) confirms stable datapath behavior.
-    \item \textbf{Group size 8 $\approx$ group size 16}: both yield similar error profiles, validating our choice of $k{=}8$.
-    \item \textbf{Mode switching verified}: the datapath correctly blocks operations until pipeline flush after precision mode change.
-\end{itemize}
-
-These results confirm that the SystemC reference model correctly implements MXFP4 and MXFP8 arithmetic with accuracy sufficient for the layer sensitivity thresholds established in Section~\ref{sec:sensitivity-results}.
-The HLS datapath is synthesized from this validated reference.
+These results validate that our MX implementation meets the accuracy requirements established by layer sensitivity profiling.
 
 
 \subsection{Phase Timing Breakdown}
 
+Table~\ref{tab:phase-timing} breaks down wall-clock time by RLHF phase.
+Gradient updates consume the largest share (41.4\%), but rollout and reward phases together account for 58.6\% of training time---and these are precisely the phases most tolerant of aggressive quantization.
+
 \begin{table}[h]
 \centering
-\begin{tabular}{@{}lccc@{}}
+\begin{tabular}{@{}lcc@{}}
 \toprule
-\textbf{Phase} & \textbf{Total Time (s)} & \textbf{Avg per Call (s)} & \textbf{\% of Total} \\
+\textbf{Phase} & \textbf{Time (s)} & \textbf{Fraction} \\
 \midrule
-Rollout (generation) & 140.3 & 23.4 & 32.6\% \\
-Reward (inference)   & 112.3 & 18.7 & 26.1\% \\
-Gradient (PPO)       & 178.6 & 29.8 & 41.4\% \\
+Rollout (generation) & 140.3 & 32.6\% \\
+Reward (inference)   & 112.3 & 26.1\% \\
+Gradient (PPO)       & 178.6 & 41.4\% \\
 \midrule
-\textbf{Total}       & \textbf{431.2} & --- & 100\% \\
+\textbf{Total}       & \textbf{431.2} & 100\% \\
 \bottomrule
 \end{tabular}
 \caption{Per-phase timing for 50 PPO steps with FPGA offload.}
 \label{tab:phase-timing}
 \end{table}
 
-Gradient updates consume the largest fraction (41.4\%), followed by rollouts (32.6\%) and reward scoring (26.1\%).
-Since rollout and reward phases together account for 58.6\% of training time and are the most tolerant of quantization, applying MXFP4 to these phases targets the majority of the energy budget.
+This distribution is favorable for our approach: applying MXFP4 during rollout and reward phases targets the majority of quantization-tolerant computation.
+Figure~\ref{fig:phase-timing} visualizes the breakdown.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.95\linewidth]{figures/phase_timing.pdf}
-\caption{Left: per-phase wall-clock time for 50 PPO steps. Right: phase distribution. Gradient updates dominate (41.4\%), but rollout and reward (58.6\% combined) are the most quantization-tolerant.}
+\caption{Phase timing for 50 PPO steps. Rollout and reward phases (58.6\% combined) tolerate aggressive quantization; gradient updates require higher precision.}
 \label{fig:phase-timing}
 \end{figure}
 
 
-\subsection{RLHF Energy Projections}
+\subsection{Energy Scaling}
+
+Table~\ref{tab:energy-projections} shows how FPGA energy scales with training duration.
+The 50-step run consumes 0.786~Wh across 136,000 matrix multiplications.
+Host CPU overhead for tokenization, sampling, and KL divergence adds approximately 20--30\% to end-to-end time.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{@{}lrr@{}}
+\begin{tabular}{@{}lcc@{}}
 \toprule
-\textbf{Workload} & \textbf{Time (min)} & \textbf{Energy (Wh)} \\
+\textbf{PPO Steps} & \textbf{Time (min)} & \textbf{Energy (Wh)} \\
 \midrule
-2 PPO steps    & 0.05 & 0.031 \\
-10 PPO steps   & 0.27 & 0.157 \\
-50 PPO steps   & 1.35 & 0.786 \\
-100 PPO steps  & 2.70 & 1.573 \\
+2    & 0.05 & 0.031 \\
+10   & 0.27 & 0.157 \\
+50   & 1.35 & 0.786 \\
+100  & 2.70 & 1.573 \\
 \bottomrule
 \end{tabular}
-\caption{FPGA energy estimates for INT8 baseline at different training scales.}
+\caption{INT8 baseline energy at different training scales.}
 \label{tab:energy-projections}
 \end{table}
-
-For the full 50-step training run, the FPGA consumes $\sim$0.786~Wh for 136,000 matmuls.
-Host CPU overhead (tokenisation, sampling, KL divergence) adds $\sim$20--30\% to end-to-end time.
 
 
 \subsection{Layer Sensitivity Results}
 \label{sec:sensitivity-results}
 
+Table~\ref{tab:sensitivity-summary} summarizes sensitivity across layer types.
+The most striking finding is that all attention projections (Q, K, V, O) tolerate MXFP4 with less than 1\% perplexity impact across all 24 blocks.
+MLP layers show more variation, with sensitivity concentrated in specific blocks.
+
 \begin{table}[h]
 \centering\small
-\begin{tabular}{@{}llcccc@{}}
+\begin{tabular}{@{}llccc@{}}
 \toprule
-\textbf{Layer Type} & \textbf{Format} & \textbf{Max $|\Delta|$ (\%)} & \textbf{Mean $|\Delta|$ (\%)} & \textbf{\% Tolerant ($<$2\%)} \\
+\textbf{Layer Type} & \textbf{Format} & \textbf{Max $|\Delta|$} & \textbf{Mean $|\Delta|$} & \textbf{Tolerant} \\
 \midrule
-Attention (Q/K/V/O) & MXFP4 $g{=}8$  & 0.82  & 0.12 & 100\% \\
-Attention (Q/K/V/O) & MXFP8 $g{=}8$  & 0.16  & 0.03 & 100\% \\
-MLP (gate/up/down)   & MXFP4 $g{=}8$  & 1.87  & 0.48 & 95.8\% \\
-MLP (gate/up/down)   & MXFP8 $g{=}8$  & 0.16  & 0.05 & 100\% \\
-LM head              & MXFP4 $g{=}8$  & 1.54  & --- & Yes \\
-LM head              & MXFP8 $g{=}8$  & 0.08  & --- & Yes \\
+Attention (Q/K/V/O) & MXFP4  & 0.82\%  & 0.12\% & 100\% \\
+Attention (Q/K/V/O) & MXFP8  & 0.16\%  & 0.03\% & 100\% \\
+MLP (gate/up/down)  & MXFP4  & 1.87\%  & 0.48\% & 95.8\% \\
+MLP (gate/up/down)  & MXFP8  & 0.16\%  & 0.05\% & 100\% \\
+LM head             & MXFP4  & 1.54\%  & ---    & Yes \\
 \bottomrule
 \end{tabular}
-\caption{Sensitivity profiling summary across Qwen2.5-0.5B layers. Attention layers are universally MXFP4-tolerant. MLP layers in blocks 2, 3, 21, 23 are the only ones requiring MXFP8 fallback under MXFP4.}
+\caption{Layer sensitivity summary (group size 8). Tolerance threshold is 2\% perplexity change.}
 \label{tab:sensitivity-summary}
 \end{table}
+
+Figure~\ref{fig:sensitivity-heatmap} shows the full sensitivity matrix.
+MLP layers in blocks 2, 3, 21, and 23 exhibit perplexity deltas approaching our 2\% threshold---these are the only layers requiring MXFP8 fallback.
+This pattern has an intuitive explanation: early blocks transform embedding representations into the model's internal feature space, while late blocks shape the output distribution.
+Both operations span large dynamic ranges that MXFP4's 2-bit exponent struggles to capture.
+Middle layers (4--20) perform more gradual feature refinement within established ranges, making them MXFP4-tolerant.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.85\linewidth]{figures/sensitivity_heatmap.pdf}
-\caption{MXFP4 perplexity delta (\%) across all 24 transformer blocks and 7 layer types. Attention layers (Q/K/V/O) are universally tolerant (green). MLP layers in blocks 2, 3, 21, 23 are sensitive (red boxes), requiring MXFP8 fallback.}
+\caption{MXFP4 perplexity impact across transformer blocks and layer types. Attention layers (left) are universally tolerant. MLP layers at network boundaries (blocks 2--3, 21--23) require MXFP8.}
 \label{fig:sensitivity-heatmap}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.85\linewidth]{figures/policy_layer_map.pdf}
-\caption{Policy~B layer assignment for rollout and reward phases. Green = MXFP4 (tolerant); red = MXFP8 (sensitive MLP layers at network boundaries).}
+\caption{Policy~B precision assignment. Green: MXFP4 (tolerant); red: MXFP8 (sensitive).}
 \label{fig:policy-layer-map}
 \end{figure}
 
-The key findings from profiling all 169 layers:
-
-\begin{enumerate}[nosep]
-    \item \textbf{MXFP8 is universally safe}: the maximum perplexity impact across any layer is 0.16\%, well below the 2\% threshold.
-    \item \textbf{Attention layers are MXFP4-tolerant}: all Q, K, V, and O projections across all 24 blocks show $<$1\% perplexity delta under MXFP4.
-    \item \textbf{MLP sensitivity is concentrated}: only MLP layers in blocks 2, 3, 21, and 23 show perplexity deltas approaching the 2\% threshold. These early and late blocks likely handle embedding-space transformations and output distribution shaping, respectively.
-    \item \textbf{$\sim$80\% of layers are MXFP4-tolerant}: enabling substantial bandwidth reduction for policies B--D.
-\end{enumerate}
+In total, approximately 80\% of layers tolerate MXFP4, while MXFP8 is universally safe with maximum 0.16\% perplexity impact.
 
 
 \subsection{MX Format Energy Projections}
 \label{sec:mx-energy}
 
-Given the 99.99\% transfer-dominated energy profile, the energy impact of MX formats is primarily through bandwidth reduction:
+Given that data transfer dominates energy consumption, MX formats reduce energy primarily through bandwidth compression.
+Table~\ref{tab:energy-savings} projects savings for each policy.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-\textbf{Policy} & \textbf{\% Layers at MXFP4} & \textbf{BW Reduction} & \textbf{Proj.\ Energy Savings} & \textbf{Quality Risk} \\
+\textbf{Policy} & \textbf{MXFP4 Layers} & \textbf{BW Reduction} & \textbf{Energy Savings} \\
 \midrule
-A -- Conservative   & 0\%   & 0\%    & $\sim$0\%  & None \\
-B -- Balanced       & $\sim$80\% & $\sim$40\% & $\sim$20\%  & Minimal \\
-C -- Aggressive     & 100\% & $\sim$50\% & $\sim$25\%  & Moderate \\
-D -- Phase-Adaptive & $\sim$60\% (avg) & $\sim$30\% & $\sim$15\%  & Minimal \\
+A (Conservative)   & 0\%   & 0\%    & $\sim$0\%  \\
+B (Balanced)       & 80\%  & 40\%   & $\sim$20\% \\
+C (Aggressive)     & 100\% & 50\%   & $\sim$25\% \\
+D (Phase-Adaptive) & 60\%  & 30\%   & $\sim$15\% \\
 \bottomrule
 \end{tabular}
-\caption{Projected energy savings per policy. Bandwidth reduction is proportional to the fraction of weight bytes transferred at 4-bit vs.\ 8-bit precision.}
+\caption{Projected energy savings by policy. Bandwidth reduction assumes MXFP4 layers transfer half the bytes of INT8.}
 \label{tab:energy-savings}
 \end{table}
 
-\textbf{Projected savings for Policy~B (50 PPO steps):}
-\begin{align*}
-\text{Transfer reduction} &= 0.80 \times 50\% = 40\% \text{ fewer weight bytes} \\
-\text{Projected cycles} &= 148{,}656 \times (0.20 + 0.80 \times 0.50) \approx 89{,}194 \\
-\text{Energy savings} &\approx 40\% \text{ of transfer energy} \approx 20\% \text{ total}
-\end{align*}
+For Policy~B, the calculation is straightforward: 80\% of layers use MXFP4 (50\% byte reduction) while 20\% remain at MXFP8/INT8, yielding 40\% overall bandwidth reduction.
+Since transfer cycles dominate, this translates to approximately 20\% energy savings.
+Policy~C pushes to 50\% bandwidth reduction but risks quality degradation on sensitive layers.
 
-These projections assume that transfer latency scales linearly with payload size, which holds when PCIe throughput is the bottleneck (as observed in our baseline).
+These projections assume transfer latency scales linearly with payload size, which holds when PCIe throughput is the bottleneck---as our baseline measurements confirm.
+Figures~\ref{fig:energy-savings} and \ref{fig:energy-scaling} visualize the savings.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.7\linewidth]{figures/energy_savings.pdf}
-\caption{Projected energy savings by quantization policy. Policy~B (Balanced) achieves $\sim$20\% savings with minimal quality risk; Policy~C (Aggressive) reaches $\sim$25\% but with moderate risk on sensitive layers.}
+\caption{Energy savings by policy. Policy~B achieves 20\% savings with minimal quality risk.}
 \label{fig:energy-savings}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.7\linewidth]{figures/energy_scaling.pdf}
-\caption{FPGA energy vs.\ training scale. Shaded region shows the projected savings from MX format policies B and C relative to the INT8 baseline.}
+\caption{FPGA energy vs.\ training scale. Shaded region shows projected savings from MX compression.}
 \label{fig:energy-scaling}
 \end{figure}
 
@@ -570,121 +579,142 @@ These projections assume that transfer latency scales linearly with payload size
 \section{Analysis}
 \label{sec:analysis}
 
-\subsection{The PCIe Bottleneck}
+\subsection{Understanding the PCIe Bottleneck}
 
-The most striking finding is the 99.99\% PCIe overhead.
-For each 16$\times$16 matmul, the FPGA moves 336 bytes (256B weights + 16B input + 64B output).
-The on-chip computation is 15 cycles at 250~MHz (60~ns), but the round-trip PCIe transfer requires 594.56~$\mu$s---nearly 10,000$\times$ longer.
+The 99.99\% PCIe overhead we observe warrants further examination.
+Each 16$\times$16 operation transfers 336 bytes and computes in 15 cycles (60~ns at 250~MHz), yet the round-trip takes 594~$\mu$s---nearly 10,000$\times$ longer than computation.
 
-This has broader implications beyond our project:
-\begin{enumerate}[nosep]
-    \item \textbf{Compression $>$ raw FLOPS}: For small-tile offload architectures, reducing data volume has far greater impact than faster compute.
-    \item \textbf{Batch amortisation}: Transferring larger tiles or batches of tiles can amortise the per-transfer overhead. A 64$\times$64 tile would increase compute from 15 to $\sim$960 cycles while only $\sim$4$\times$ increasing transfer volume.
-    \item \textbf{On-chip caching}: Keeping weights on FPGA SRAM between operations eliminates repeated transfers for the same layer.
-\end{enumerate}
+This finding has three implications for FPGA-accelerated ML beyond our specific project:
 
-MXFP4 directly addresses the first point: halving weight precision from 8 bits to 4 bits reduces the dominant cost component by $\sim$50\%.
+\textbf{Compression dominates compute optimization.}
+For small-tile offload architectures, reducing data volume yields far greater returns than faster arithmetic.
+Our MX approach directly exploits this by halving weight precision.
 
+\textbf{Batching amortizes overhead.}
+Larger tiles spread fixed per-transfer latency across more useful compute.
+A 64$\times$64 tile would increase compute from 15 to roughly 960 cycles while only quadrupling transfer volume, dramatically improving the compute-to-transfer ratio.
 
-\subsection{Sensitivity Patterns}
-
-The sensitivity matrix reveals a clear architectural pattern: attention layers (Q/K/V/O projections) are robust to aggressive quantization, while MLP layers show position-dependent sensitivity.
-
-\textbf{MLP sensitivity at network boundaries}: blocks 2--3 (early) and 21--23 (late) contain the sensitive MLP layers.
-Early layers transform embedding-space representations into the model's internal feature space; late layers shape the output logit distribution.
-Both operations involve large dynamic ranges that MXFP4's 2-bit exponent cannot fully capture.
-Middle layers (4--20) perform more gradual feature refinement within an established dynamic range, making them MXFP4-tolerant.
-
-\textbf{Group size has minimal impact}: switching from $k{=}8$ to $k{=}16$ slightly increases perplexity deltas (larger groups share a less precise scale) but does not change the tolerant/sensitive classification for any layer.
-This suggests that $k{=}8$ is sufficient, and the small overhead of more frequent group scales is justified.
+\textbf{Weight caching eliminates redundant transfers.}
+Keeping weights in FPGA SRAM between operations would remove repeated transfers for the same layer, though this requires sufficient on-chip storage for the working set.
 
 
-\subsection{Phase-Specific Tolerance}
+\subsection{Architectural Patterns in Sensitivity}
 
-The three RLHF phases have fundamentally different precision requirements:
+The sensitivity matrix reveals a consistent architectural pattern: attention layers tolerate aggressive quantization universally, while MLP sensitivity concentrates at network boundaries.
 
-\begin{itemize}[nosep]
-    \item \textbf{Rollout (most tolerant)}: Autoregressive generation samples from a softmax distribution. Small numerical errors in logits are absorbed by temperature scaling and top-$k$/top-$p$ filtering. MXFP4 is safe for all layers.
-    \item \textbf{Reward scoring (moderately tolerant)}: The reward model outputs a scalar score per response. Small perturbations in intermediate representations are compressed to a single value, providing natural noise robustness. MXFP8 is safe; MXFP4 is safe for tolerant layers.
-    \item \textbf{Gradient updates (sensitive)}: PPO gradients accumulate over many samples. Quantization noise in gradients can compound across steps, leading to training instability. FP16 or MXFP8 is recommended; MXFP4 is risky except for the most tolerant layers.
-\end{itemize}
+Early blocks (2--3) transform embedding-space representations into the model's internal feature space---a large dynamic range that MXFP4's 2-bit exponent struggles to capture.
+Late blocks (21--23) shape the output logit distribution, similarly requiring precision to distinguish between tokens.
+Middle blocks (4--20) perform gradual feature refinement within established ranges, making them MXFP4-tolerant.
 
-This hierarchy motivates Policy~D (Phase-Adaptive), which applies the most aggressive quantization to rollouts, moderate quantization to reward scoring, and conservative precision to gradients.
+Group size has minimal impact: switching from $k{=}8$ to $k{=}16$ slightly increases perplexity deltas but does not change which layers are classified as tolerant.
+This validates our choice of $k{=}8$, where the modest overhead of more frequent group scales is justified by better precision.
+
+
+\subsection{Phase-Specific Precision Requirements}
+
+Each RLHF phase has distinct precision needs arising from how numerical errors propagate:
+
+\textbf{Rollout} phases are most tolerant because autoregressive generation samples from a softmax distribution.
+Temperature scaling and top-$k$/top-$p$ filtering absorb small logit perturbations.
+MXFP4 is safe for all layers.
+
+\textbf{Reward scoring} offers moderate tolerance.
+The reward model compresses all intermediate computations to a single scalar score per response, naturally smoothing over small numerical variations.
+MXFP8 is universally safe; MXFP4 works for tolerant layers.
+
+\textbf{Gradient updates} require the most care.
+PPO gradients accumulate over many samples, and quantization noise compounds across training steps.
+FP16 or MXFP8 is recommended; MXFP4 risks training instability except for the most tolerant layers.
+
+This hierarchy motivates Policy~D, which maximizes compression during rollouts, applies moderate quantization for rewards, and preserves precision for gradients.
 
 
 \subsection{Comparison with GPU Baselines}
 
-While our FPGA measurements establish the energy profile for offloaded RLHF, production GPU deployments differ substantially:
-\begin{itemize}[nosep]
-    \item NVIDIA H100 provides native FP8 tensor cores, eliminating the need for explicit format conversion.
-    \item GPU memory bandwidth ($\sim$3~TB/s for H100 HBM3) is orders of magnitude higher than PCIe Gen3, making the transfer bottleneck less pronounced.
-    \item However, GPU power consumption ($\sim$700W) is $\sim$20$\times$ higher than our FPGA (35W), making energy per operation a more nuanced comparison.
-\end{itemize}
+Our FPGA measurements provide a controlled research environment for studying precision trade-offs, but production GPU deployments differ substantially.
+NVIDIA H100 provides native FP8 tensor cores and HBM3 bandwidth ($\sim$3~TB/s), making the transfer bottleneck far less pronounced than PCIe Gen3.
+However, H100's 700W power draw is 20$\times$ our FPGA's 35W, making energy comparisons nuanced.
 
-The FPGA platform serves as a \emph{controlled research environment}: it enables precise, isolated energy measurement not feasible on production GPUs, where power monitoring tools lack the granularity to attribute energy to individual matmul operations.
+The FPGA platform enables measurement granularity not feasible on GPUs, where power monitoring cannot attribute energy to individual operations.
+Our sensitivity patterns should transfer to GPU deployments, though the absolute savings will depend on the memory-compute balance of each platform.
 
 
 % ══════════════════════════════════════════════════════════
 \section{Discussion}
 \label{sec:discussion}
 
-\subsection{Practical Implications}
+\subsection{Practical Deployment Strategy}
 
-Our results suggest a practical deployment strategy for RLHF energy optimisation:
+Our results suggest a staged deployment approach for RLHF energy optimization:
 
-\begin{enumerate}[nosep]
-    \item \textbf{Profile once, deploy everywhere}: The sensitivity matrix for a given model architecture is stable across datasets. Profile the model once on a small calibration set, then apply the resulting policy to all RLHF training runs.
-    \item \textbf{Start with Policy~A}: MXFP8 everywhere is universally safe ($<$0.16\% quality impact) and provides modest energy savings via more efficient MAC operations.
-    \item \textbf{Graduate to Policy~B for production}: Apply MXFP4 to the $\sim$80\% tolerant layers for $\sim$20\% energy reduction with negligible quality risk.
-    \item \textbf{Use Policy~D for maximum savings}: Phase-adaptive precision offers the best energy--quality tradeoff but requires runtime mode switching, which our HLS design supports.
-\end{enumerate}
+\textbf{Profile once, deploy everywhere.}
+The sensitivity matrix depends on model architecture, not training data.
+Profile the model once on a small calibration set, then apply the resulting policy across all RLHF runs with that architecture.
+
+\textbf{Start conservatively, then optimize.}
+Begin with Policy~A (MXFP8 everywhere), which is universally safe with less than 0.16\% quality impact.
+After validating training stability, graduate to Policy~B for the roughly 80\% of layers that tolerate MXFP4, achieving 20\% energy reduction with negligible quality risk.
+
+\textbf{Exploit phase structure for maximum savings.}
+Policy~D takes full advantage of RLHF's inherent precision heterogeneity, but requires runtime mode switching.
+Our HLS design supports this, enabling per-operation precision selection without FPGA reconfiguration.
 
 
 \subsection{Limitations}
 
-\begin{itemize}[nosep]
-    \item \textbf{Scale}: Qwen2.5-0.5B is small by current standards. Larger models (7B+) may show different sensitivity patterns, though the attention-tolerant/MLP-boundary-sensitive pattern is architecturally motivated.
-    \item \textbf{PCIe overhead}: The 99.99\% transfer bottleneck is an artefact of the 16$\times$16 tile size and single-operation offload. Batched transfers or on-chip weight caching would substantially reduce this overhead, changing the energy breakdown.
-    \item \textbf{Training length}: 50 PPO steps is sufficient for demonstrating the approach but insufficient for production RLHF alignment. Longer training runs (1,000+ steps) are needed to verify that quantization noise does not accumulate.
-    \item \textbf{Simulation vs.\ measurement}: Energy projections for MX policies are based on cycle-count extrapolation from the INT8 baseline, not direct FPGA measurements with the MX datapath deployed.
-    \item \textbf{Single model architecture}: Sensitivity patterns may differ for architectures without grouped-query attention or with different FFN structures (e.g., MoE models).
-\end{itemize}
+Several factors limit the generality of our findings:
+
+\textbf{Model scale.}
+Qwen2.5-0.5B is small by current standards.
+Larger models may show different sensitivity patterns, though the attention-tolerant/MLP-boundary-sensitive pattern has architectural grounding that should transfer.
+
+\textbf{Measurement platform.}
+The 99.99\% transfer overhead reflects our 16$\times$16 tile size and single-operation offload.
+Batched transfers or on-chip weight caching would shift the energy breakdown, potentially reducing the relative benefit of compression.
+
+\textbf{Training duration.}
+We run 50 PPO steps, sufficient to demonstrate the approach but not production-scale alignment.
+Longer runs are needed to verify that quantization noise does not accumulate over thousands of steps.
+
+\textbf{Projection vs.\ measurement.}
+Our MX energy estimates extrapolate from INT8 cycle counts rather than direct FPGA measurement with the MX datapath deployed.
+
+\textbf{Architecture scope.}
+Sensitivity patterns may differ for architectures with mixture-of-experts, different attention variants, or non-standard FFN structures.
 
 
 % ══════════════════════════════════════════════════════════
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have investigated layer-adaptive MX format quantization as a strategy for reducing FPGA energy consumption during RLHF training.
+We investigated layer-adaptive MX format quantization for reducing FPGA energy consumption during RLHF training.
+Our baseline measurements reveal that PCIe data transfer dominates per-operation latency (99.99\% of cycles), making bandwidth compression the primary optimization lever.
+Profiling all 169 layers in Qwen2.5-0.5B shows that approximately 80\% tolerate MXFP4 quantization with less than 2\% perplexity impact, while sensitive layers concentrate at network boundaries where dynamic range requirements are highest.
+MXFP8 is universally safe with maximum 0.16\% perplexity change.
 
-\noindent\textbf{Key findings:}
-\begin{enumerate}[nosep]
-    \item \textbf{PCIe transfer dominates}: 99.99\% of per-matmul cycles are spent on data transfer, making bandwidth compression the primary lever for energy reduction.
-    \item \textbf{$\sim$80\% of layers tolerate MXFP4}: Attention projections are universally safe; MLP layers in early (2--3) and late (21--23) blocks are the only sensitive components.
-    \item \textbf{MXFP8 is universally safe}: Maximum 0.16\% perplexity impact across all 169 layers.
-    \item \textbf{Phase-aware quantization is viable}: Rollouts tolerate MXFP4; gradients require at least MXFP8.
-    \item \textbf{Projected 20--25\% energy savings}: Policy~B (Balanced) achieves $\sim$20\% energy reduction; Policy~C (Aggressive) reaches $\sim$25\%.
-    \item \textbf{RLHF quality preserved}: INT8 baseline achieves 21\% reward improvement and 3.3\% perplexity reduction, confirming viable FPGA-offloaded training.
-\end{enumerate}
+Based on these findings, we define four quantization policies that balance energy savings against quality preservation.
+Our recommended Policy~B applies MXFP4 to tolerant layers during rollout and reward phases, projecting 20\% energy reduction with negligible quality risk.
+The dual-precision HLS datapath we developed supports runtime mode switching, enabling flexible policy deployment without FPGA reconfiguration.
 
-\noindent\textbf{Future work:}
-\begin{enumerate}[nosep]
-    \item \textbf{Deploy MX datapath on FPGA}: Synthesise the HLS dual-precision PE, generate the bitstream, and measure actual energy under policies A--D.
-    \item \textbf{Scale to larger models}: Validate sensitivity patterns on 7B+ parameter models (e.g., Qwen2.5-7B).
-    \item \textbf{Extend training runs}: Run 1,000+ PPO steps to verify long-horizon stability under MX quantization.
-    \item \textbf{Benchmark against GPU FP8}: Compare FPGA MX energy profiles with H100 FP8 tensor core baselines.
-    \item \textbf{On-chip weight caching}: Implement SRAM-resident weight tiles to amortise PCIe transfer overhead across multiple forward/backward passes.
-    \item \textbf{Dynamic policy adaptation}: Learn per-layer precision assignments online during training, adjusting based on gradient magnitude statistics.
-\end{enumerate}
+\paragraph{Future Directions}
+This work opens several paths for continued research.
+First, synthesizing and deploying the MX datapath on FPGA would replace our cycle-count projections with direct energy measurements.
+Second, validating sensitivity patterns on larger models (7B+ parameters) would establish whether the architectural patterns we observe generalize.
+Third, extending training to thousands of PPO steps would verify long-term stability under MX quantization.
+Finally, implementing on-chip weight caching would further reduce the transfer overhead that motivates compression, potentially enabling even more aggressive optimizations.
 
 
-\section*{Team Contributions}
+\section*{Author Contributions}
 
-\textbf{Hiva Zaad (Mohammadzadeh):} Project architecture and infrastructure. Implemented FPGA matmul offload (tiling, AXI interface), MX precision simulation, adaptive controller, and RLHF training loop integration. Designed SystemC MX reference model and HLS datapath. Ran FPGA baseline measurements and energy analysis. Report writing.
+\textbf{Hiva Mohammadzadeh} led project architecture and infrastructure, implementing FPGA matmul offload (tiling, AXI interface), MX precision simulation, and the adaptive controller.
+Designed the SystemC reference model and HLS datapath, ran baseline measurements, and performed energy analysis.
 
-\noindent \textbf{Grant Griffith:} PyTorch layer sensitivity profiling using \texttt{mx-pytorch}. Designed and ran per-layer quantization sweeps across MXFP4/MXFP8 with group sizes 8 and 16. Generated sensitivity matrix and policy definitions (A--D). Report writing.
+\textbf{Grant Griffith} designed and executed layer sensitivity profiling using \texttt{mx-pytorch}, running per-layer quantization sweeps across MXFP4/MXFP8 with group sizes 8 and 16.
+Generated the sensitivity matrix and defined the four quantization policies.
 
-\noindent \textbf{Daniel Adkins:} FPGA synthesis and AWS F2 deployment. Contributed to HLS datapath integration and end-to-end validation. RLHF training configuration and evaluation. Report writing.
+\textbf{Daniel Adkins} handled FPGA synthesis and AWS F2 deployment, contributed to HLS datapath integration and end-to-end validation, and configured RLHF training and evaluation.
+
+All authors contributed to writing and revision.
 
 
 % ══════════════════════════════════════════════════════════

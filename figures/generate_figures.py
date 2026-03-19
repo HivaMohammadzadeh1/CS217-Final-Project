@@ -174,14 +174,10 @@ def fig3_sensitivity_heatmap():
     ax.set_yticklabels([f'{i}' for i in range(0, 24, 2)], fontsize=8)
     ax.set_xlabel('Layer Type', fontsize=10)
     ax.set_ylabel('Transformer Block', fontsize=10)
-    ax.set_title('MXFP4 Perplexity Impact (%)', fontsize=11, fontweight='bold', pad=10)
+    ax.set_title('MXFP4 Perplexity Impact (%)', fontsize=11, fontweight='bold', pad=15)
 
     # Add vertical line separating attention and MLP
     ax.axvline(x=3.5, color='white', linewidth=2)
-
-    # Add text labels for attention vs MLP
-    ax.text(1.5, -1.5, 'Attention', ha='center', fontsize=9, fontweight='bold')
-    ax.text(5, -1.5, 'MLP', ha='center', fontsize=9, fontweight='bold')
 
     # Highlight sensitive blocks with subtle boxes
     for b in [2, 3, 21, 23]:
