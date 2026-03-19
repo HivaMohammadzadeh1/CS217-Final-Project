@@ -505,18 +505,14 @@ public:
 
       if (pe_config.precision_mode != spec::kPrecisionINT8) {
         // MX path: accumulator already holds the integer-scale result
-        // (fractional bits removed in ProductSumMX). Just clamp.
+        // (fractional bits removed in ProductSumMX). Just clamp and output.
 #pragma hls_unroll yes
         for (int i = 0; i < spec::kNumVectorLanes; i++) {
-          // Explicit sign extension from 31-bit to 32-bit
-          NVINT32 val = (NVINT32)accum_vector[i].to_int64();
+          spec::AccumScalarType acc_val = accum_vector[i];
+          spec::ActScalarType val = acc_val;  // implicit sign extension
           if (val > spec::kActWordMax) val = spec::kActWordMax;
           else if (val < spec::kActWordMin) val = spec::kActWordMin;
-          accum_vector_out[i] = val;
-        }
-#pragma hls_unroll yes
-        for (int i = 0; i < spec::kNumVectorLanes; i++) {
-          act_port_reg[i] = accum_vector_out[i];
+          act_port_reg[i] = val;
         }
       } else {
         // INT8 path: divide by 12.25 via (accum * 167) >> 11
