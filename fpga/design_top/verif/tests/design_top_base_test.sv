@@ -67,6 +67,52 @@ import tb_type_defines_pkg::*;
     return neg ? -value : value;
   endfunction
 
+  // Fixed-point E4M3 decode matching hardware DecodeE4M3Fixed exactly.
+  // Returns signed integer with 4 fractional bits (Q4.4).
+  function automatic longint decode_e4m3_fixed(input [7:0] code);
+    int sign_bit = (code >> 7) & 1;
+    int exp_f    = (code >> 3) & 4'hF;
+    int mant     = code & 3'h7;
+    longint full_mant = 8 | mant;
+    longint abs_val;
+    case (exp_f)
+       0: abs_val = 0;
+       1: abs_val = full_mant >> 5;
+       2: abs_val = full_mant >> 4;
+       3: abs_val = full_mant >> 3;
+       4: abs_val = full_mant >> 2;
+       5: abs_val = full_mant >> 1;
+       6: abs_val = full_mant;
+       7: abs_val = full_mant << 1;
+       8: abs_val = full_mant << 2;
+       9: abs_val = full_mant << 3;
+      10: abs_val = full_mant << 4;
+      11: abs_val = full_mant << 5;
+      12: abs_val = full_mant << 6;
+      13: abs_val = full_mant << 7;
+      14: abs_val = full_mant << 8;
+      default: abs_val = (mant == 7) ? 0 : full_mant << 9;
+    endcase
+    return sign_bit ? -abs_val : abs_val;
+  endfunction
+
+  // Fixed-point E2M1 decode matching hardware DecodeE2M1Fixed exactly.
+  function automatic longint decode_e2m1_fixed(input [7:0] code);
+    int sign_bit = (code >> 3) & 1;
+    int exp_f    = (code >> 1) & 2'h3;
+    int mant     = code & 1'h1;
+    longint full_mant = 2 | mant;
+    longint abs_val;
+    case (exp_f)
+      0: abs_val = mant ? 8 : 0;
+      1: abs_val = full_mant << 3;
+      2: abs_val = full_mant << 4;
+      3: abs_val = full_mant << 5;
+      default: abs_val = 0;
+    endcase
+    return sign_bit ? -abs_val : abs_val;
+  endfunction
+
   task automatic start_data_transfer_counter();
     logic [WIDTH_ADDR_AXI - 1 : 0] addr;
     logic [WIDTH_DATA_AXI - 1:0] data;
@@ -366,22 +412,27 @@ import tb_type_defines_pkg::*;
         end
         scaled = output_accum / 12.25;
       end else begin
-        // MX golden model: decode bytes as minifloat, group-scaled dot product
-        int eb, mb, bias;
-        real acc_mx;
-        if (test_precision_mode == PE_PRECISION_MXFP8) begin
-          eb = 4; mb = 3; bias = 7;
-        end else begin
-          eb = 2; mb = 1; bias = 1;
-        end
-        acc_mx = 0.0;
+        // MX golden model: fixed-point decode matching hardware Datapath.h exactly.
+        // DecodeE4M3Fixed/DecodeE2M1Fixed return 16-bit fixed-point with 4 frac bits.
+        // ProductSumMX accumulates in 32-bit, then >>8 removes fractional bits (4+4).
+        longint acc_fx;
+        acc_fx = 0;
         for (int j = 0; j < kVectorSize; j++) begin
-          real wf, inf;
-          wf = decode_minifloat_real((weight[i] >> kIntWordWidth*j) & 8'hFF, eb, mb, bias);
-          inf = decode_minifloat_real((input_written >> kIntWordWidth*j) & 8'hFF, eb, mb, bias);
-          acc_mx += wf * inf;
+          logic [7:0] w_byte, i_byte;
+          longint w_val, i_val;
+          w_byte = (weight[i] >> kIntWordWidth*j) & 8'hFF;
+          i_byte = (input_written >> kIntWordWidth*j) & 8'hFF;
+
+          if (test_precision_mode == PE_PRECISION_MXFP8) begin
+            w_val = decode_e4m3_fixed(w_byte);
+            i_val = decode_e4m3_fixed(i_byte);
+          end else begin
+            w_val = decode_e2m1_fixed(w_byte);
+            i_val = decode_e2m1_fixed(i_byte);
+          end
+          acc_fx += w_val * i_val;
         end
-        scaled = acc_mx;
+        scaled = $itor(acc_fx >>> 8); // arithmetic right shift by 8
       end
 
       if (scaled > kActWordMax)
