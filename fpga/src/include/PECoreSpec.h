@@ -29,10 +29,10 @@ namespace spec {
   namespace PE {
     namespace Weight {  
       typedef VectorType WordType;
-      const int kNumReadPorts = 1; // Reduced to 1 to avoid arbitrated crossbar scheduling issues
+      const int kNumReadPorts = 4; // Reduced from 16 to ease timing/port pressure
       const int kNumWritePorts = 1;
-      const int kNumBanks = 1;  // Reduced from 16 to avoid crossbar scheduling issues
-      const int kEntriesPerBank = 4096;      // Increased since only 1 bank now
+      const int kNumBanks = kNumVectorLanes;
+      const int kEntriesPerBank = 256;       // reduced from 4096 to fit FPGA SRAM
       const unsigned int kAddressWidth = nvhls::index_width<kNumBanks * kEntriesPerBank>::val;
       const unsigned int kBankIndexSize = nvhls::index_width<kNumBanks>::val;
       const unsigned int kLocalIndexSize = nvhls::index_width<kEntriesPerBank>::val;
