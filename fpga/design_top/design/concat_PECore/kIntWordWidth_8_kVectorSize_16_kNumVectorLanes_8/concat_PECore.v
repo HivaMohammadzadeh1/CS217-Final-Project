@@ -2334,14 +2334,15 @@ module PECore_PECore_PECoreRun_act_port_Push_mioi_act_port_Push_mio_wait_dp (
   // Interconnect Declarations for Component Instantiations 
   assign act_port_Push_mioi_wen_comp = (~ act_port_Push_mioi_oswt) | act_port_Push_mioi_biwt
       | act_port_Push_mioi_bcwt;
-  assign act_port_Push_mioi_m_data_rsc_dat = {15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[240:224])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[208:192])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[176:160])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[144:128])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[112:96])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[80:64])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[48:32])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[16:0])};
+  // Sign-extend each 17-bit lane to 32 bits (fix: was zero-padding, causing negative values to appear positive)
+  assign act_port_Push_mioi_m_data_rsc_dat = {{15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[240]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[240:224])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[208]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[208:192])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[176]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[176:160])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[144]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[144:128])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[112]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[112:96])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[80]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[80:64])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[48]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[48:32])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[16]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[16:0])};
   always @(posedge clk or negedge rst) begin
     if ( ~ rst ) begin
       act_port_Push_mioi_bcwt <= 1'b0;
@@ -2837,15 +2838,16 @@ module PECore_PECore_PECoreRun_act_port_Push_mioi (
 
   // Interconnect Declarations for Component Instantiations 
   wire [255:0] nl_PECore_PECoreRun_act_port_Push_mioi_act_port_Push_mio_wait_dp_inst_act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff;
+  // Sign-extend each 17-bit lane to 32 bits (fix: was zero-padding, causing negative values to appear positive)
   assign nl_PECore_PECoreRun_act_port_Push_mioi_act_port_Push_mio_wait_dp_inst_act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff
-      = {15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[240:224])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[208:192])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[176:160])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[144:128])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[112:96])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[80:64])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[48:32])
-      , 15'b000000000000000 , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[16:0])};
+      = {{15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[240]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[240:224])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[208]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[208:192])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[176]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[176:160])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[144]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[144:128])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[112]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[112:96])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[80]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[80:64])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[48]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[48:32])
+      , {15{act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[16]}} , (act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff[16:0])};
   PECore_Connections_OutBlocking_spec_ActVectorType_Connections_SYN_PORT_Push  act_port_Push_mioi
       (
       .this_vld(act_port_vld),
@@ -9533,12 +9535,13 @@ module PECore_PECore_PECoreRun (
   wire [2:0] nl_weight_mem_read_arbxbar_xbar_1_for_2_lshift_rg_s;
   assign nl_weight_mem_read_arbxbar_xbar_1_for_2_lshift_rg_s = weight_read_addrs_1_lpi_1_dfm_1_1[2:0];
   wire [255:0] nl_PECore_PECoreRun_act_port_Push_mioi_inst_act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff;
+  // Sign-extend each 17-bit lane to 32 bits (fix: was zero-padding, causing negative values to appear positive)
   assign nl_PECore_PECoreRun_act_port_Push_mioi_inst_act_port_Push_mioi_m_data_rsc_dat_PECoreRun_pff
-      = {15'b000000000000000 , act_port_reg_data_240_224_sva_dfm_1_2 , 15'b000000000000000
-      , act_port_reg_data_208_192_sva_dfm_1_2 , 15'b000000000000000 , act_port_reg_data_176_160_sva_dfm_1_2
-      , 15'b000000000000000 , act_port_reg_data_144_128_sva_dfm_1_1 , 15'b000000000000000
-      , act_port_reg_data_112_96_sva_dfm_1_1 , 15'b000000000000000 , act_port_reg_data_80_64_sva_dfm_1_1
-      , 15'b000000000000000 , act_port_reg_data_48_32_sva_dfm_1_1 , 15'b000000000000000
+      = {{15{act_port_reg_data_240_224_sva_dfm_1_2[16]}} , act_port_reg_data_240_224_sva_dfm_1_2 , {15{act_port_reg_data_208_192_sva_dfm_1_2[16]}}
+      , act_port_reg_data_208_192_sva_dfm_1_2 , {15{act_port_reg_data_176_160_sva_dfm_1_2[16]}} , act_port_reg_data_176_160_sva_dfm_1_2
+      , {15{act_port_reg_data_144_128_sva_dfm_1_1[16]}} , act_port_reg_data_144_128_sva_dfm_1_1 , {15{act_port_reg_data_112_96_sva_dfm_1_1[16]}}
+      , act_port_reg_data_112_96_sva_dfm_1_1 , {15{act_port_reg_data_80_64_sva_dfm_1_1[16]}} , act_port_reg_data_80_64_sva_dfm_1_1
+      , {15{act_port_reg_data_48_32_sva_dfm_1_1[16]}} , act_port_reg_data_48_32_sva_dfm_1_1 , {15{act_port_reg_data_16_0_sva_dfm_1_2[16]}}
       , act_port_reg_data_16_0_sva_dfm_1_2};
   wire weight_port_read_out_data_mux_4_nl;
   wire weight_port_read_out_data_mux_149_nl;
