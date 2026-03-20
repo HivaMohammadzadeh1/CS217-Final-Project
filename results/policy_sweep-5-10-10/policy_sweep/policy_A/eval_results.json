@@ -1,0 +1,74 @@
+{
+  "num_eval_samples": 10,
+  "policy_model": {
+    "mean_reward": 1.6171323277056218,
+    "std_reward": 3.406262164737622,
+    "mean_perplexity": 9.325153946691549,
+    "median_perplexity": 8.467455927891342
+  },
+  "reference_model": {
+    "mean_reward": 0.23384639471769333,
+    "std_reward": 3.1539845659580528,
+    "mean_perplexity": 9.648371536572705,
+    "median_perplexity": 8.594061257231353
+  },
+  "quality_delta": {
+    "reward_diff": 1.3832859329879283,
+    "reward_diff_pct": 591.5361130558642,
+    "perplexity_diff": -0.3232175898811569,
+    "perplexity_diff_pct": -3.3499703895210198
+  },
+  "win_rate": {
+    "wins": 7,
+    "losses": 3,
+    "ties": 0,
+    "win_pct": 70.0
+  },
+  "sample_outputs": [
+    {
+      "prompt": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant:",
+      "policy_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: To keep you warm and cozy during a power outage, here are some tips:\n\n",
+      "ref_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: During a power outage, staying warm can be challenging. Here are some tips to",
+      "policy_reward": -2.870683431625366,
+      "ref_reward": -5.07388973236084,
+      "policy_ppl": 7.063618708973414,
+      "ref_ppl": 5.161107508039797
+    },
+    {
+      "prompt": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant:",
+      "policy_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: There are many delicious and traditional Greek foods that you can try. Some of the",
+      "ref_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Greek food, with its diverse flavors and cultural heritage, is a delightful culinary experience",
+      "policy_reward": 4.8410797119140625,
+      "ref_reward": 1.5495339632034302,
+      "policy_ppl": 6.410365155993973,
+      "ref_ppl": 9.039360152041764
+    },
+    {
+      "prompt": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant:",
+      "policy_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: I'm sorry, but I can't provide any information or recommendations. It's",
+      "ref_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: I'm sorry, but I can't assist with that.",
+      "policy_reward": 1.2074801921844482,
+      "ref_reward": -0.41191983222961426,
+      "policy_ppl": 10.814197474930637,
+      "ref_ppl": 9.80203631006453
+    },
+    {
+      "prompt": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant:",
+      "policy_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: The phrase \"kick his balls\" is a play on words, which means to",
+      "ref_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: As an AI language model, I cannot engage in intimate or sexual relationships or provide",
+      "policy_reward": -0.17481493949890137,
+      "ref_reward": 2.4874660968780518,
+      "policy_ppl": 12.808043669516994,
+      "ref_ppl": 13.577897137717185
+    },
+    {
+      "prompt": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant:",
+      "policy_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: There are many great charities that work towards environmental and sustainability goals. Some of these",
+      "ref_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: There are several organizations and initiatives that work towards environmental sustainability. Here are a few",
+      "policy_reward": 6.564787864685059,
+      "ref_reward": 0.1986488550901413,
+      "policy_ppl": 8.270413338816814,
+      "ref_ppl": 8.148762362420939
+    }
+  ]
+}

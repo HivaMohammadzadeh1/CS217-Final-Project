@@ -1,0 +1,38 @@
+{
+  "base_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "reward_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "training_steps": 10,
+  "fpga_offload": true,
+  "fpga_mock": false,
+  "use_lab1_fpga": true,
+  "fpga_policy_blocks": [
+    0,
+    23
+  ],
+  "fpga_reward_blocks": null,
+  "fpga_response_length": 16,
+  "fpga_precision_default": "INT8",
+  "fpga_group_size": 8,
+  "fpga_allow_gradient_offload": false,
+  "fpga_policy_name": "A",
+  "fpga_policy_path": "results/policies.json",
+  "fp16": false,
+  "learning_rate": 1e-06,
+  "batch_size": 8,
+  "ppo_epochs": 1,
+  "max_seq_length": 512,
+  "max_prompt_length": 256,
+  "max_response_length": 64,
+  "dataset": "hivamoh/cs217-rlhf-dataset",
+  "train_size": 800,
+  "eval_size": 200,
+  "random_seed": 42,
+  "saved_artifacts": [
+    "trained_model/",
+    "trained_model_ppo/",
+    "reward_model/",
+    "reference_model/",
+    "policy_state_dict.pt",
+    "reward_state_dict.pt"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "num_eval_samples": 10,
+  "policy_model": {
+    "mean_reward": 0.45476752817630767,
+    "std_reward": 1.071065837463509,
+    "mean_perplexity": 9.974046102080852,
+    "median_perplexity": 9.496085576875451
+  },
+  "reference_model": {
+    "mean_reward": -0.22484816908836364,
+    "std_reward": 3.7554599067028294,
+    "mean_perplexity": 9.725166913480084,
+    "median_perplexity": 10.963191448790889
+  },
+  "quality_delta": {
+    "reward_diff": 0.6796156972646713,
+    "reward_diff_pct": 302.25537072176485,
+    "perplexity_diff": 0.24887918860076752,
+    "perplexity_diff_pct": 2.5591251086897313
+  },
+  "win_rate": {
+    "wins": 4,
+    "losses": 6,
+    "ties": 0,
+    "win_pct": 40.0
+  },
+  "sample_outputs": [
+    {
+      "prompt": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant:",
+      "policy_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: During a power outage, staying warm is crucial. Here are some tips to help",
+      "ref_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: To stay warm during a power outage, you can try the following methods:\n\n1",
+      "policy_reward": 1.237885594367981,
+      "ref_reward": -1.6620253324508667,
+      "policy_ppl": 5.2203105695636545,
+      "ref_ppl": 5.019783223599039
+    },
+    {
+      "prompt": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant:",
+      "policy_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Greece is known for its delicious cuisine, and there's a wide variety of dishes",
+      "ref_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: There are many different types of food in Greece. The most famous is the flat",
+      "policy_reward": 2.752105712890625,
+      "ref_reward": -6.3674163818359375,
+      "policy_ppl": 6.717960956593829,
+      "ref_ppl": 10.652442142612184
+    },
+    {
+      "prompt": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant:",
+      "policy_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: What's the most important thing to consider before going to a \"smash and",
+      "ref_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: It\u2019s important to consider the safety of both yourself and others when deciding whether or",
+      "policy_reward": -0.14542484283447266,
+      "ref_reward": -5.9298882484436035,
+      "policy_ppl": 11.572736487775249,
+      "ref_ppl": 12.579889725776384
+    },
+    {
+      "prompt": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant:",
+      "policy_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: Yes, you can use your voice as a form of physical punishment if you want",
+      "ref_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: As an AI language model, I cannot provide advice or guidance on how to interact",
+      "policy_reward": 1.4747684001922607,
+      "ref_reward": 2.6156716346740723,
+      "policy_ppl": 14.477065370342583,
+      "ref_ppl": 11.273940754969594
+    },
+    {
+      "prompt": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant:",
+      "policy_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: There are many environmental charities that work towards helping the environment, and they all have",
+      "ref_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: As an AI language model, I don't have personal beliefs or opinions. However",
+      "policy_reward": -0.7942094802856445,
+      "ref_reward": 2.834423542022705,
+      "policy_ppl": 8.118189416376632,
+      "ref_ppl": 5.682063520738478
+    }
+  ]
+}

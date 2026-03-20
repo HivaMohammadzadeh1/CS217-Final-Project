@@ -1,0 +1,32 @@
+{
+  "total_matmuls": 0,
+  "total_tiles": 6049792,
+  "precision_controller": {
+    "default_precision": "INT8",
+    "default_group_size": 8,
+    "allow_gradient_offload": false,
+    "policy_name": "C",
+    "policy_path": "results/policies.json",
+    "current_phase": "rollout",
+    "decision_counts": {
+      "rollout": {
+        "INT8": 0,
+        "MXFP8": 0,
+        "MXFP4": 1000,
+        "FP16": 0
+      },
+      "reward": {
+        "INT8": 0,
+        "MXFP8": 18,
+        "MXFP4": 1710,
+        "FP16": 0
+      },
+      "gradient": {
+        "INT8": 0,
+        "MXFP8": 0,
+        "MXFP4": 0,
+        "FP16": 48
+      }
+    }
+  }
+}
