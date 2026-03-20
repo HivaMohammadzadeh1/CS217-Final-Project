@@ -1,0 +1,125 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{ouyang2022training,christiano2017deep}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\citation{rouhani2023mxformat}
+\citation{ouyang2022training,christiano2017deep}
+\citation{schulman2017ppo}
+\citation{vonwerra2022trl}
+\citation{rouhani2023mxformat}
+\citation{micikevicius2018mixed}
+\citation{micikevicius2022fp8}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background and Related Work}{2}{section.2}\protected@file@percent }
+\newlabel{sec:related-work}{{2}{2}{Background and Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{RLHF Training}{2}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Microscaling Formats}{2}{section*.2}\protected@file@percent }
+\citation{guo2017angel,wang2021fpga}
+\citation{dong2019hawq,wang2019haq}
+\citation{qwen2025qwen25}
+\citation{bai2022training}
+\citation{vonwerra2022trl}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Bit layouts for INT8, MXFP8, and MXFP4. MX formats share a group scale factor across multiple elements, enabling aggressive bit-width reduction while maintaining dynamic range.}}{3}{figure.caption.3}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:mx-formats}{{1}{3}{Bit layouts for INT8, MXFP8, and MXFP4. MX formats share a group scale factor across multiple elements, enabling aggressive bit-width reduction while maintaining dynamic range}{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Low-Precision Training}{3}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{FPGA Acceleration}{3}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Adaptive Quantization}{3}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Problem Definition and FPGA Motivation}{3}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Target workload}{3}{subsection.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Target workload and project scope.}}{4}{table.caption.7}\protected@file@percent }
+\newlabel{tab:workload-summary}{{1}{4}{Target workload and project scope}{table.caption.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Why FPGA for this problem}{4}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Evaluation scope}{4}{subsection.3.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Sources of evidence used in the evaluation.}}{5}{table.caption.8}\protected@file@percent }
+\newlabel{tab:evidence-boundary}{{2}{5}{Sources of evidence used in the evaluation}{table.caption.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Accelerator Design}{5}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Programming model and software mapping}{5}{subsection.4.1}\protected@file@percent }
+\newlabel{lst:api}{{1}{5}{Host-side targeting model for one tiled linear op}{lstlisting.1}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}{\ignorespaces Host-side targeting model for one tiled linear op.}}{5}{lstlisting.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Compile-time and runtime parameters exposed by the programming model.}}{5}{table.caption.9}\protected@file@percent }
+\newlabel{tab:programming-model}{{3}{5}{Compile-time and runtime parameters exposed by the programming model}{table.caption.9}{}}
+\citation{rouhani2023mxformat}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Software-visible launch path. The host selects a mode from the per-layer policy, writes the corresponding configuration fields, flushes on mode changes, then launches the tile through the existing PCIe and AXI path.}}{6}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:system-overview}{{2}{6}{Software-visible launch path. The host selects a mode from the per-layer policy, writes the corresponding configuration fields, flushes on mode changes, then launches the tile through the existing PCIe and AXI path}{figure.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}PE microarchitecture}{6}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}MX formats and adaptive precision}{6}{subsection.4.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces PE-level microarchitecture. The key change relative to the INT8 baseline is the precision-selectable decode path in front of the multiply-accumulate stage, controlled by the same PE configuration structure that already manages tile execution.}}{7}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:pe-microarchitecture}{{3}{7}{PE-level microarchitecture. The key change relative to the INT8 baseline is the precision-selectable decode path in front of the multiply-accumulate stage, controlled by the same PE configuration structure that already manages tile execution}{figure.caption.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}SystemC correctness contract}{7}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}HLS-aware design and optimization}{7}{subsection.4.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces HLS design space for the PE datapath. The current source tree corresponds to the 4-port design point.}}{8}{table.caption.12}\protected@file@percent }
+\newlabel{tab:hls-design-space}{{4}{8}{HLS design space for the PE datapath. The current source tree corresponds to the 4-port design point}{table.caption.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Memory system and data movement}{8}{subsection.4.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Current versus intended memory flow. The main change is that buffering and reuse become first-class design goals.}}{9}{table.caption.13}\protected@file@percent }
+\newlabel{tab:memory-flow}{{5}{9}{Current versus intended memory flow. The main change is that buffering and reuse become first-class design goals}{table.caption.13}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Effective bytes per matmul under weight reuse. Compression matters most when reuse is low, while caching matters more as reuse rises. The two techniques stack.}}{9}{table.caption.14}\protected@file@percent }
+\newlabel{tab:reuse-bytes}{{6}{9}{Effective bytes per matmul under weight reuse. Compression matters most when reuse is low, while caching matters more as reuse rises. The two techniques stack}{table.caption.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Resource realism and timing constraints}{9}{subsection.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experimental Setup}{10}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}RLHF run configuration}{10}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}INT8 hardware baseline}{10}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Layer sensitivity profiling}{10}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}SystemC validation}{10}{subsection.5.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Cycle breakdown for one 16x16 tile launch in the deployed INT8 prototype. Most cycles are spent in host-device launch and movement overhead rather than in the PE itself.}}{11}{figure.caption.16}\protected@file@percent }
+\newlabel{fig:cycle-breakdown}{{4}{11}{Cycle breakdown for one 16x16 tile launch in the deployed INT8 prototype. Most cycles are spent in host-device launch and movement overhead rather than in the PE itself}{figure.caption.16}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Results}{11}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}The current tile path is launch- and transfer-bound}{11}{subsection.6.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces AWS F2 INT8 baseline for one 16x16 tile launch in the deployed prototype.}}{11}{table.caption.15}\protected@file@percent }
+\newlabel{tab:fpga-baseline}{{7}{11}{AWS F2 INT8 baseline for one 16x16 tile launch in the deployed prototype}{table.caption.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}The hardware path works inside a real RLHF loop}{11}{subsection.6.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Post-training quality on 50 held-out examples for the deployed hardware-backed run.}}{12}{table.caption.17}\protected@file@percent }
+\newlabel{tab:rlhf-quality}{{8}{12}{Post-training quality on 50 held-out examples for the deployed hardware-backed run}{table.caption.17}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Phase timing for the 50-step hardware-backed RLHF run. Rollout and reward occupy most of the run and are the most numerically forgiving phases.}}{12}{figure.caption.18}\protected@file@percent }
+\newlabel{fig:phase-timing}{{5}{12}{Phase timing for the 50-step hardware-backed RLHF run. Rollout and reward occupy most of the run and are the most numerically forgiving phases}{figure.caption.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}The SystemC datapath matches the floating-point reference closely enough}{12}{subsection.6.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces SystemC validation against the floating-point reference. The ranges in the ``max'' column come from the broader statistical sweeps over input distribution and magnitude.}}{12}{table.caption.19}\protected@file@percent }
+\newlabel{tab:systemc-validation}{{9}{12}{SystemC validation against the floating-point reference. The ranges in the ``max'' column come from the broader statistical sweeps over input distribution and magnitude}{table.caption.19}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces SystemC sweeps explain the precision tradeoff. MXFP8 is stable. MXFP4 is acceptable only when the local dynamic range is controlled or when the phase can absorb noise.}}{13}{figure.caption.20}\protected@file@percent }
+\newlabel{fig:systemc-sweeps}{{6}{13}{SystemC sweeps explain the precision tradeoff. MXFP8 is stable. MXFP4 is acceptable only when the local dynamic range is controlled or when the phase can absorb noise}{figure.caption.20}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Layer sensitivity is sparse and structurally meaningful}{13}{subsection.6.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Policy-generation summary from the layer profiler.}}{13}{table.caption.22}\protected@file@percent }
+\newlabel{tab:sensitivity-summary}{{10}{13}{Policy-generation summary from the layer profiler}{table.caption.22}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Balanced policy is the right first deployment target}{13}{subsection.6.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Block-level perplexity deltas from the layer profiler. MXFP4 problems are sparse and structural. The biggest failures occur in MLP blocks 2, 3, 21, and 23, plus the LM head. MXFP8 stays small everywhere.}}{14}{figure.caption.21}\protected@file@percent }
+\newlabel{fig:sensitivity-heatmap}{{7}{14}{Block-level perplexity deltas from the layer profiler. MXFP4 problems are sparse and structural. The biggest failures occur in MLP blocks 2, 3, 21, and 23, plus the LM head. MXFP8 stays small everywhere}{figure.caption.21}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Policies generated from the sensitivity matrix.}}{14}{table.caption.23}\protected@file@percent }
+\newlabel{tab:policies}{{11}{14}{Policies generated from the sensitivity matrix}{table.caption.23}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Conservative policy tradeoff model under the deployed transfer-bound baseline. Policy B is the most credible first target because it captures most of the benefit without forcing low precision into fragile phases.}}{15}{figure.caption.24}\protected@file@percent }
+\newlabel{fig:policy-tradeoffs}{{8}{15}{Conservative policy tradeoff model under the deployed transfer-bound baseline. Policy B is the most credible first target because it captures most of the benefit without forcing low precision into fragile phases}{figure.caption.24}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Discussion}{15}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Interpretation and limits}{15}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Why the sensitivity pattern makes sense}{15}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Phase-specific precision requirements}{16}{subsection.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Engineering implications}{16}{subsection.7.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Limitations}{16}{subsection.7.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{16}{section.8}\protected@file@percent }
+\bibstyle{plainnat}
+\bibcite{ouyang2022training}{{1}{2022}{{Ouyang et~al.}}{{}}}
+\bibcite{christiano2017deep}{{2}{2017}{{Christiano et~al.}}{{}}}
+\bibcite{schulman2017ppo}{{3}{2017}{{Schulman et~al.}}{{}}}
+\bibcite{rouhani2023mxformat}{{4}{2023}{{Rouhani et~al.}}{{}}}
+\bibcite{bai2022training}{{5}{2022}{{Bai et~al.}}{{}}}
+\bibcite{qwen2025qwen25}{{6}{2025}{{Qwen Team}}{{}}}
+\bibcite{vonwerra2022trl}{{7}{2022}{{von Werra et~al.}}{{}}}
+\bibcite{micikevicius2018mixed}{{8}{2018}{{Micikevicius et~al.}}{{}}}
+\bibcite{micikevicius2022fp8}{{9}{2022}{{Micikevicius et~al.}}{{}}}
+\bibcite{dong2019hawq}{{10}{2019}{{Dong et~al.}}{{}}}
+\bibcite{wang2019haq}{{11}{2019}{{Wang et~al.}}{{}}}
+\bibcite{guo2017angel}{{12}{2017}{{Guo et~al.}}{{}}}
+\bibcite{wang2021fpga}{{13}{2021}{{Wang et~al.}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Block-Level MXFP4 Sensitivity Averages}{18}{appendix.A}\protected@file@percent }
+\newlabel{app:sensitivity}{{A}{18}{Block-Level MXFP4 Sensitivity Averages}{appendix.A}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Block-level MXFP4 perplexity deltas used to build the sensitivity figures. The LM head is omitted here because it is a single large outlier at +60.49\%.}}{18}{table.caption.27}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces FPGA hardware configuration.}}{19}{table.caption.28}\protected@file@percent }
+\newlabel{tab:fpga-config}{{13}{19}{FPGA hardware configuration}{table.caption.28}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}FPGA Hardware Configuration}{19}{appendix.B}\protected@file@percent }
+\newlabel{app:fpga-config}{{B}{19}{FPGA Hardware Configuration}{appendix.B}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}RLHF Workload Calculation}{19}{appendix.C}\protected@file@percent }
+\newlabel{app:workload}{{C}{19}{RLHF Workload Calculation}{appendix.C}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {D}Compute Budget}{19}{appendix.D}\protected@file@percent }
+\newlabel{app:compute}{{D}{19}{Compute Budget}{appendix.D}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces Estimated compute budget.}}{19}{table.caption.29}\protected@file@percent }
+\newlabel{tab:compute}{{14}{19}{Estimated compute budget}{table.caption.29}{}}
+\gdef \@abspage@last{19}

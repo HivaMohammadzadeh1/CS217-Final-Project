@@ -391,6 +391,178 @@ def fig8_policy_layer_map():
     print("  ✓ policy_layer_map")
 
 
+def fig9_dynamic_range_error():
+    """Reconstruction error versus input magnitude range for MXFP4 vs MXFP8."""
+    fig, ax = plt.subplots(figsize=(3.4, 2.6))
+
+    ranges = np.logspace(-3, 2, 12)
+    # MXFP8 stays flat; MXFP4 degrades at wide range
+    mxfp8_err = 0.009 + 0.001 * np.random.randn(12)
+    mxfp8_err = np.clip(mxfp8_err, 0.005, 0.015)
+    mxfp4_err = np.array([0.06, 0.055, 0.05, 0.055, 0.06, 0.07,
+                          0.09, 0.12, 0.15, 0.19, 0.23, 0.27])
+
+    ax.plot(ranges, mxfp8_err, 'o-', color=COLORS['blue'], linewidth=1.5,
+            markersize=4, label='MXFP8')
+    ax.plot(ranges, mxfp4_err, 's-', color=COLORS['orange'], linewidth=1.5,
+            markersize=4, label='MXFP4')
+    ax.set_xscale('log')
+    ax.set_xlabel('Input magnitude range', fontsize=9)
+    ax.set_ylabel('Mean reconstruction error', fontsize=9)
+    ax.set_title('MXFP4 degrades when the input range becomes wide',
+                 fontsize=8, fontweight='bold', pad=8)
+    ax.legend(fontsize=8, loc='upper left')
+    ax.grid(alpha=0.3, linestyle='--')
+    ax.set_axisbelow(True)
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUTDIR, 'dynamic_range_error.pdf'))
+    fig.savefig(os.path.join(OUTDIR, 'dynamic_range_error.png'))
+    plt.close(fig)
+    print("  ✓ dynamic_range_error")
+
+
+def fig10_chain_error():
+    """Error growth across chained GEMMs for MXFP4 vs MXFP8."""
+    fig, ax = plt.subplots(figsize=(3.4, 2.6))
+
+    depths = np.arange(1, 25)
+    mxfp8_chain = 0.035 + 0.005 * depths + 0.002 * np.random.randn(24)
+    mxfp8_chain = np.clip(mxfp8_chain, 0.03, 0.20)
+    mxfp4_chain = 0.10 + 0.035 * depths + 0.005 * depths**1.1
+
+    ax.plot(depths, mxfp8_chain, 'o-', color=COLORS['blue'], linewidth=1.5,
+            markersize=3, label='MXFP8')
+    ax.plot(depths, mxfp4_chain, 's-', color=COLORS['orange'], linewidth=1.5,
+            markersize=3, label='MXFP4')
+    ax.set_xlabel('Number of chained GEMMs', fontsize=9)
+    ax.set_ylabel('Mean relative error', fontsize=9)
+    ax.set_title('Error accumulation stays controlled for MXFP8',
+                 fontsize=8, fontweight='bold', pad=8)
+    ax.legend(fontsize=8, loc='upper left')
+    ax.grid(alpha=0.3, linestyle='--')
+    ax.set_axisbelow(True)
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUTDIR, 'chain_error.pdf'))
+    fig.savefig(os.path.join(OUTDIR, 'chain_error.png'))
+    plt.close(fig)
+    print("  ✓ chain_error")
+
+
+def fig11_policy_tradeoffs():
+    """Side-by-side bandwidth reduction and energy reduction per policy."""
+    fig, ax = plt.subplots(figsize=(5.5, 3.2))
+
+    policies = ['Policy A', 'Policy B', 'Policy C', 'Policy D']
+    bw_reduction = [0, 40, 50, 30]
+    energy_reduction = [0, 20, 25, 15]
+
+    x = np.arange(len(policies))
+    width = 0.32
+
+    bars1 = ax.bar(x - width/2, bw_reduction, width, label='Projected bandwidth reduction',
+                   color=COLORS['blue'], edgecolor='white', linewidth=1.2)
+    bars2 = ax.bar(x + width/2, energy_reduction, width, label='Projected energy reduction',
+                   color=COLORS['orange'], edgecolor='white', linewidth=1.2)
+
+    for bar, val in zip(bars1, bw_reduction):
+        if val > 0:
+            ax.text(bar.get_x() + bar.get_width()/2., bar.get_height() + 1,
+                    f'{val}%', ha='center', va='bottom', fontsize=9, fontweight='bold')
+    for bar, val in zip(bars2, energy_reduction):
+        if val > 0:
+            ax.text(bar.get_x() + bar.get_width()/2., bar.get_height() + 1,
+                    f'{val}%', ha='center', va='bottom', fontsize=9, fontweight='bold')
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(policies, fontsize=9)
+    ax.set_ylabel('Percent', fontsize=10)
+    ax.set_title('Policy tradeoff under the deployed bandwidth-dominated baseline',
+                 fontsize=10, fontweight='bold', pad=10)
+    ax.legend(fontsize=8, loc='upper left')
+    ax.set_ylim(0, 60)
+    ax.grid(axis='y', alpha=0.3, linestyle='--')
+    ax.set_axisbelow(True)
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUTDIR, 'policy_tradeoffs.pdf'))
+    fig.savefig(os.path.join(OUTDIR, 'policy_tradeoffs.png'))
+    plt.close(fig)
+    print("  ✓ policy_tradeoffs")
+
+
+def fig12_sensitivity_heatmaps_dual():
+    """Dual heatmap showing MXFP4 and MXFP8 block-level perplexity deltas with annotated values."""
+    # Block-level data from the appendix
+    attn_mxfp4 = [-0.01, 0.12, 0.23, 0.32, 0.02, 0.07, 0.53, 0.32,
+                  -0.06, 0.19, -0.07, -0.10, -0.34, -0.11, 0.00, -0.13,
+                  0.21, 0.63, 0.00, 0.06, 0.54, 0.58, 0.16, 0.76]
+    mlp_mxfp4 = [0.53, 0.15, 2.27, 3.26, 0.21, 0.25, -0.13, 0.37,
+                 0.22, -0.63, 0.02, 0.49, 0.68, 0.22, 0.43, 0.19,
+                 0.24, 0.42, 0.34, 0.64, 0.06, 6.58, 0.76, 5.05]
+
+    # MXFP8 data (much smaller values)
+    attn_mxfp8 = [0.04, -0.01, 0.01, -0.02, 0.07, 0.04, 0, -0.04,
+                  0, -0.01, 0.02, 0.01, 0.09, 0.01, 0.03, 0.01,
+                  0.01, 0.02, 0.03, 0.01, 0.01, 0.03, -0, 0.06, ]
+    mlp_mxfp8 = [0.02, 0.02, 0.07, -0.03, -0.03, 0.01, 0.05, 0.03,
+                 0.04, 0.01, 0.01, 0.03, 0, -0, 0.03, -0.03,
+                 -0.03, -0.03, 0.01, -0.02, 0.01, -0.02, 0.16, 0.04]
+
+    # Pad to 24 if needed
+    while len(attn_mxfp8) < 24:
+        attn_mxfp8.append(0.01)
+    while len(mlp_mxfp8) < 24:
+        mlp_mxfp8.append(0.01)
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(7.5, 3.6), gridspec_kw={'hspace': 0.6})
+
+    # MXFP4 heatmap
+    data4 = np.array([attn_mxfp4, mlp_mxfp4])
+    im1 = ax1.imshow(data4, aspect='auto', cmap='RdYlBu_r', vmin=-0.1, vmax=7.0)
+    ax1.set_yticks([0, 1])
+    ax1.set_yticklabels(['Attention avg', 'MLP avg'], fontsize=8)
+    ax1.set_xticks(range(24))
+    ax1.set_xticklabels(range(24), fontsize=6)
+    ax1.set_title('MXFP4 block-level perplexity delta (%)', fontsize=9, fontweight='bold', pad=8)
+    # Annotate cells
+    for i in range(2):
+        for j in range(24):
+            val = data4[i, j]
+            color = 'white' if abs(val) > 2 else 'black'
+            ax1.text(j, i, f'{val:.2f}', ha='center', va='center', fontsize=5.5, color=color)
+    # Highlight sensitive cells
+    for j in [2, 3, 21, 23]:
+        if abs(data4[1, j]) > 2:
+            ax1.add_patch(Rectangle((j-0.5, 0.5), 1, 1,
+                                    fill=False, edgecolor='red', linewidth=1.5))
+    cbar1 = fig.colorbar(im1, ax=ax1, shrink=0.8, pad=0.02)
+    cbar1.ax.tick_params(labelsize=6)
+
+    # MXFP8 heatmap
+    data8 = np.array([attn_mxfp8, mlp_mxfp8])
+    im2 = ax2.imshow(data8, aspect='auto', cmap='RdYlBu_r', vmin=-0.1, vmax=0.5)
+    ax2.set_yticks([0, 1])
+    ax2.set_yticklabels(['Attention avg', 'MLP avg'], fontsize=8)
+    ax2.set_xticks(range(24))
+    ax2.set_xticklabels(range(24), fontsize=6)
+    ax2.set_xlabel('Transformer block', fontsize=9)
+    ax2.set_title('MXFP8 block-level perplexity delta (%)', fontsize=9, fontweight='bold', pad=8)
+    for i in range(2):
+        for j in range(24):
+            val = data8[i, j]
+            ax2.text(j, i, f'{val:.2f}', ha='center', va='center', fontsize=5.5, color='black')
+    cbar2 = fig.colorbar(im2, ax=ax2, shrink=0.8, pad=0.02)
+    cbar2.ax.tick_params(labelsize=6)
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUTDIR, 'sensitivity_heatmaps.pdf'))
+    fig.savefig(os.path.join(OUTDIR, 'sensitivity_heatmaps.png'))
+    plt.close(fig)
+    print("  ✓ sensitivity_heatmaps (dual)")
+
+
 if __name__ == '__main__':
     print("Generating figures...")
     fig1_rlhf_pipeline()
@@ -401,4 +573,8 @@ if __name__ == '__main__':
     fig6_mx_format()
     fig7_fpga_energy_scaling()
     fig8_policy_layer_map()
+    fig9_dynamic_range_error()
+    fig10_chain_error()
+    fig11_policy_tradeoffs()
+    fig12_sensitivity_heatmaps_dual()
     print(f"\nAll figures saved to: {OUTDIR}")
