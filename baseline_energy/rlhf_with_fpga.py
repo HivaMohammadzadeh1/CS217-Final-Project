@@ -536,7 +536,9 @@ class RLHFWithFPGATrainer:
 
         total_loss = 0.0
         correct = 0
+        pretrain_start = time.time()
         for step in range(steps):
+            step_start = time.time()
             idx = step % len(self.train_dataset)
             example = self.train_dataset[idx]
 
@@ -549,11 +551,14 @@ class RLHFWithFPGATrainer:
                 max_length=config.MAX_SEQ_LENGTH, truncation=True,
             ).to(self.reward_device)
 
+            t0 = time.time()
             with self._phase_scope("reward"):
                 chosen_score = self.reward_model(**chosen_inputs).logits[0, 0]
+            t1 = time.time()
+            with self._phase_scope("reward"):
                 rejected_score = self.reward_model(**rejected_inputs).logits[0, 0]
+            t2 = time.time()
 
-            # Bradley-Terry log-sigmoid loss (standard RLHF reward model loss)
             loss = -F.logsigmoid(chosen_score - rejected_score)
 
             optimizer.zero_grad()
@@ -564,11 +569,16 @@ class RLHFWithFPGATrainer:
             if chosen_score.item() > rejected_score.item():
                 correct += 1
 
-            if (step + 1) % 5 == 0:
-                pretrain_fpga = self.fpga_offloader.get_stats()
-                print(f"  [{step+1}/{steps}] loss={total_loss/(step+1):.4f} "
-                      f"accuracy={correct/(step+1):.1%} "
-                      f"fpga_tiles={pretrain_fpga['total_tiles']}", flush=True)
+            step_elapsed = time.time() - step_start
+            pretrain_fpga = self.fpga_offloader.get_stats()
+            total_elapsed = time.time() - pretrain_start
+            eta = (total_elapsed / (step + 1)) * (steps - step - 1)
+            print(f"  [{step+1}/{steps}] loss={total_loss/(step+1):.4f} "
+                  f"acc={correct/(step+1):.1%} "
+                  f"step={step_elapsed:.1f}s "
+                  f"(fwd_chosen={t1-t0:.1f}s fwd_rejected={t2-t1:.1f}s) "
+                  f"tiles={pretrain_fpga['total_tiles']} "
+                  f"ETA={eta/60:.1f}min", flush=True)
 
         self.reward_model.eval()
         for param in self.reward_model.parameters():
