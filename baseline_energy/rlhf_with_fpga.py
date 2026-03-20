@@ -551,13 +551,23 @@ class RLHFWithFPGATrainer:
                 max_length=config.MAX_SEQ_LENGTH, truncation=True,
             ).to(self.reward_device)
 
+            chosen_len = chosen_inputs["input_ids"].shape[-1]
+            rejected_len = rejected_inputs["input_ids"].shape[-1]
+            tiles_est = 2 * 96 * (math.ceil(max(chosen_len, rejected_len) / 16)
+                                  * math.ceil(896 / 16) * math.ceil(896 / 16))
+            print(f"  [{step+1}/{steps}] starting... "
+                  f"seq_lens=({chosen_len},{rejected_len}) "
+                  f"~{tiles_est:,} tiles", flush=True)
+
             t0 = time.time()
             with self._phase_scope("reward"):
                 chosen_score = self.reward_model(**chosen_inputs).logits[0, 0]
             t1 = time.time()
+            print(f"    chosen fwd done: {t1-t0:.1f}s", flush=True)
             with self._phase_scope("reward"):
                 rejected_score = self.reward_model(**rejected_inputs).logits[0, 0]
             t2 = time.time()
+            print(f"    rejected fwd done: {t2-t1:.1f}s", flush=True)
 
             loss = -F.logsigmoid(chosen_score - rejected_score)
 
