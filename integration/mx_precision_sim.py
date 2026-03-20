@@ -142,6 +142,51 @@ def quantize_dequantize_vector(values: Iterable[float],
     return out
 
 
+def quantize_dequantize_matrix(matrix: np.ndarray,
+                               spec: MiniFloatSpec,
+                               group_size: int) -> np.ndarray:
+    """Vectorized MX quantize-dequantize over the last axis of a matrix."""
+    validate_group_size(group_size)
+    arr = np.asarray(matrix, dtype=np.float32)
+    original_shape = arr.shape
+    flat = arr.reshape(-1)
+    out = np.zeros_like(flat)
+
+    total_bits = spec.exponent_bits + spec.mantissa_bits
+    exp_mask = (1 << spec.exponent_bits) - 1
+    mant_mask = (1 << spec.mantissa_bits) - 1
+    max_exp = exp_mask
+    max_code = (max_exp << spec.mantissa_bits) | mant_mask
+
+    for start in range(0, flat.size, group_size):
+        end = min(start + group_size, flat.size)
+        group = flat[start:end]
+
+        max_abs = float(np.max(np.abs(group))) if group.size else 0.0
+        if max_abs == 0.0:
+            continue
+
+        shared_exp = _floor_log2_positive(max_abs)
+        scale = math.ldexp(1.0, -shared_exp)
+        inv_scale = math.ldexp(1.0, shared_exp)
+
+        scaled_group = group * np.float32(scale)
+
+        for i in range(len(scaled_group)):
+            code = encode_minifloat(float(scaled_group[i]), spec)
+            out[start + i] = np.float32(decode_minifloat(code, spec) * inv_scale)
+
+    return out.reshape(original_shape)
+
+
+def matmul_mx(a: np.ndarray, b: np.ndarray,
+              spec: MiniFloatSpec, group_size: int) -> np.ndarray:
+    """Full-matrix MX-quantized matmul without 16x16 tiling."""
+    a_q = quantize_dequantize_matrix(a, spec, group_size)
+    b_q = quantize_dequantize_matrix(b, spec, group_size)
+    return np.matmul(a_q, b_q).astype(np.float32)
+
+
 def dot_quantized(a: Iterable[float], b: Iterable[float],
                   spec: MiniFloatSpec, group_size: int) -> float:
     a_arr = np.asarray(list(a), dtype=np.float32)

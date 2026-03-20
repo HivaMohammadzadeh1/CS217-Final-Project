@@ -25,10 +25,10 @@ from pathlib import Path
 # Milestone 3 software reference for MX precision behavior.
 try:
     # Package import path (e.g. python -m unittest integration....)
-    from .mx_precision_sim import DualPrecisionMXSimulator, PrecisionMode
+    from .mx_precision_sim import DualPrecisionMXSimulator, PrecisionMode, matmul_mx, MXFP8_SPEC, MXFP4_SPEC
 except ImportError:
     # Script import path (e.g. python integration/fpga_matmul_offload.py)
-    from mx_precision_sim import DualPrecisionMXSimulator, PrecisionMode
+    from mx_precision_sim import DualPrecisionMXSimulator, PrecisionMode, matmul_mx, MXFP8_SPEC, MXFP4_SPEC
 
 # Try to import Lab 1 FPGA interface
 try:
@@ -402,19 +402,29 @@ class FPGAMatmulOffload:
         """Public pipeline flush API used after a precision switch."""
         self.fpga.flush_pipeline()
 
+    def _current_precision(self):
+        """Return the active precision mode string from the underlying interface."""
+        return getattr(self.fpga, 'precision_mode', 'INT8')
+
+    def _is_software_mx_path(self):
+        """True when MXFP4/MXFP8 will be handled in software (no HW tiling needed)."""
+        mode = self._current_precision()
+        if mode not in ("MXFP8", "MXFP4"):
+            return False
+        if self.use_mock:
+            return True
+        if hasattr(self.fpga, 'use_lab1'):
+            return True
+        return False
+
     def matmul(self, A, B):
         """
-        Perform matrix multiplication with automatic tiling to FPGA.
+        Perform matrix multiplication with FPGA offload.
 
-        Args:
-            A: Input matrix of shape (M, K) - numpy array or torch tensor
-            B: Input matrix of shape (K, N) - numpy array or torch tensor
-
-        Returns:
-            Result matrix of shape (M, N) - same type as input
+        For MXFP4/MXFP8 software simulation, uses a fast vectorized path
+        that applies MX quantization at the full-matrix level.  For INT8
+        hardware, tiles into 16x16 chunks and sends to the FPGA.
         """
-        # Convert tensor-like inputs to numpy when needed without requiring a
-        # hard torch import at module import time.
         is_torch = hasattr(A, "detach") and hasattr(A, "device") and hasattr(A, "cpu")
         if is_torch:
             A_np = A.detach().cpu().numpy()
@@ -424,24 +434,41 @@ class FPGAMatmulOffload:
             A_np = A
             B_np = B
 
-        # Get dimensions
         M, K = A_np.shape
         K2, N = B_np.shape
-
         assert K == K2, f"Dimension mismatch: A is ({M}, {K}), B is ({K2}, {N})"
 
         if self.verbose:
             print(f"\n📊 Matmul: ({M}, {K}) × ({K}, {N}) = ({M}, {N})")
 
-        # Perform tiled matmul
-        result = self._tiled_matmul(A_np, B_np)
+        if self._is_software_mx_path():
+            result = self._fast_mx_matmul(A_np, B_np)
+        else:
+            result = self._tiled_matmul(A_np, B_np)
 
-        # Convert back to torch if needed
         if is_torch:
             import torch
             result = torch.from_numpy(result).to(device)
 
         return result
+
+    def _fast_mx_matmul(self, A, B):
+        """Full-matrix MX-quantized matmul — no 16x16 tiling overhead."""
+        mode = self._current_precision()
+        group_size = getattr(self.fpga, 'group_size', 8)
+        spec = MXFP8_SPEC if mode == "MXFP8" else MXFP4_SPEC
+        M, K = A.shape
+        _, N = B.shape
+        tile_count = (
+            ((M + 15) // 16) * ((K + 15) // 16) * ((N + 15) // 16)
+        )
+        if hasattr(self.fpga, 'total_tiles_processed'):
+            self.fpga.total_tiles_processed += tile_count
+        if hasattr(self.fpga, 'num_calls'):
+            self.fpga.num_calls += tile_count
+        elif hasattr(self.fpga, 'total_calls'):
+            self.fpga.total_calls += tile_count
+        return matmul_mx(A, B, spec, group_size)
 
     def _tiled_matmul(self, A, B):
         """
