@@ -406,14 +406,14 @@ class FPGAMatmulOffload:
         """Return the active precision mode string from the underlying interface."""
         return getattr(self.fpga, 'precision_mode', 'INT8')
 
-    def _is_software_mx_path(self):
-        """True when MXFP4/MXFP8 will be handled in software (no HW tiling needed)."""
-        mode = self._current_precision()
-        if mode not in ("MXFP8", "MXFP4"):
-            return False
+    def _use_fast_path(self):
+        """True when the matmul can skip 16x16 tiling (software simulation)."""
         if self.use_mock:
             return True
-        if hasattr(self.fpga, 'use_lab1'):
+        if hasattr(self.fpga, 'use_lab1') and not getattr(self.fpga, 'use_hardware', False):
+            return True
+        mode = self._current_precision()
+        if mode in ("MXFP8", "MXFP4") and hasattr(self.fpga, 'use_lab1'):
             return True
         return False
 
@@ -421,9 +421,9 @@ class FPGAMatmulOffload:
         """
         Perform matrix multiplication with FPGA offload.
 
-        For MXFP4/MXFP8 software simulation, uses a fast vectorized path
-        that applies MX quantization at the full-matrix level.  For INT8
-        hardware, tiles into 16x16 chunks and sends to the FPGA.
+        Uses a fast full-matrix path for software simulation (all modes)
+        and falls back to 16x16 tiling only when real FPGA hardware is
+        actively handling the compute.
         """
         is_torch = hasattr(A, "detach") and hasattr(A, "device") and hasattr(A, "cpu")
         if is_torch:
@@ -441,8 +441,8 @@ class FPGAMatmulOffload:
         if self.verbose:
             print(f"\n📊 Matmul: ({M}, {K}) × ({K}, {N}) = ({M}, {N})")
 
-        if self._is_software_mx_path():
-            result = self._fast_mx_matmul(A_np, B_np)
+        if self._use_fast_path():
+            result = self._fast_matmul(A_np, B_np)
         else:
             result = self._tiled_matmul(A_np, B_np)
 
@@ -452,11 +452,10 @@ class FPGAMatmulOffload:
 
         return result
 
-    def _fast_mx_matmul(self, A, B):
-        """Full-matrix MX-quantized matmul — no 16x16 tiling overhead."""
+    def _fast_matmul(self, A, B):
+        """Full-matrix matmul with optional MX quantization — no tiling."""
         mode = self._current_precision()
         group_size = getattr(self.fpga, 'group_size', 8)
-        spec = MXFP8_SPEC if mode == "MXFP8" else MXFP4_SPEC
         M, K = A.shape
         _, N = B.shape
         tile_count = (
@@ -468,6 +467,11 @@ class FPGAMatmulOffload:
             self.fpga.num_calls += tile_count
         elif hasattr(self.fpga, 'total_calls'):
             self.fpga.total_calls += tile_count
+
+        if mode == "INT8":
+            return np.matmul(A, B).astype(np.float32)
+
+        spec = MXFP8_SPEC if mode == "MXFP8" else MXFP4_SPEC
         return matmul_mx(A, B, spec, group_size)
 
     def _tiled_matmul(self, A, B):
