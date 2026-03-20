@@ -375,6 +375,7 @@ class FPGAMatmulOffload:
         """
         self.use_mock = use_mock
         self.verbose = verbose
+        self._fast_path_tiles = 0
 
         if use_mock:
             self.fpga = MockFPGAInterface(
@@ -461,12 +462,7 @@ class FPGAMatmulOffload:
         tile_count = (
             ((M + 15) // 16) * ((K + 15) // 16) * ((N + 15) // 16)
         )
-        if hasattr(self.fpga, 'total_tiles_processed'):
-            self.fpga.total_tiles_processed += tile_count
-        if hasattr(self.fpga, 'num_calls'):
-            self.fpga.num_calls += tile_count
-        elif hasattr(self.fpga, 'total_calls'):
-            self.fpga.total_calls += tile_count
+        self._fast_path_tiles += tile_count
 
         if mode == "INT8":
             return np.matmul(A, B).astype(np.float32)
@@ -563,11 +559,15 @@ class FPGAMatmulOffload:
 
     def get_stats(self):
         """Get FPGA usage statistics."""
-        return self.fpga.get_stats()
+        stats = self.fpga.get_stats()
+        hw_tiles = stats.get('total_tiles', stats.get('num_calls', 0))
+        stats['total_tiles'] = hw_tiles + self._fast_path_tiles
+        return stats
 
     def reset_stats(self):
         """Reset FPGA usage statistics."""
         self.fpga.reset_stats()
+        self._fast_path_tiles = 0
 
 
 # Convenience function
