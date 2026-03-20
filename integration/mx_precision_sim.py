@@ -142,41 +142,98 @@ def quantize_dequantize_vector(values: Iterable[float],
     return out
 
 
+def _np_encode_decode_minifloat(values: np.ndarray,
+                                spec: MiniFloatSpec) -> np.ndarray:
+    """Batch encode-then-decode minifloat values using pure numpy ops."""
+    exp_bits = spec.exponent_bits
+    mant_bits = spec.mantissa_bits
+    exp_bias = spec.exponent_bias
+    exp_mask = (1 << exp_bits) - 1
+    mant_scale = float(1 << mant_bits)
+
+    x = np.asarray(values, dtype=np.float64)
+    out = np.zeros_like(x)
+    nonzero = x != 0.0
+    if not np.any(nonzero):
+        return out.astype(np.float32)
+
+    ax = np.abs(x[nonzero])
+    neg = x[nonzero] < 0.0
+
+    log2_ax = np.floor(np.log2(np.maximum(ax, np.finfo(np.float64).tiny)))
+    exp_field = (log2_ax + exp_bias).astype(np.int32)
+
+    is_subnormal = exp_field <= 0
+    is_normal = ~is_subnormal
+
+    decoded = np.zeros_like(ax)
+
+    if np.any(is_subnormal):
+        sub_ax = ax[is_subnormal]
+        scaled = np.ldexp(sub_ax, -(1 - exp_bias))
+        mantissa = np.clip(np.round(scaled * mant_scale), 0, (1 << mant_bits) - 1)
+        frac = mantissa / mant_scale
+        decoded[is_subnormal] = np.ldexp(frac, 1 - exp_bias)
+
+    if np.any(is_normal):
+        norm_ax = ax[is_normal]
+        norm_ef = exp_field[is_normal]
+        normalized = np.ldexp(norm_ax, -log2_ax[is_normal].astype(np.int32))
+        mantissa_f = (normalized - 1.0) * mant_scale
+        mantissa = np.round(mantissa_f).astype(np.int32)
+
+        carry = mantissa == (1 << mant_bits)
+        mantissa[carry] = 0
+        norm_ef[carry] += 1
+
+        saturated = norm_ef >= exp_mask
+        norm_ef[saturated] = exp_mask
+        mantissa[saturated] = (1 << mant_bits) - 1
+
+        frac = 1.0 + mantissa.astype(np.float64) / mant_scale
+        decoded[is_normal] = np.ldexp(frac, norm_ef - exp_bias)
+
+    decoded[neg] *= -1.0
+    out[nonzero] = decoded
+    return out.astype(np.float32)
+
+
 def quantize_dequantize_matrix(matrix: np.ndarray,
                                spec: MiniFloatSpec,
                                group_size: int) -> np.ndarray:
-    """Vectorized MX quantize-dequantize over the last axis of a matrix."""
+    """Vectorized MX quantize-dequantize with per-group shared exponents."""
     validate_group_size(group_size)
     arr = np.asarray(matrix, dtype=np.float32)
     original_shape = arr.shape
-    flat = arr.reshape(-1)
-    out = np.zeros_like(flat)
+    flat = arr.reshape(-1).astype(np.float64)
+    n = flat.size
 
-    total_bits = spec.exponent_bits + spec.mantissa_bits
-    exp_mask = (1 << spec.exponent_bits) - 1
-    mant_mask = (1 << spec.mantissa_bits) - 1
-    max_exp = exp_mask
-    max_code = (max_exp << spec.mantissa_bits) | mant_mask
+    pad = (-n) % group_size
+    if pad:
+        flat = np.concatenate([flat, np.zeros(pad, dtype=np.float64)])
 
-    for start in range(0, flat.size, group_size):
-        end = min(start + group_size, flat.size)
-        group = flat[start:end]
+    groups = flat.reshape(-1, group_size)
+    max_abs = np.max(np.abs(groups), axis=1, keepdims=True)
+    nonzero_mask = (max_abs > 0).squeeze()
 
-        max_abs = float(np.max(np.abs(group))) if group.size else 0.0
-        if max_abs == 0.0:
-            continue
+    if not np.any(nonzero_mask):
+        return np.zeros(original_shape, dtype=np.float32)
 
-        shared_exp = _floor_log2_positive(max_abs)
-        scale = math.ldexp(1.0, -shared_exp)
-        inv_scale = math.ldexp(1.0, shared_exp)
+    shared_exp = np.floor(np.log2(
+        np.maximum(max_abs[nonzero_mask], np.finfo(np.float64).tiny)
+    ))
 
-        scaled_group = group * np.float32(scale)
+    scale = np.float64(2.0) ** (-shared_exp)
+    inv_scale = np.float64(2.0) ** shared_exp
 
-        for i in range(len(scaled_group)):
-            code = encode_minifloat(float(scaled_group[i]), spec)
-            out[start + i] = np.float32(decode_minifloat(code, spec) * inv_scale)
+    scaled = groups[nonzero_mask] * scale
+    decoded = _np_encode_decode_minifloat(scaled.ravel(), spec).astype(np.float64)
+    decoded = decoded.reshape(-1, group_size) * inv_scale
 
-    return out.reshape(original_shape)
+    result = np.zeros_like(groups)
+    result[nonzero_mask] = decoded
+
+    return result.ravel()[:n].reshape(original_shape).astype(np.float32)
 
 
 def matmul_mx(a: np.ndarray, b: np.ndarray,
