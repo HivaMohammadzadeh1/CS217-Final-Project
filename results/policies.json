@@ -1,7 +1,7 @@
 {
   "A": {
-    "name": "A - MXFP4 All Phases",
-    "description": "MXFP4 for all phases on tolerant layers, MXFP8 fallback for sensitive layers",
+    "name": "A - MXFP4 All Layers",
+    "description": "MXFP4 for all layers across rollout and reward phases",
     "group_size": 8,
     "layers": {
       "model.layers.0.self_attn.q_proj": {
@@ -95,19 +95,19 @@
         "gradient": "MXFP4"
       },
       "model.layers.2.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.2.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.2.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.3.self_attn.q_proj": {
         "rollout": "MXFP4",
@@ -130,19 +130,19 @@
         "gradient": "MXFP4"
       },
       "model.layers.3.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.3.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.3.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.4.self_attn.q_proj": {
         "rollout": "MXFP4",
@@ -615,9 +615,9 @@
         "gradient": "MXFP4"
       },
       "model.layers.17.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.17.mlp.gate_proj": {
         "rollout": "MXFP4",
@@ -760,19 +760,19 @@
         "gradient": "MXFP4"
       },
       "model.layers.21.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.21.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.21.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.22.self_attn.q_proj": {
         "rollout": "MXFP4",
@@ -830,30 +830,30 @@
         "gradient": "MXFP4"
       },
       "model.layers.23.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.23.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "model.layers.23.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       },
       "lm_head": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "MXFP8"
+        "rollout": "MXFP4",
+        "reward": "MXFP4",
+        "gradient": "MXFP4"
       }
     }
   },
   "B": {
-    "name": "B - MXFP8 All Phases",
-    "description": "MXFP8 for all layers across all phases",
+    "name": "B - MXFP8 All Layers",
+    "description": "MXFP8 for all layers across rollout and reward phases",
     "group_size": 8,
     "layers": {
       "model.layers.0.self_attn.q_proj": {
@@ -1704,1803 +1704,99 @@
     }
   },
   "C": {
-    "name": "C - MXFP8 Inference / INT8 Gradient",
-    "description": "Rollout and reward use MXFP8, gradient uses INT8",
-    "group_size": 8,
-    "layers": {
-      "model.layers.0.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.0.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.0.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.0.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.0.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.0.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.0.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.1.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.1.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.1.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.1.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.1.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.1.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.1.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.2.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.2.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.2.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.2.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.2.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.2.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.2.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.3.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.3.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.3.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.3.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.3.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.3.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.3.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.4.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.4.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.4.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.4.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.4.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.4.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.4.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.5.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.5.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.5.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.5.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.5.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.5.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.5.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.6.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.6.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.6.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.6.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.6.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.6.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.6.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.7.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.7.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.7.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.7.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.7.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.7.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.7.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.8.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.8.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.8.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.8.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.8.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.8.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.8.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.9.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.9.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.9.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.9.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.9.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.9.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.9.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.10.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.10.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.10.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.10.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.10.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.10.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.10.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.11.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.11.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.11.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.11.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.11.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.11.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.11.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.12.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.12.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.12.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.12.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.12.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.12.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.12.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.13.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.13.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.13.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.13.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.13.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.13.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.13.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.14.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.14.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.14.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.14.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.14.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.14.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.14.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.15.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.15.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.15.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.15.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.15.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.15.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.15.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.16.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.16.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.16.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.16.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.16.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.16.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.16.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.17.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.17.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.17.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.17.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.17.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.17.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.17.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.18.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.18.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.18.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.18.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.18.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.18.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.18.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.19.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.19.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.19.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.19.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.19.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.19.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.19.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.20.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.20.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.20.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.20.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.20.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.20.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.20.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.21.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.21.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.21.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.21.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.21.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.21.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.21.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.22.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.22.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.22.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.22.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.22.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.22.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.22.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.23.self_attn.q_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.23.self_attn.k_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.23.self_attn.v_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.23.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.23.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.23.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.23.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "lm_head": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      }
-    }
-  },
-  "D": {
-    "name": "D - MXFP4 Inference / INT8 Gradient",
-    "description": "Rollout and reward use MXFP4 (MXFP8 for sensitive), gradient uses INT8",
+    "name": "C - Sensitivity-Aware Hybrid",
+    "description": "MXFP4 for tolerant layers, MXFP8 for sensitive layers (>2% perplexity delta) across rollout and reward",
     "group_size": 8,
     "layers": {
       "model.layers.0.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.0.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.0.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.0.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.0.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.0.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.0.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.1.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.1.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.1.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.1.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.1.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.1.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.1.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.2.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.2.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.2.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
+        "gradient": "MXFP4"
       },
       "model.layers.2.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.2.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.2.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.2.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.3.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.3.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.3.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.3.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.3.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.3.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.3.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.4.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.4.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.4.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.4.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.4.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.4.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.4.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.5.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.5.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.5.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.5.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.5.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.5.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.5.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.6.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.6.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.6.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.6.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.6.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.6.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.6.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.7.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.7.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.7.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.7.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.7.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.7.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.7.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.8.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.8.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.8.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.8.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.8.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.8.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.8.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.9.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.9.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.9.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.9.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.9.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.9.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.9.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.10.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.10.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.10.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.10.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.10.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.10.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.10.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.11.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.11.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.11.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.11.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.11.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.11.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.11.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.12.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.12.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.12.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.12.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.12.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.12.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.12.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.13.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.13.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.13.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.13.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.13.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.13.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.13.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.14.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.14.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.14.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.14.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.14.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.14.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.14.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.15.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.15.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.15.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.15.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.15.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.15.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.15.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.16.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.16.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.16.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.16.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.16.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.16.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.16.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.17.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.17.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.17.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.17.self_attn.o_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.17.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.17.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.17.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.18.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.18.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.18.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.18.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.18.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.18.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.18.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.19.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.19.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.19.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.19.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.19.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.19.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.19.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.20.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.20.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.20.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.20.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.20.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.20.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.20.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.21.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.21.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.21.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.21.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.21.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.21.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.21.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.22.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.22.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.22.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.22.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.22.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.22.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.22.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.23.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.23.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.23.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.23.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "INT8"
-      },
-      "model.layers.23.mlp.gate_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.23.mlp.up_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "model.layers.23.mlp.down_proj": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      },
-      "lm_head": {
-        "rollout": "MXFP8",
-        "reward": "MXFP8",
-        "gradient": "INT8"
-      }
-    }
-  },
-  "E": {
-    "name": "E - MXFP4 Inference / MXFP8 Gradient",
-    "description": "Rollout and reward use MXFP4 (MXFP8 for sensitive), gradient uses MXFP8",
-    "group_size": 8,
-    "layers": {
-      "model.layers.0.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.0.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.0.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.0.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.0.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.0.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.0.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.1.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.1.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.1.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.1.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.1.mlp.gate_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.1.mlp.up_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.1.mlp.down_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.2.self_attn.q_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.2.self_attn.k_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.2.self_attn.v_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
-      },
-      "model.layers.2.self_attn.o_proj": {
-        "rollout": "MXFP4",
-        "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.2.mlp.gate_proj": {
         "rollout": "MXFP8",
@@ -3520,22 +1816,22 @@
       "model.layers.3.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.3.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.3.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.3.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.3.mlp.gate_proj": {
         "rollout": "MXFP8",
@@ -3555,472 +1851,472 @@
       "model.layers.4.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.4.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.4.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.4.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.4.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.4.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.4.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.5.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.5.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.5.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.5.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.5.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.5.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.5.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.6.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.6.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.6.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.6.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.6.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.6.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.6.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.7.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.7.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.7.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.7.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.7.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.7.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.7.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.8.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.8.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.8.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.8.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.8.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.8.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.8.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.9.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.9.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.9.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.9.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.9.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.9.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.9.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.10.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.10.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.10.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.10.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.10.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.10.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.10.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.11.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.11.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.11.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.11.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.11.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.11.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.11.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.12.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.12.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.12.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.12.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.12.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.12.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.12.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.13.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.13.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.13.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.13.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.13.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.13.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.13.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.14.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.14.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.14.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.14.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.14.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.14.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.14.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.15.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.15.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.15.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.15.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.15.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.15.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.15.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.16.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.16.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.16.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.16.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.16.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.16.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.16.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.17.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.17.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.17.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.17.self_attn.o_proj": {
         "rollout": "MXFP8",
@@ -4030,142 +2326,142 @@
       "model.layers.17.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.17.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.17.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.18.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.18.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.18.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.18.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.18.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.18.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.18.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.19.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.19.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.19.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.19.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.19.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.19.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.19.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.20.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.20.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.20.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.20.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.20.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.20.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.20.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.21.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.21.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.21.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.21.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.21.mlp.gate_proj": {
         "rollout": "MXFP8",
@@ -4185,57 +2481,57 @@
       "model.layers.22.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.22.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.22.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.22.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.22.mlp.gate_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.22.mlp.up_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.22.mlp.down_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.23.self_attn.q_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.23.self_attn.k_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.23.self_attn.v_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.23.self_attn.o_proj": {
         "rollout": "MXFP4",
         "reward": "MXFP4",
-        "gradient": "MXFP8"
+        "gradient": "MXFP4"
       },
       "model.layers.23.mlp.gate_proj": {
         "rollout": "MXFP8",
