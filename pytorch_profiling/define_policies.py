@@ -40,72 +40,81 @@ def layer_policy(rollout: str, reward: str, gradient: str) -> Dict[str, str]:
     }
 
 
-def define_policy_a_conservative(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
+def define_policy_a_mxfp4_all(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
+    fp4_col = tolerant_column("MXFP4", group_size)
     policy = {
-        "name": "A - Conservative",
-        "description": "MXFP8 all layers for rollout/reward, FP16 for gradients",
+        "name": "A - MXFP4 All Phases",
+        "description": "MXFP4 for all phases on tolerant layers, MXFP8 fallback for sensitive layers (>2% perplexity delta)",
         "group_size": group_size,
         "layers": {},
     }
     for _, row in df.iterrows():
-        policy["layers"][row["layer"]] = layer_policy("MXFP8", "MXFP8", "FP16")
+        precision = "MXFP4" if bool(row[fp4_col]) else "MXFP8"
+        policy["layers"][row["layer"]] = layer_policy(precision, precision, precision)
     return policy
 
 
-def define_policy_b_balanced(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
-    fp4_col = tolerant_column("MXFP4", group_size)
+def define_policy_b_mxfp8_all(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
     policy = {
-        "name": "B - Balanced",
-        "description": "MXFP4 for tolerant layers, MXFP8 otherwise, FP16 for gradients",
+        "name": "B - MXFP8 All Phases",
+        "description": "MXFP8 for all layers across all phases",
         "group_size": group_size,
         "layers": {},
     }
     for _, row in df.iterrows():
-        preferred = "MXFP4" if bool(row[fp4_col]) else "MXFP8"
-        policy["layers"][row["layer"]] = layer_policy(preferred, preferred, "FP16")
+        policy["layers"][row["layer"]] = layer_policy("MXFP8", "MXFP8", "MXFP8")
     return policy
 
 
-def define_policy_c_aggressive(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
-    fp4_col = tolerant_column("MXFP4", group_size)
+def define_policy_c_mxfp8_int8_gradient(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
     policy = {
-        "name": "C - Aggressive",
-        "description": "MXFP4 everywhere possible, MXFP8 fallback for sensitive gradients",
+        "name": "C - MXFP8 Inference / INT8 Gradient",
+        "description": "Rollout and reward use MXFP8, gradient uses INT8",
         "group_size": group_size,
         "layers": {},
     }
     for _, row in df.iterrows():
-        gradient = "MXFP4" if bool(row[fp4_col]) else "MXFP8"
-        policy["layers"][row["layer"]] = layer_policy("MXFP4", "MXFP4", gradient)
+        policy["layers"][row["layer"]] = layer_policy("MXFP8", "MXFP8", "INT8")
     return policy
 
 
-def define_policy_d_phase_adaptive(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
+def define_policy_d_mxfp4_int8_gradient(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
     fp4_col = tolerant_column("MXFP4", group_size)
-    fp8_col = tolerant_column("MXFP8", group_size)
     policy = {
-        "name": "D - Phase-Adaptive",
-        "description": "MXFP4-biased rollout, MXFP8-biased reward, FP16-safe gradients",
+        "name": "D - MXFP4 Inference / INT8 Gradient",
+        "description": "Rollout and reward use MXFP4 (MXFP8 for sensitive layers), gradient uses INT8",
         "group_size": group_size,
         "layers": {},
     }
     for _, row in df.iterrows():
-        rollout = "MXFP4" if bool(row[fp4_col]) else "MXFP8"
-        reward = "MXFP8"
-        gradient = "MXFP8" if bool(row[fp8_col]) and bool(row[fp4_col]) else "FP16"
-        policy["layers"][row["layer"]] = layer_policy(rollout, reward, gradient)
+        inference = "MXFP4" if bool(row[fp4_col]) else "MXFP8"
+        policy["layers"][row["layer"]] = layer_policy(inference, inference, "INT8")
+    return policy
+
+
+def define_policy_e_mxfp4_mxfp8_gradient(df: pd.DataFrame, group_size: int) -> Dict[str, object]:
+    fp4_col = tolerant_column("MXFP4", group_size)
+    policy = {
+        "name": "E - MXFP4 Inference / MXFP8 Gradient",
+        "description": "Rollout and reward use MXFP4 (MXFP8 for sensitive layers), gradient uses MXFP8",
+        "group_size": group_size,
+        "layers": {},
+    }
+    for _, row in df.iterrows():
+        inference = "MXFP4" if bool(row[fp4_col]) else "MXFP8"
+        policy["layers"][row["layer"]] = layer_policy(inference, inference, "MXFP8")
     return policy
 
 
 def analyze_policy(policy: Dict[str, object]) -> Dict[str, Dict[str, int]]:
     counts = {
-        "rollout": {"MXFP4": 0, "MXFP8": 0, "FP16": 0},
-        "reward": {"MXFP4": 0, "MXFP8": 0, "FP16": 0},
-        "gradient": {"MXFP4": 0, "MXFP8": 0, "FP16": 0},
+        "rollout": {"INT8": 0, "MXFP4": 0, "MXFP8": 0, "FP16": 0},
+        "reward": {"INT8": 0, "MXFP4": 0, "MXFP8": 0, "FP16": 0},
+        "gradient": {"INT8": 0, "MXFP4": 0, "MXFP8": 0, "FP16": 0},
     }
     for _, phases in policy["layers"].items():
         for phase, precision in phases.items():
-            counts[phase][precision] += 1
+            counts[phase][precision] = counts[phase].get(precision, 0) + 1
     return counts
 
 
@@ -117,7 +126,7 @@ def print_policy_analysis(policy_id: str, policy: Dict[str, object]) -> None:
         total = sum(counts[phase].values())
         summary = "  ".join(
             f"{fmt}:{counts[phase][fmt]:2d} ({(counts[phase][fmt] / total * 100) if total else 0:4.1f}%)"
-            for fmt in ("MXFP4", "MXFP8", "FP16")
+            for fmt in ("INT8", "MXFP4", "MXFP8", "FP16")
         )
         print(f"{phase:>8}: {summary}")
 
@@ -125,10 +134,11 @@ def print_policy_analysis(policy_id: str, policy: Dict[str, object]) -> None:
 def build_policies(df: pd.DataFrame, group_size: int) -> Dict[str, Dict[str, object]]:
     require_columns(df, group_size)
     return {
-        "A": define_policy_a_conservative(df, group_size),
-        "B": define_policy_b_balanced(df, group_size),
-        "C": define_policy_c_aggressive(df, group_size),
-        "D": define_policy_d_phase_adaptive(df, group_size),
+        "A": define_policy_a_mxfp4_all(df, group_size),
+        "B": define_policy_b_mxfp8_all(df, group_size),
+        "C": define_policy_c_mxfp8_int8_gradient(df, group_size),
+        "D": define_policy_d_mxfp4_int8_gradient(df, group_size),
+        "E": define_policy_e_mxfp4_mxfp8_gradient(df, group_size),
     }
 
 
