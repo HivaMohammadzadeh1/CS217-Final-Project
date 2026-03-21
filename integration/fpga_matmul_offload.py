@@ -246,9 +246,9 @@ class RealFPGAInterface:
         """
         Configure precision mode for real interface.
 
-        Current hardware support:
-          - INT8: handled by Lab 1 path.
-          - MXFP8/MXFP4: software fallback in this interface until MX RTL is deployed.
+        Hardware support:
+          - INT8: native Lab 1 path.
+          - MXFP8/MXFP4: native via MX-capable bitstream (RVA PE config).
         """
         mode = str(precision_mode).upper()
         if mode not in ("INT8", "MXFP8", "MXFP4"):
@@ -282,10 +282,6 @@ class RealFPGAInterface:
 
         if self.pending_precision_mode in ("MXFP8", "MXFP4"):
             self._mx_fallback.request_mode(self._mode_to_sim(self.pending_precision_mode))
-            if self.verbose:
-                print(
-                    f"⚠️  {self.pending_precision_mode} requested; using software fallback until MX hardware is available."
-                )
 
         if flush:
             self.flush_pipeline()
@@ -322,11 +318,9 @@ class RealFPGAInterface:
                 "Precision switch pending. Call flush_pipeline() before matmul_16x16()."
             )
 
-        if self.precision_mode in ("MXFP8", "MXFP4"):
-            return self._mx_fallback.matmul_16x16(tile_a, tile_b)
-
         if self.use_lab1:
-            # Use Lab 1 FPGA hardware (or software fallback if hardware unavailable)
+            # All modes (INT8, MXFP8, MXFP4) go through real FPGA hardware.
+            # The C wrapper handles precision-aware encoding/decoding via RVA.
             return self.fpga.matmul_16x16(tile_a, tile_b)
         else:
             raise NotImplementedError("Generic FPGA interface not yet implemented")
@@ -411,11 +405,16 @@ class FPGAMatmulOffload:
         """True when the matmul can skip 16x16 tiling (software simulation)."""
         if self.use_mock:
             return True
-        if hasattr(self.fpga, 'use_lab1') and not getattr(self.fpga, 'use_hardware', False):
+        # Check the inner Lab1FPGAInterface for hardware availability,
+        # not the outer RealFPGAInterface wrapper.
+        if hasattr(self.fpga, 'fpga') and hasattr(self.fpga.fpga, 'use_hardware'):
+            if not self.fpga.fpga.use_hardware:
+                return True
+        elif hasattr(self.fpga, 'use_hardware') and not self.fpga.use_hardware:
             return True
-        mode = self._current_precision()
-        if mode in ("MXFP8", "MXFP4") and hasattr(self.fpga, 'use_lab1'):
-            return True
+        # All modes (INT8, MXFP8, MXFP4) go through real FPGA hardware
+        # when hardware is available. The MX-capable bitstream handles
+        # all precision modes natively via RVA.
         return False
 
     def matmul(self, A, B):
