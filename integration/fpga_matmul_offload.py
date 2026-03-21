@@ -376,8 +376,7 @@ class FPGAMatmulOffload:
                 precision_mode=precision_mode,
                 group_size=group_size
             )
-            if verbose:
-                print("🔧 Using MOCK FPGA interface")
+            print("🔧 Using MOCK FPGA interface (software simulation)")
         else:
             self.fpga = RealFPGAInterface(
                 device_id=device_id,
@@ -386,8 +385,14 @@ class FPGAMatmulOffload:
                 precision_mode=precision_mode,
                 group_size=group_size
             )
-            if verbose:
-                print(f"🔧 Connected to real FPGA (device {device_id})")
+            # Always print hardware status so we know what path we're on
+            hw_status = "UNKNOWN"
+            if hasattr(self.fpga, 'fpga') and hasattr(self.fpga.fpga, 'use_hardware'):
+                hw_status = "REAL HARDWARE" if self.fpga.fpga.use_hardware else "SOFTWARE FALLBACK"
+            print(f"🔧 FPGA interface: {hw_status} (device {device_id}, mode={precision_mode})")
+            if hw_status == "SOFTWARE FALLBACK":
+                print("   ⚠️  WARNING: FPGA hardware not available, using software simulation!")
+                print("   Check: liblab1_wrapper.so exists, bitstream loaded, running as sudo")
 
     def configure_precision(self, precision_mode, group_size=None, flush=True):
         """Public precision configuration API used by adaptive control logic."""
@@ -407,10 +412,12 @@ class FPGAMatmulOffload:
             return True
         # Check the inner Lab1FPGAInterface for hardware availability,
         # not the outer RealFPGAInterface wrapper.
+        hw_available = False
         if hasattr(self.fpga, 'fpga') and hasattr(self.fpga.fpga, 'use_hardware'):
-            if not self.fpga.fpga.use_hardware:
-                return True
-        elif hasattr(self.fpga, 'use_hardware') and not self.fpga.use_hardware:
+            hw_available = self.fpga.fpga.use_hardware
+        elif hasattr(self.fpga, 'use_hardware'):
+            hw_available = self.fpga.use_hardware
+        if not hw_available:
             return True
         # All modes (INT8, MXFP8, MXFP4) go through real FPGA hardware
         # when hardware is available. The MX-capable bitstream handles

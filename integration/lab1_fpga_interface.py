@@ -35,14 +35,16 @@ class Lab1FPGAInterface:
 
         self.TILE_SIZE = 16
 
-        # Milestone 3 precision control state.
-        # Current Lab 1 bitstream supports INT8 compute. MX modes are modeled
-        # in software above this layer until MX hardware is deployed.
+        # Precision control state.
+        # The MX-capable bitstream supports INT8, MXFP8 and MXFP4 natively.
         self.precision_mode = "INT8"
         self.pending_precision_mode = "INT8"
         self.precision_switch_pending = False
         self.group_size = 8
         self.pipeline_flush_count = 0
+
+        # Map mode strings to C-level constants used by lab1_wrapper.
+        self._MODE_TO_INT = {"INT8": 0, "MXFP8": 1, "MXFP4": 2}
 
         # Performance tracking
         self.total_calls = 0
@@ -67,12 +69,11 @@ class Lab1FPGAInterface:
                 break
 
         if lib_path is None:
-            if self.verbose:
-                print("⚠️  liblab1_wrapper.so not found. Searched:")
-                for p in search_paths:
-                    print(f"    {p}")
-                print("    Build it with: bash integration/compile_lab1_wrapper.sh")
-                print("    Using software fallback")
+            print("⚠️  liblab1_wrapper.so not found. Searched:")
+            for p in search_paths:
+                print(f"    {p}")
+            print("    Build it with: bash integration/compile_lab1_wrapper.sh")
+            print("    Using software fallback")
             self.use_hardware = False
             return
 
@@ -83,6 +84,10 @@ class Lab1FPGAInterface:
             self.lib.fpga_init.argtypes = [ctypes.c_int]
             self.lib.fpga_init.restype = ctypes.c_int
 
+            # int fpga_configure_precision(int precision_mode, int group_size)
+            self.lib.fpga_configure_precision.argtypes = [ctypes.c_int, ctypes.c_int]
+            self.lib.fpga_configure_precision.restype = ctypes.c_int
+
             # int fpga_matmul_16x16(float *A, float *B, float *C)
             self.lib.fpga_matmul_16x16.argtypes = [
                 ctypes.POINTER(ctypes.c_float),
@@ -90,6 +95,14 @@ class Lab1FPGAInterface:
                 ctypes.POINTER(ctypes.c_float),
             ]
             self.lib.fpga_matmul_16x16.restype = ctypes.c_int
+
+            # int fpga_matmul_16x16_mx(float *A, float *B, float *C)
+            self.lib.fpga_matmul_16x16_mx.argtypes = [
+                ctypes.POINTER(ctypes.c_float),
+                ctypes.POINTER(ctypes.c_float),
+                ctypes.POINTER(ctypes.c_float),
+            ]
+            self.lib.fpga_matmul_16x16_mx.restype = ctypes.c_int
 
             # void fpga_cleanup()
             self.lib.fpga_cleanup.argtypes = []
@@ -104,21 +117,18 @@ class Lab1FPGAInterface:
 
             rc = self.lib.fpga_init(self.device_id)
             if rc != 0:
-                if self.verbose:
-                    print(f"⚠️  fpga_init(slot={self.device_id}) failed (rc={rc})")
-                    print("    Make sure FPGA bitstream is loaded and you're running as root/sudo")
-                    print("    Using software fallback")
+                print(f"⚠️  fpga_init(slot={self.device_id}) failed (rc={rc})")
+                print("    Make sure FPGA bitstream is loaded and you're running as root/sudo")
+                print("    Using software fallback")
                 self.use_hardware = False
                 return
 
             self.use_hardware = True
-            if self.verbose:
-                print(f"✓ FPGA initialized on slot {self.device_id} — using REAL hardware")
+            print(f"✓ FPGA initialized on slot {self.device_id} — using REAL hardware")
 
         except Exception as e:
-            if self.verbose:
-                print(f"⚠️  Failed to load/init FPGA wrapper: {e}")
-                print("    Using software fallback")
+            print(f"⚠️  Failed to load/init FPGA wrapper: {e}")
+            print("    Using software fallback")
             self.use_hardware = False
 
     def configure_precision(self, precision_mode, group_size=None, flush=True):
@@ -126,12 +136,9 @@ class Lab1FPGAInterface:
         Configure compute precision mode.
 
         Supported:
-          - INT8  (native Lab 1 support)
-          - MXFP8 (accepted for API compatibility; hardware fallback path)
-          - MXFP4 (accepted for API compatibility; hardware fallback path)
-
-        If/when a dedicated MX bitstream is deployed, this method is where the
-        PEConfig precision/group-size fields should be programmed before start.
+          - INT8  (native hardware)
+          - MXFP8 (native hardware via MX-capable bitstream)
+          - MXFP4 (native hardware via MX-capable bitstream)
         """
         mode = str(precision_mode).upper()
         if mode not in ("INT8", "MXFP8", "MXFP4"):
@@ -149,17 +156,19 @@ class Lab1FPGAInterface:
 
     def flush_pipeline(self):
         """
-        Apply pending precision change.
-
-        In current Lab 1 INT8 hardware this is a software-level state update.
-        For future MX hardware this should also trigger hardware pipeline drain
-        semantics around mode transitions.
+        Apply pending precision change and push it to the C wrapper so
+        subsequent matmul calls use the correct FPGA precision mode.
         """
         if not self.precision_switch_pending:
             return
         self.precision_mode = self.pending_precision_mode
         self.precision_switch_pending = False
         self.pipeline_flush_count += 1
+
+        # Push mode to the C layer so fpga_matmul_16x16_mx uses it.
+        if self.use_hardware and hasattr(self, 'lib'):
+            mode_int = self._MODE_TO_INT.get(self.precision_mode, 0)
+            self.lib.fpga_configure_precision(mode_int, self.group_size)
 
     def matmul_16x16(self, A, B):
         """
@@ -180,7 +189,11 @@ class Lab1FPGAInterface:
             return self._matmul_software(A, B)
 
     def _matmul_hardware(self, A, B):
-        """Execute 16x16 matmul on Lab 1 FPGA via liblab1_wrapper.so."""
+        """Execute 16x16 matmul on Lab 1 FPGA via liblab1_wrapper.so.
+
+        Uses the MX-aware fpga_matmul_16x16_mx() which respects the
+        current precision mode configured via fpga_configure_precision().
+        """
         A_f32 = np.ascontiguousarray(A, dtype=np.float32)
         B_f32 = np.ascontiguousarray(B, dtype=np.float32)
         C_f32 = np.zeros((16, 16), dtype=np.float32)
@@ -189,12 +202,13 @@ class Lab1FPGAInterface:
         B_ptr = B_f32.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
         C_ptr = C_f32.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
 
-        rc = self.lib.fpga_matmul_16x16(A_ptr, B_ptr, C_ptr)
+        rc = self.lib.fpga_matmul_16x16_mx(A_ptr, B_ptr, C_ptr)
 
         if rc != 0:
-            if self.verbose:
-                print(f"⚠️  FPGA matmul failed (rc={rc}), falling back to software")
-            return self._matmul_software(A, B)
+            raise RuntimeError(
+                f"FPGA matmul failed (rc={rc}) in {self.precision_mode} mode. "
+                "Check FPGA connection and bitstream."
+            )
 
         self.total_calls += 1
         self.total_compute_cycles += 1
