@@ -1,0 +1,348 @@
+WARNING:root:A <class 'transformers.models.qwen2.modeling_qwen2.Qwen2ForCausalLM'> model is loaded from 'Qwen/Qwen2.5-0.5B-Instruct', and no v_head weight is found. This IS expected if you are not resuming PPO training.
+Some weights of Qwen2ForSequenceClassification were not initialized from the model checkpoint at Qwen/Qwen2.5-0.5B-Instruct and are newly initialized: ['score.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+WARNING:root:A <class 'transformers.models.qwen2.modeling_qwen2.Qwen2ForCausalLM'> model is loaded from 'Qwen/Qwen2.5-0.5B-Instruct', and no v_head weight is found. This IS expected if you are not resuming PPO training.
+
+============================================================
+RLHF Training with FPGA Offload
+============================================================
+Device: cpu
+Steps: 50
+Output: results/policy_sweep/policy_baseline_grant
+FPGA Mode: REAL
+FPGA Policy Blocks: [0, 23]
+FPGA Reward Blocks: ALL
+FPGA Response Length: 16
+Precision Policy: global INT8
+Gradient Offload: disabled
+============================================================
+
+📥 Loading models...
+  Loading policy model...
+  Replacing policy model blocks [0, 23] with FPGA offload...
+   Replaced pretrained_model.model.layers.0.self_attn.q_proj with FPGA offload
+   Replaced pretrained_model.model.layers.0.self_attn.k_proj with FPGA offload
+   Replaced pretrained_model.model.layers.0.self_attn.v_proj with FPGA offload
+   Replaced pretrained_model.model.layers.0.self_attn.o_proj with FPGA offload
+   Replaced pretrained_model.model.layers.23.self_attn.q_proj with FPGA offload
+   Replaced pretrained_model.model.layers.23.self_attn.k_proj with FPGA offload
+   Replaced pretrained_model.model.layers.23.self_attn.v_proj with FPGA offload
+   Replaced pretrained_model.model.layers.23.self_attn.o_proj with FPGA offload
+  ✓ Replaced 8 linear layers in policy model
+  Loading reward model...
+  Replacing ALL reward model layers with FPGA offload...
+   Replaced model.layers.0.self_attn.q_proj with FPGA offload
+   Replaced model.layers.0.self_attn.k_proj with FPGA offload
+   Replaced model.layers.0.self_attn.v_proj with FPGA offload
+   Replaced model.layers.0.self_attn.o_proj with FPGA offload
+   Replaced model.layers.1.self_attn.q_proj with FPGA offload
+   Replaced model.layers.1.self_attn.k_proj with FPGA offload
+   Replaced model.layers.1.self_attn.v_proj with FPGA offload
+   Replaced model.layers.1.self_attn.o_proj with FPGA offload
+   Replaced model.layers.2.self_attn.q_proj with FPGA offload
+   Replaced model.layers.2.self_attn.k_proj with FPGA offload
+   Replaced model.layers.2.self_attn.v_proj with FPGA offload
+   Replaced model.layers.2.self_attn.o_proj with FPGA offload
+   Replaced model.layers.3.self_attn.q_proj with FPGA offload
+   Replaced model.layers.3.self_attn.k_proj with FPGA offload
+   Replaced model.layers.3.self_attn.v_proj with FPGA offload
+   Replaced model.layers.3.self_attn.o_proj with FPGA offload
+   Replaced model.layers.4.self_attn.q_proj with FPGA offload
+   Replaced model.layers.4.self_attn.k_proj with FPGA offload
+   Replaced model.layers.4.self_attn.v_proj with FPGA offload
+   Replaced model.layers.4.self_attn.o_proj with FPGA offload
+   Replaced model.layers.5.self_attn.q_proj with FPGA offload
+   Replaced model.layers.5.self_attn.k_proj with FPGA offload
+   Replaced model.layers.5.self_attn.v_proj with FPGA offload
+   Replaced model.layers.5.self_attn.o_proj with FPGA offload
+   Replaced model.layers.6.self_attn.q_proj with FPGA offload
+   Replaced model.layers.6.self_attn.k_proj with FPGA offload
+   Replaced model.layers.6.self_attn.v_proj with FPGA offload
+   Replaced model.layers.6.self_attn.o_proj with FPGA offload
+   Replaced model.layers.7.self_attn.q_proj with FPGA offload
+   Replaced model.layers.7.self_attn.k_proj with FPGA offload
+   Replaced model.layers.7.self_attn.v_proj with FPGA offload
+   Replaced model.layers.7.self_attn.o_proj with FPGA offload
+   Replaced model.layers.8.self_attn.q_proj with FPGA offload
+   Replaced model.layers.8.self_attn.k_proj with FPGA offload
+   Replaced model.layers.8.self_attn.v_proj with FPGA offload
+   Replaced model.layers.8.self_attn.o_proj with FPGA offload
+   Replaced model.layers.9.self_attn.q_proj with FPGA offload
+   Replaced model.layers.9.self_attn.k_proj with FPGA offload
+   Replaced model.layers.9.self_attn.v_proj with FPGA offload
+   Replaced model.layers.9.self_attn.o_proj with FPGA offload
+   Replaced model.layers.10.self_attn.q_proj with FPGA offload
+   Replaced model.layers.10.self_attn.k_proj with FPGA offload
+   Replaced model.layers.10.self_attn.v_proj with FPGA offload
+   Replaced model.layers.10.self_attn.o_proj with FPGA offload
+   Replaced model.layers.11.self_attn.q_proj with FPGA offload
+   Replaced model.layers.11.self_attn.k_proj with FPGA offload
+   Replaced model.layers.11.self_attn.v_proj with FPGA offload
+   Replaced model.layers.11.self_attn.o_proj with FPGA offload
+   Replaced model.layers.12.self_attn.q_proj with FPGA offload
+   Replaced model.layers.12.self_attn.k_proj with FPGA offload
+   Replaced model.layers.12.self_attn.v_proj with FPGA offload
+   Replaced model.layers.12.self_attn.o_proj with FPGA offload
+   Replaced model.layers.13.self_attn.q_proj with FPGA offload
+   Replaced model.layers.13.self_attn.k_proj with FPGA offload
+   Replaced model.layers.13.self_attn.v_proj with FPGA offload
+   Replaced model.layers.13.self_attn.o_proj with FPGA offload
+   Replaced model.layers.14.self_attn.q_proj with FPGA offload
+   Replaced model.layers.14.self_attn.k_proj with FPGA offload
+   Replaced model.layers.14.self_attn.v_proj with FPGA offload
+   Replaced model.layers.14.self_attn.o_proj with FPGA offload
+   Replaced model.layers.15.self_attn.q_proj with FPGA offload
+   Replaced model.layers.15.self_attn.k_proj with FPGA offload
+   Replaced model.layers.15.self_attn.v_proj with FPGA offload
+   Replaced model.layers.15.self_attn.o_proj with FPGA offload
+   Replaced model.layers.16.self_attn.q_proj with FPGA offload
+   Replaced model.layers.16.self_attn.k_proj with FPGA offload
+   Replaced model.layers.16.self_attn.v_proj with FPGA offload
+   Replaced model.layers.16.self_attn.o_proj with FPGA offload
+   Replaced model.layers.17.self_attn.q_proj with FPGA offload
+   Replaced model.layers.17.self_attn.k_proj with FPGA offload
+   Replaced model.layers.17.self_attn.v_proj with FPGA offload
+   Replaced model.layers.17.self_attn.o_proj with FPGA offload
+   Replaced model.layers.18.self_attn.q_proj with FPGA offload
+   Replaced model.layers.18.self_attn.k_proj with FPGA offload
+   Replaced model.layers.18.self_attn.v_proj with FPGA offload
+   Replaced model.layers.18.self_attn.o_proj with FPGA offload
+   Replaced model.layers.19.self_attn.q_proj with FPGA offload
+   Replaced model.layers.19.self_attn.k_proj with FPGA offload
+   Replaced model.layers.19.self_attn.v_proj with FPGA offload
+   Replaced model.layers.19.self_attn.o_proj with FPGA offload
+   Replaced model.layers.20.self_attn.q_proj with FPGA offload
+   Replaced model.layers.20.self_attn.k_proj with FPGA offload
+   Replaced model.layers.20.self_attn.v_proj with FPGA offload
+   Replaced model.layers.20.self_attn.o_proj with FPGA offload
+   Replaced model.layers.21.self_attn.q_proj with FPGA offload
+   Replaced model.layers.21.self_attn.k_proj with FPGA offload
+   Replaced model.layers.21.self_attn.v_proj with FPGA offload
+   Replaced model.layers.21.self_attn.o_proj with FPGA offload
+   Replaced model.layers.22.self_attn.q_proj with FPGA offload
+   Replaced model.layers.22.self_attn.k_proj with FPGA offload
+   Replaced model.layers.22.self_attn.v_proj with FPGA offload
+   Replaced model.layers.22.self_attn.o_proj with FPGA offload
+   Replaced model.layers.23.self_attn.q_proj with FPGA offload
+   Replaced model.layers.23.self_attn.k_proj with FPGA offload
+   Replaced model.layers.23.self_attn.v_proj with FPGA offload
+   Replaced model.layers.23.self_attn.o_proj with FPGA offload
+  ✓ Replaced 96 linear layers in reward model
+  Loading reference model...
+  Replacing reference model blocks [0, 23] with FPGA offload...
+  ✓ Replaced 8 linear layers in reference model
+  Devices: policy=cpu, reward=cpu, reference=cpu
+✓ Models loaded (reward blocks=all, policy/ref blocks=[0, 23])
+
+📊 Loading dataset...
+  Source: hivamoh/cs217-rlhf-dataset
+  Train: 800 examples
+  Eval:  200 examples
+✓ Dataset loaded
+
+🎓 Pre-training reward model head (5 steps, lr=0.0005)...
+  FPGA layers remain active during pre-training
+  [1/5] starting... seq_lens=(65,96) ~3,612,672 tiles
+    chosen fwd done: 4.9s
+    rejected fwd done: 5.3s
+  [1/5] loss=2.3085 acc=0.0% step=10.2s (fwd_chosen=4.9s fwd_rejected=5.3s) tiles=1892352 ETA=0.7min
+  [2/5] starting... seq_lens=(138,122) ~5,419,008 tiles
+    chosen fwd done: 5.4s
+    rejected fwd done: 5.2s
+  [2/5] loss=1.3705 acc=50.0% step=10.6s (fwd_chosen=5.4s fwd_rejected=5.2s) tiles=4816896 ETA=0.5min
+  [3/5] starting... seq_lens=(512,512) ~19,267,584 tiles
+    chosen fwd done: 6.7s
+    rejected fwd done: 6.5s
+  [3/5] loss=1.1447 acc=33.3% step=13.3s (fwd_chosen=6.7s fwd_rejected=6.5s) tiles=15826944 ETA=0.4min
+  [4/5] starting... seq_lens=(101,39) ~4,214,784 tiles
+    chosen fwd done: 5.0s
+    rejected fwd done: 5.0s
+  [4/5] loss=0.9167 acc=50.0% step=9.9s (fwd_chosen=5.0s fwd_rejected=5.0s) tiles=17547264 ETA=0.2min
+  [5/5] starting... seq_lens=(186,192) ~7,225,344 tiles
+    chosen fwd done: 5.4s
+    rejected fwd done: 5.1s
+  [5/5] loss=1.1641 acc=40.0% step=10.5s (fwd_chosen=5.4s fwd_rejected=5.1s) tiles=21676032 ETA=0.0min
+✓ Reward head pre-trained (accuracy=40.0%, fpga_tiles=21676032)
+
+🎯 Starting training with FPGA offload...
+
+🔋 Skipping GPU power monitoring (nvidia-smi not available)
+
+📍 Batch 1/6 (steps 1-8)
+/home/ubuntu/.local/lib/python3.8/site-packages/trl/trainer/ppo_config.py:207: FutureWarning: `PPOConfig` is deprecated and will be removed in the future. Please use `PPOv2Config` with `PPOv2Trainer` instead.
+  warnings.warn(
+/home/ubuntu/.local/lib/python3.8/site-packages/trl/trainer/ppo_trainer.py:193: FutureWarning: `PPOTrainer` is deprecated and will be removed in trl v0.12. Please use `PPOv2Trainer` instead.
+  warnings.warn(
+/home/ubuntu/.local/lib/python3.8/site-packages/trl/trainer/ppo_trainer.py:273: UserWarning: No dataset is provided. Make sure to set config.batch_size to the correct value before training.
+  warnings.warn(
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+  Generated response 1/8
+  Generated response 2/8
+  Generated response 3/8
+  Generated response 4/8
+  Generated response 5/8
+  Generated response 6/8
+  Generated response 7/8
+  Generated response 8/8
+  Running PPO gradient update...
+
+📍 Batch 2/6 (steps 9-16)
+  Generated response 1/8
+  Generated response 2/8
+  Generated response 3/8
+  Generated response 4/8
+  Generated response 5/8
+  Generated response 6/8
+  Generated response 7/8
+  Generated response 8/8
+  Running PPO gradient update...
+
+📍 Batch 3/6 (steps 17-24)
+  Generated response 1/8
+  Generated response 2/8
+  Generated response 3/8
+  Generated response 4/8
+  Generated response 5/8
+  Generated response 6/8
+  Generated response 7/8
+  Generated response 8/8
+  Running PPO gradient update...
+
+📍 Batch 4/6 (steps 25-32)
+  Generated response 1/8
+  Generated response 2/8
+  Generated response 3/8
+  Generated response 4/8
+  Generated response 5/8
+  Generated response 6/8
+  Generated response 7/8
+  Generated response 8/8
+  Running PPO gradient update...
+
+📍 Batch 5/6 (steps 33-40)
+  Generated response 1/8
+  Generated response 2/8
+  Generated response 3/8
+  Generated response 4/8
+  Generated response 5/8
+  Generated response 6/8
+  Generated response 7/8
+  Generated response 8/8
+  Running PPO gradient update...
+
+📍 Batch 6/6 (steps 41-48)
+  Generated response 1/8
+  Generated response 2/8
+  Generated response 3/8
+  Generated response 4/8
+  Generated response 5/8
+  Generated response 6/8
+  Generated response 7/8
+  Generated response 8/8
+  Running PPO gradient update...
+
+✓ Training complete
+
+💾 Saving results...
+✓ Results saved to results/policy_sweep/policy_baseline_grant/
+
+============================================================
+Training Summary
+============================================================
+rollout        :   241.5s total,  40.25s avg
+reward         :   179.5s total,  29.91s avg
+gradient       :    75.7s total,  12.62s avg
+
+FPGA Statistics:
+  Total matmuls offloaded: 0
+  Total tiles processed:   38821888
+============================================================
+
+
+============================================================
+Saving Models & Artifacts
+============================================================
+
+  Restoring FPGA layers to nn.Linear for serialization...
+    Restored: policy=8, reward=96, ref=8
+  ✓ Policy model: results/policy_sweep/policy_baseline_grant/trained_model/
+  ✓ PPO model: results/policy_sweep/policy_baseline_grant/trained_model_ppo/
+  ✓ Reward model: results/policy_sweep/policy_baseline_grant/reward_model/
+  ✓ Reference model: results/policy_sweep/policy_baseline_grant/reference_model/
+  ✓ Training metadata: results/policy_sweep/policy_baseline_grant/training_meta.json
+  Re-applying FPGA offload layers...
+
+============================================================
+All artifacts saved to: results/policy_sweep/policy_baseline_grant/
+============================================================
+
+
+============================================================
+Post-Training Evaluation: Quantization Quality Check
+============================================================
+
+Evaluating on 50 held-out examples...
+
+  [1/50] policy_reward=4.751  ref_reward=2.823  WIN  (avg: 4.751 vs 2.823, win_rate=100.0%)
+  [2/50] policy_reward=6.168  ref_reward=-6.159  WIN  (avg: 5.459 vs -1.668, win_rate=100.0%)
+  [3/50] policy_reward=-4.572  ref_reward=5.356  LOSS  (avg: 2.116 vs 0.673, win_rate=66.7%)
+  [4/50] policy_reward=6.470  ref_reward=-3.127  WIN  (avg: 3.204 vs -0.277, win_rate=75.0%)
+  [5/50] policy_reward=10.167  ref_reward=9.495  WIN  (avg: 4.597 vs 1.678, win_rate=80.0%)
+  [6/50] policy_reward=4.062  ref_reward=-5.118  WIN  (avg: 4.508 vs 0.545, win_rate=83.3%)
+  [7/50] policy_reward=11.508  ref_reward=4.054  WIN  (avg: 5.508 vs 1.046, win_rate=85.7%)
+  [8/50] policy_reward=-1.394  ref_reward=1.867  LOSS  (avg: 4.645 vs 1.149, win_rate=75.0%)
+  [9/50] policy_reward=5.103  ref_reward=2.429  WIN  (avg: 4.696 vs 1.291, win_rate=77.8%)
+  [10/50] policy_reward=4.890  ref_reward=2.251  WIN  (avg: 4.715 vs 1.387, win_rate=80.0%)
+  [11/50] policy_reward=5.519  ref_reward=2.887  WIN  (avg: 4.788 vs 1.523, win_rate=81.8%)
+  [12/50] policy_reward=7.787  ref_reward=-3.314  WIN  (avg: 5.038 vs 1.120, win_rate=83.3%)
+  [13/50] policy_reward=5.241  ref_reward=1.051  WIN  (avg: 5.054 vs 1.115, win_rate=84.6%)
+  [14/50] policy_reward=9.276  ref_reward=2.917  WIN  (avg: 5.356 vs 1.244, win_rate=85.7%)
+  [15/50] policy_reward=3.865  ref_reward=4.896  LOSS  (avg: 5.256 vs 1.487, win_rate=80.0%)
+  [16/50] policy_reward=0.238  ref_reward=4.356  LOSS  (avg: 4.942 vs 1.666, win_rate=75.0%)
+  [17/50] policy_reward=2.268  ref_reward=9.425  LOSS  (avg: 4.785 vs 2.123, win_rate=70.6%)
+  [18/50] policy_reward=4.467  ref_reward=6.467  LOSS  (avg: 4.767 vs 2.364, win_rate=66.7%)
+  [19/50] policy_reward=1.684  ref_reward=3.530  LOSS  (avg: 4.605 vs 2.426, win_rate=63.2%)
+  [20/50] policy_reward=6.364  ref_reward=3.838  WIN  (avg: 4.693 vs 2.496, win_rate=65.0%)
+  [21/50] policy_reward=7.259  ref_reward=-2.702  WIN  (avg: 4.815 vs 2.249, win_rate=66.7%)
+  [22/50] policy_reward=3.213  ref_reward=5.895  LOSS  (avg: 4.742 vs 2.414, win_rate=63.6%)
+  [23/50] policy_reward=-2.147  ref_reward=1.319  LOSS  (avg: 4.443 vs 2.367, win_rate=60.9%)
+  [24/50] policy_reward=4.675  ref_reward=6.627  LOSS  (avg: 4.453 vs 2.544, win_rate=58.3%)
+  [25/50] policy_reward=4.848  ref_reward=2.249  WIN  (avg: 4.468 vs 2.532, win_rate=60.0%)
+  [26/50] policy_reward=9.469  ref_reward=6.089  WIN  (avg: 4.661 vs 2.669, win_rate=61.5%)
+  [27/50] policy_reward=6.099  ref_reward=4.218  WIN  (avg: 4.714 vs 2.727, win_rate=63.0%)
+  [28/50] policy_reward=0.231  ref_reward=8.379  LOSS  (avg: 4.554 vs 2.928, win_rate=60.7%)
+  [29/50] policy_reward=9.231  ref_reward=9.244  LOSS  (avg: 4.715 vs 3.146, win_rate=58.6%)
+  [30/50] policy_reward=4.770  ref_reward=4.370  WIN  (avg: 4.717 vs 3.187, win_rate=60.0%)
+  [31/50] policy_reward=4.486  ref_reward=8.103  LOSS  (avg: 4.710 vs 3.346, win_rate=58.1%)
+  [32/50] policy_reward=5.721  ref_reward=9.127  LOSS  (avg: 4.741 vs 3.526, win_rate=56.2%)
+  [33/50] policy_reward=1.663  ref_reward=1.663  TIE  (avg: 4.648 vs 3.470, win_rate=54.5%)
+  [34/50] policy_reward=1.819  ref_reward=-0.754  WIN  (avg: 4.565 vs 3.346, win_rate=55.9%)
+  [35/50] policy_reward=6.378  ref_reward=6.150  WIN  (avg: 4.616 vs 3.426, win_rate=57.1%)
+  [36/50] policy_reward=3.938  ref_reward=5.049  LOSS  (avg: 4.598 vs 3.471, win_rate=55.6%)
+  [37/50] policy_reward=5.222  ref_reward=7.179  LOSS  (avg: 4.615 vs 3.571, win_rate=54.1%)
+  [38/50] policy_reward=9.511  ref_reward=8.825  WIN  (avg: 4.743 vs 3.709, win_rate=55.3%)
+  [39/50] policy_reward=-2.072  ref_reward=5.359  LOSS  (avg: 4.569 vs 3.752, win_rate=53.8%)
+  [40/50] policy_reward=3.866  ref_reward=3.954  LOSS  (avg: 4.551 vs 3.757, win_rate=52.5%)
+  [41/50] policy_reward=4.914  ref_reward=1.590  WIN  (avg: 4.560 vs 3.704, win_rate=53.7%)
+  [42/50] policy_reward=1.280  ref_reward=4.919  LOSS  (avg: 4.482 vs 3.733, win_rate=52.4%)
+  [43/50] policy_reward=10.292  ref_reward=3.683  WIN  (avg: 4.617 vs 3.732, win_rate=53.5%)
+  [44/50] policy_reward=5.152  ref_reward=6.311  LOSS  (avg: 4.629 vs 3.790, win_rate=52.3%)
+  [45/50] policy_reward=-1.472  ref_reward=8.942  LOSS  (avg: 4.494 vs 3.905, win_rate=51.1%)
+  [46/50] policy_reward=9.276  ref_reward=9.542  LOSS  (avg: 4.598 vs 4.027, win_rate=50.0%)
+  [47/50] policy_reward=2.414  ref_reward=2.105  WIN  (avg: 4.551 vs 3.986, win_rate=51.1%)
+  [48/50] policy_reward=2.302  ref_reward=2.128  WIN  (avg: 4.504 vs 3.948, win_rate=52.1%)
+  [49/50] policy_reward=11.683  ref_reward=3.413  WIN  (avg: 4.651 vs 3.937, win_rate=53.1%)
+  [50/50] policy_reward=4.376  ref_reward=3.523  WIN  (avg: 4.645 vs 3.928, win_rate=54.0%)
+
+============================================================
+Evaluation Summary (FPGA-Quantized vs Reference)
+============================================================
+  Metric                     Policy (FPGA)      Reference      Delta
+  ---------------------------------------------------------------
+  Mean Reward                       4.6452         3.9285    +0.7167
+  Mean Perplexity                     9.20           9.63      -0.44
+  Win Rate                           54.0%                (27W/22L/1T)
+============================================================
+  -> Quantization impact: SIGNIFICANT (>10% reward change)
+
+🎉 FPGA baseline measurement complete!

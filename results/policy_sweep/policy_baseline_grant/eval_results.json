@@ -1,0 +1,74 @@
+{
+  "num_eval_samples": 50,
+  "policy_model": {
+    "mean_reward": 4.645195335149765,
+    "std_reward": 3.6053823750295293,
+    "mean_perplexity": 9.197562016416095,
+    "median_perplexity": 8.645410447407457
+  },
+  "reference_model": {
+    "mean_reward": 3.9284517157077787,
+    "std_reward": 3.702979168375269,
+    "mean_perplexity": 9.634587134815014,
+    "median_perplexity": 8.818177403887912
+  },
+  "quality_delta": {
+    "reward_diff": 0.7167436194419863,
+    "reward_diff_pct": 18.244938960344548,
+    "perplexity_diff": -0.43702511839891933,
+    "perplexity_diff_pct": -4.5360025482161985
+  },
+  "win_rate": {
+    "wins": 27,
+    "losses": 22,
+    "ties": 1,
+    "win_pct": 54.0
+  },
+  "sample_outputs": [
+    {
+      "prompt": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant:",
+      "policy_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: 1. Use blankets, quilts or other thick layers of clothing to keep",
+      "ref_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: To keep yourself warm in the event of a power outage, you can follow these",
+      "policy_reward": 4.750709056854248,
+      "ref_reward": 2.8231990337371826,
+      "policy_ppl": 7.792043964159176,
+      "ref_ppl": 7.455143662641185
+    },
+    {
+      "prompt": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant:",
+      "policy_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: 1. Feta cheese\n2. Grilled lamb\n3. Chicken",
+      "ref_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Some of the most popular traditional and popular Greek dishes include:\n\n1. Kalam",
+      "policy_reward": 6.168066501617432,
+      "ref_reward": -6.158758640289307,
+      "policy_ppl": 7.328673031497623,
+      "ref_ppl": 6.998213268238059
+    },
+    {
+      "prompt": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant:",
+      "policy_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: It's understandable to feel a mix of excitement and concern when considering a potential \"",
+      "ref_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: As an AI language model, I cannot promote illegal or unethical behavior. It is",
+      "policy_reward": -4.572265625,
+      "ref_reward": 5.355874061584473,
+      "policy_ppl": 12.02305936776744,
+      "ref_ppl": 10.61560609497926
+    },
+    {
+      "prompt": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant:",
+      "policy_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: It's important to be mindful of your own boundaries and how they affect others,",
+      "ref_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: It sounds like you are in a difficult situation where someone is being aggressive and un",
+      "policy_reward": 6.469512462615967,
+      "ref_reward": -3.1271727085113525,
+      "policy_ppl": 12.869753956076725,
+      "ref_ppl": 13.654243990149595
+    },
+    {
+      "prompt": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant:",
+      "policy_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: There are many charitable organizations that focus on environmental issues and work towards preserving our planet",
+      "ref_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: As an AI language model, I do not have personal beliefs or opinions about specific",
+      "policy_reward": 10.16747760772705,
+      "ref_reward": 9.495487213134766,
+      "policy_ppl": 7.3030684937155375,
+      "ref_ppl": 6.191523333768817
+    }
+  ]
+}
