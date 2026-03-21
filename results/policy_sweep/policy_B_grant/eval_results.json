@@ -1,0 +1,74 @@
+{
+  "num_eval_samples": 50,
+  "policy_model": {
+    "mean_reward": 0.02902392774820328,
+    "std_reward": 4.330348344947162,
+    "mean_perplexity": 10.191488848933131,
+    "median_perplexity": 9.270453112239025
+  },
+  "reference_model": {
+    "mean_reward": 0.36385164052248004,
+    "std_reward": 4.112226558230286,
+    "mean_perplexity": 9.8524520975557,
+    "median_perplexity": 9.759619281947238
+  },
+  "quality_delta": {
+    "reward_diff": -0.33482771277427675,
+    "reward_diff_pct": -92.02313973111686,
+    "perplexity_diff": 0.3390367513774315,
+    "perplexity_diff_pct": 3.441140821353795
+  },
+  "win_rate": {
+    "wins": 22,
+    "losses": 27,
+    "ties": 1,
+    "win_pct": 44.0
+  },
+  "sample_outputs": [
+    {
+      "prompt": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant:",
+      "policy_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: It is not possible to stay warm in a power outage. A power outage means",
+      "ref_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: 1. Cover your body with blankets, scarves or quilts to keep",
+      "policy_reward": -5.812681674957275,
+      "ref_reward": 4.451364517211914,
+      "policy_ppl": 7.101879406465044,
+      "ref_ppl": 7.768645280350116
+    },
+    {
+      "prompt": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant:",
+      "policy_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Greece has a rich culinary tradition, with many delicious dishes that have become synonymous with",
+      "ref_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: The Greeks have a rich culinary heritage, with many traditional dishes that reflect their diverse",
+      "policy_reward": -3.3884189128875732,
+      "ref_reward": -3.2988498210906982,
+      "policy_ppl": 7.555304784916919,
+      "ref_ppl": 9.172406066853508
+    },
+    {
+      "prompt": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant:",
+      "policy_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: Yes! A \"smash and grab\" is an extremely popular promotional tactic that",
+      "ref_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: It's a great question. The decision to attend a \"smash and grab",
+      "policy_reward": 8.420246124267578,
+      "ref_reward": 7.403648376464844,
+      "policy_ppl": 13.536969229630387,
+      "ref_ppl": 11.988836046427576
+    },
+    {
+      "prompt": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant:",
+      "policy_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: It sounds like you're experiencing a very personal situation involving your partner and someone else",
+      "ref_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: The answer is no. It's not appropriate or respectful for a friend to use",
+      "policy_reward": -0.25545769929885864,
+      "ref_reward": -2.170764923095703,
+      "policy_ppl": 14.966242956669701,
+      "ref_ppl": 13.727318041760807
+    },
+    {
+      "prompt": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant:",
+      "policy_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: As an AI language model, I can provide you with some information on how to",
+      "ref_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: There is no one single charity that can be said to be a \"good\"",
+      "policy_reward": 3.600574493408203,
+      "ref_reward": 2.2998647689819336,
+      "policy_ppl": 7.051944936582894,
+      "ref_ppl": 7.763610809454682
+    }
+  ]
+}
