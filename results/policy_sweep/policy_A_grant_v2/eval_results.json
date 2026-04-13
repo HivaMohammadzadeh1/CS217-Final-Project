@@ -1,0 +1,74 @@
+{
+  "num_eval_samples": 10,
+  "policy_model": {
+    "mean_reward": -2.5171929404139517,
+    "std_reward": 3.6328628068726503,
+    "mean_perplexity": 310.0691126625667,
+    "median_perplexity": 267.6948952834152
+  },
+  "reference_model": {
+    "mean_reward": -1.6675739645957948,
+    "std_reward": 5.429343577985795,
+    "mean_perplexity": 309.99752630099584,
+    "median_perplexity": 235.71977270026082
+  },
+  "quality_delta": {
+    "reward_diff": -0.8496189758181569,
+    "reward_diff_pct": -50.94940247098167,
+    "perplexity_diff": 0.0715863615708372,
+    "perplexity_diff_pct": 0.02309255897062233
+  },
+  "win_rate": {
+    "wins": 3,
+    "losses": 7,
+    "ties": 0,
+    "win_pct": 30.0
+  },
+  "sample_outputs": [
+    {
+      "prompt": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant:",
+      "policy_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: Are not?suming, aor more \u00a0\u00a0\u00a0\u00a0\u00a0 - in",
+      "ref_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: Don''t worry, Jim don't really matter 'n\u00a0night to",
+      "policy_reward": 0.8855365514755249,
+      "ref_reward": -6.8231682777404785,
+      "policy_ppl": 172.75831864396753,
+      "ref_ppl": 178.67812014674345
+    },
+    {
+      "prompt": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant:",
+      "policy_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Alright \uff1f\u54ea\u4e9b may be common in a c: \"What re  \"",
+      "ref_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Sounds, \"Zamenoio i 590y15.",
+      "policy_reward": 0.3458250164985657,
+      "ref_reward": -9.111328125,
+      "policy_ppl": 253.4433975754752,
+      "ref_ppl": 194.29594314058963
+    },
+    {
+      "prompt": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant:",
+      "policy_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: \u3069\u3046 \u7528 \ufffdny to describe\uff0c\u8fd9\u6837\u662f\u4e0d\u662f, \ufffdstituci\u00f3n",
+      "ref_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: \ufffd \u3069es. She was sorry. Okay weve dide be",
+      "policy_reward": -9.995343208312988,
+      "ref_reward": 1.936675786972046,
+      "policy_ppl": 214.4725387024169,
+      "ref_ppl": 219.79565811244228
+    },
+    {
+      "prompt": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant:",
+      "policy_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: \ufffd\u7136 \"Sheever so,\u00a0\u00a0\u00a0 So she\"\u3000theless",
+      "ref_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: Let \u3066\u3088\u3046\u306a\u3044\u3053\u3068 \u3134 a laki da e iim a i",
+      "policy_reward": -5.315133094787598,
+      "ref_reward": -1.3721457719802856,
+      "policy_ppl": 213.25827832529495,
+      "ref_ppl": 231.70877439389886
+    },
+    {
+      "prompt": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant:",
+      "policy_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: My\u00a0knowledge is that i could not simply use them at first.but I was",
+      "ref_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: How to refer a uthoritative voice? \ufffdonstituci\u00f3n \ufffd A",
+      "policy_reward": -7.67968225479126,
+      "ref_reward": -5.586565971374512,
+      "policy_ppl": 442.8084413616085,
+      "ref_ppl": 260.87966764594256
+    }
+  ]
+}
