@@ -1,0 +1,17 @@
+{
+  "rollout": {
+    "total_time_s": 48211.53779196739,
+    "avg_time_s": 8035.256298661232,
+    "num_calls": 6
+  },
+  "reward": {
+    "total_time_s": 106103.97017550468,
+    "avg_time_s": 17683.995029250782,
+    "num_calls": 6
+  },
+  "gradient": {
+    "total_time_s": 74.19983887672424,
+    "avg_time_s": 12.366639812787374,
+    "num_calls": 6
+  }
+}

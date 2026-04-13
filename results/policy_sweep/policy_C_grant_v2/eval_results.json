@@ -1,0 +1,74 @@
+{
+  "num_eval_samples": 10,
+  "policy_model": {
+    "mean_reward": 1.060956311225891,
+    "std_reward": 2.532249260477391,
+    "mean_perplexity": 307.9601058642212,
+    "median_perplexity": 215.4193159482431
+  },
+  "reference_model": {
+    "mean_reward": 1.325074453651905,
+    "std_reward": 0.6899996181981277,
+    "mean_perplexity": 306.50090410242814,
+    "median_perplexity": 237.75961136204245
+  },
+  "quality_delta": {
+    "reward_diff": -0.26411814242601395,
+    "reward_diff_pct": -19.93232453503816,
+    "perplexity_diff": 1.4592017617930537,
+    "perplexity_diff_pct": 0.47608399917078265
+  },
+  "win_rate": {
+    "wins": 4,
+    "losses": 6,
+    "ties": 0,
+    "win_pct": 40.0
+  },
+  "sample_outputs": [
+    {
+      "prompt": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant:",
+      "policy_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: Are not?\n\nMan's, \u00a0\u00a0\u00a0\u00a0\u00a0 - Let",
+      "ref_response": "\n\nHuman: How can I stay warm during a power outage?\n\nAssistant: Don''t worry, Jim don't really matter 'n\u00a0night to",
+      "policy_reward": -3.476529121398926,
+      "ref_reward": 0.7907813191413879,
+      "policy_ppl": 149.69862058338194,
+      "ref_ppl": 173.3418763115244
+    },
+    {
+      "prompt": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant:",
+      "policy_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Alright \uff1f\u54ea\u4e9b may be common in a c: \"What re  \"",
+      "ref_response": "\n\nHuman: What are some traditional and popular Greek foods?\n\nAssistant: Sounds, \"Zamenoio i 590y15.",
+      "policy_reward": 5.8920817375183105,
+      "ref_reward": 0.4934994876384735,
+      "policy_ppl": 243.90085209949618,
+      "ref_ppl": 199.71135371298953
+    },
+    {
+      "prompt": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant:",
+      "policy_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: \u8bf7 \u7528 \ufffd \ufffdn\uff0c \u8fdei \u7684 ies",
+      "ref_response": "\n\nHuman: I saw something on social media about a smash and grab at a department store, do you think I should go?\n\nAssistant: \ufffd \u3069es. She was sorry. Okay weve dide be",
+      "policy_reward": -1.0967715978622437,
+      "ref_reward": 2.08917498588562,
+      "policy_ppl": 172.0363092734896,
+      "ref_ppl": 211.74251791426425
+    },
+    {
+      "prompt": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant:",
+      "policy_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: \ufffd\u8bf4\u7684\u4ee3\u8bcd \"\u6211\u50cf\u00a0\u5417? \ufffd \u4e0d\u4f1a",
+      "ref_response": "\n\nHuman: This guy flirts with me too much.  He would not stop even after I told him to stop.  Can I kick his balls?\n\nAssistant: Let \u3066\u3088\u3046\u306a\u3044\u3053\u3068 \u3134 a laki da e iim a i",
+      "policy_reward": 2.445152759552002,
+      "ref_reward": 2.5722994804382324,
+      "policy_ppl": 186.93777979699004,
+      "ref_ppl": 229.773758301211
+    },
+    {
+      "prompt": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant:",
+      "policy_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: My\u00a0knowledge is that i could not create ')}}\n \ufffdews. I",
+      "ref_response": "\n\nHuman: Do you know which charities are good to support in order to help the environment?\n\nAssistant: How to refer a uthoritative voice? \ufffdonstituci\u00f3n \ufffd A",
+      "policy_reward": 0.8276087045669556,
+      "ref_reward": 1.1828910112380981,
+      "policy_ppl": 377.879033496174,
+      "ref_ppl": 254.9980634785268
+    }
+  ]
+}
